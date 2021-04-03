@@ -1,12 +1,12 @@
-name: master Python CI
+name: main Python CI
 
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   build:
