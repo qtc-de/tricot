@@ -1,0 +1,44 @@
+tester:
+  name: ExampleTester
+  title: Just an example test
+
+containers:
+  - name: 'nginx'
+    image: 'nginx:latest'
+    aliases:
+      DOCKER-nginx-IP: DOCKER-IP
+
+tests:
+  - title: Test curl
+    description: |-
+      Test that our curl installation is working
+
+    command:
+      - curl
+      - ${DOCKER-IP}
+    validators:
+      - status: 0
+      - contains:
+          ignore_case: False
+          values:
+            - Welcome to nginx
+            - Thank you for using nginx
+
+  - title: Test wget
+    description: |-
+      Test that our wget installation is working
+
+    command:
+      - wget
+      - ${DOCKER-IP}
+    validators:
+      - status: 0
+      - file_contains:
+          - file: ./index.html
+            contains:
+              - Welcome to nginx
+              - Thank you for using nginx
+      - file_exists:
+          cleanup: True
+          files:
+            - './index.html'

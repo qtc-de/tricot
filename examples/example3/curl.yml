@@ -1,0 +1,21 @@
+tester:
+  name: CurlTester
+  title: Curl Commands
+
+tests:
+
+  - title: Test passwd File
+    description: |-
+      Test whether the passwd file can be obtained from the
+      http_listener plugin.
+
+    command:
+      - curl
+      - http://127.0.0.1:8000/passwd
+    validators:
+      - status: 0
+      - contains:
+          values:
+            - root
+            - bin
+            - www-data

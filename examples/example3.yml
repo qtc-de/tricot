@@ -1,0 +1,23 @@
+tester:
+  name: ExampleTester
+  title: Just an example test
+  error_mode: break
+
+plugins:
+  - mkdir:
+      cleanup: True
+      force: True
+      dirs:
+        - ./www
+  - os_command:
+      cmd:
+        - cp
+        - /etc/passwd
+        - ./www
+  - http_listener:
+      port: 8000
+      dir: ./www
+
+testers:
+  - ./example3/curl.yml
+  - ./example3/wget.yml

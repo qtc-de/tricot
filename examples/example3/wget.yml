@@ -1,0 +1,26 @@
+tester:
+  name: WgetTester
+  title: Wget Commands
+
+tests:
+
+  - title: Test passwd File
+    description: |-
+      Test whether the passwd file can be obtained from the
+      http_listener plugin.
+
+    command:
+      - wget
+      - http://127.0.0.1:8000/passwd
+    validators:
+      - status: 0
+      - file_contains:
+          - file: ./passwd
+            contains:
+              - root
+              - bin
+              - nope
+      - file_exists:
+          cleanup: True
+          files:
+            - './passwd'

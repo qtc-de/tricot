@@ -1,0 +1,51 @@
+#!/bin/bash
+
+type _comp_filter &> /dev/null || return
+type _comp_contains &> /dev/null || return
+type _comp_filter_shorts &> /dev/null || return
+
+function _tricot() {
+
+    local cur prev opts
+
+    _init_completion || return
+    COMPREPLY=()
+
+    # No completion
+	if _comp_contains "--number --tester" $prev; then
+		return 0
+
+    # Complete template modes
+	elif _comp_contains "--template" $prev; then
+        opts="plugin tester validator"
+
+    # Options with filename completions
+	elif _comp_contains "--plugin --validator" $prev; then
+        _filedir
+        return 0
+
+	# Current wort starts with -*
+    elif [[ "$cur" == -* ]]; then
+		opts="--help"
+		opts="$opts --verbose"
+		opts="$opts --quite"
+		opts="$opts --plugin"
+		opts="$opts --validator"
+		opts="$opts --tester"
+		opts="$opts --template"
+		opts="$opts --number"
+
+    # Default to filename completion
+    else
+        _filedir
+        return 0
+    fi
+
+    _comp_filter "opts" "--validator --plugin --tester --number"
+    _comp_filter_shorts "opts"
+
+	mapfile -t COMPREPLY < <(compgen -W "${opts}" -- "${cur}") 
+	return 0
+}
+
+complete -F _tricot tricot
