@@ -10,7 +10,7 @@ for end to end testing of command line applications.
 
 ![](https://github.com/qtc-de/tricot/workflows/main%20Python%20CI/badge.svg?branch=main)
 ![](https://github.com/qtc-de/tricot/workflows/develop%20Python%20CI/badge.svg?branch=develop)
-![example-usage](https://tneitzel.eu/73201a92878c0aba7c3419b7403ab604/tricot-example.png)
+![example-usage](https://tneitzel.eu/73201a92878c0aba7c3419b7403ab604/tricot-example.gif)
 
 
 ### Installation
