@@ -320,6 +320,10 @@ class Test:
                 Logger.print_plain_red("error.")
                 raise TricotRuntimeError(e)
 
+            except KeyboardInterrupt as e:
+                Logger.print_plain_red("canceled.")
+                raise KeyboardInterrupt(e)
+
         else:
             prev = hotplug_variables.get('$prev')
             prev_cmd = hotplug_variables.get('$prev-cmd')

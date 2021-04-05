@@ -127,6 +127,12 @@ def main():
             tricot.Logger.increase_indent()
             tricot.Logger.print_with_indent_blue(str(e.original), e=True)
 
+        except KeyboardInterrupt:
+            tricot.Logger.reset_indent()
+            tricot.Logger.print('')
+            tricot.Logger.print_mixed_yellow('Caught', 'KeyboardInterrupt', 'from user.')
+            tricot.Logger.print('Stopping current test.')
+
         except Exception as e:
             tricot.Logger.print_mixed_blue('Caught', 'unexpected Exception', e=True)
             tricot.Logger.increase_indent()
