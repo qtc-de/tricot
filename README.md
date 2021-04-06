@@ -43,9 +43,9 @@ $ cp resources/bash_completion.d/tricot ~/bash_completion.d/
 
 *tricot* tests are defined within of *YAML* files that can contain the following components:
 
-* **Testers**: Each *tricot YAML* file is required to define excatly one *Tester*. The *Tester*
+* **Testers**: Each *tricot YAML* file is required to define exactly one *Tester*. The *Tester*
   basically describes the context of the current *YAML* file and sets attributes like it's *name*
-  or *error_mode*. Furthermore, *tricot YAML* files can contain referneces to other *Testers*,
+  or *error_mode*. Furthermore, *tricot YAML* files can contain references to other *Testers*,
   which allows nesting *Testers*.
 
 * **Tests**: *tricot YAML* files can contain an arbitrary number of *Tests*. Each *Test* contains
@@ -64,7 +64,7 @@ $ cp resources/bash_completion.d/tricot ~/bash_completion.d/
 
 * **Containers**: When testing commands that interact with other systems, you probably want to run
   your tests against a docker container. *Container* definitions within of *tricot YAML* files can
-  be used to start containsers before your tests run. A container defined in a *YAML* file runs as
+  be used to start containers before your tests run. A container defined in a *YAML* file runs as
   long as the *Tests* from the corresponding *YAML* file are executed. After all tests have finished,
   the container is stopped.
 

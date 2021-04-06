@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 import tricot
 
 
-tester_template = '''tester:
+tester_template = """tester:
   name: <NAME>
   title: <TITLE>
   description: |-
@@ -45,13 +43,13 @@ tests:
 
 testers:
   - <TESTER>
-'''
+"""
 
 
-plugin_template = '''import tricot
+plugin_template = """import tricot
 
 class MyPlugin(tricot.Plugin):
-    """
+    '''
     Plugin description.
 
     Example:
@@ -59,30 +57,33 @@ class MyPlugin(tricot.Plugin):
         plugins:
             - my_plugin:
                 key: value
-    """
+    '''
     param_type = dict
     inner_types = {
                     'key': {'required': True, 'type': str},
                   }
 
     def run(self) -> None:
-        """
+        '''
         Executed on startup.
-        """
+        '''
         pass
 
     def stop(self) -> None:
-        """
+        '''
         Executed when stopping.
-        """
+        '''
         pass
-'''
 
 
-validator_template = '''import tricot
+tricot.register_plugin('my_plugin', MyPlugin)
+"""
+
+
+validator_template = """import tricot
 
 class MyValidator(tricot.Validator):
-    """
+    '''
     Validator description.
 
     Example:
@@ -90,22 +91,22 @@ class MyValidator(tricot.Validator):
         validators:
             - my_validator:
                 key: value
-    """
+    '''
     param_type = dict
     inner_types = {
             'key': {'required': True, 'type': str},
     }
 
     def run(self, cmd_output: list[int, str]) -> None:
-        """
+        '''
         Run during validation.
-        """
-        if cmd_output != 0:
-            raise tricot.ValidationException(f'File {dir_name} does exist.')
+        '''
+        if cmd_output[0] != 0:
+            raise tricot.ValidationException(f'Failure Reason')
 
 
 tricot.register_validator('my_validator', MyValidator)
-'''
+"""
 
 
 def replace_placeholders(template: str) -> str:
