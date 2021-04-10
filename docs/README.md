@@ -19,6 +19,11 @@ overview that may be extended in future:
 * [plugins](./plugins)
 * [validators](./validators)
 
+The following sections demonstrate how custom *tricot* plugins and validators can be created.
+In case you require more detailed information on how to achieve certain things, please refer
+to the source code of *tricot* and read the corresponding class definitions for the ``Validator``
+and ``Plugin`` class.
+
 
 ### Writing Custom Plugins
 
@@ -191,3 +196,44 @@ the validator will raise a ``ValidationException``:
 [-]                 null
 [-]  
 ```
+
+
+### Parameter Types and their Validation
+
+----
+
+Plugins and validators may use the ``param_type`` and ``inner_types`` class variables to define more detailed
+information on their required parameters types. Both variables are used when parsing the test configuration
+and perform some basic type validations. To describe this in more detail, we use the following test configuration:
+
+```yaml
+tester:
+  name: ExampleTester
+  title: Just an example test
+
+plugins:
+  example_one: Hello World :)
+  example_two:
+    - arg1
+    - 22
+  example_three:
+    key1: arg1
+    key2: 22
+```
+
+* ``param_type`` can be used to specify the python type that is expected for the toplevel argument of a
+  plugin or validator. In the example test configuration above, the ``param_type`` values should be set
+  like this:
+  * ``example_one``: ``param_type = str``
+  * ``example_two``: ``param_type = list``
+  * ``example_three``: ``param_type = dict``
+
+* ``inner_types`` can be used to specify further requirements on inner parameters that are expected within
+  of list or dictionary argument types. In the example test configuration above, the ``inner_types`` values
+  should be set like this:
+  * ``example_one``: Not set
+  * ``example_two``: ``inner_types = [str, int]``
+  * ``example_three``: ``inner_types = {'key1': {'required': True, 'type': str}, 'key2': {'required': False, 'type': int}``
+
+The parameter validation described above is very basic and has obviously limitations. In future, we probably
+want a parameter validation that is easier to use and has an arbitrary recursion depth.

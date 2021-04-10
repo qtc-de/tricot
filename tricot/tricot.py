@@ -175,7 +175,7 @@ class Test:
                         val[ctr] = str(val[ctr])
 
         if type(val) is not list:
-            raise KeyError(f"The '{k}' key needs to be a list within the ")
+            raise ValueError(f"The '{k}' key needs to be a list within the ")
 
         return val
 
@@ -219,6 +219,9 @@ class Test:
 
         except KeyError as e:
             raise TestKeyError(str(e), path)
+
+        except ValueError as e:
+            raise TestKeyError(None, path, str(e))
 
     def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue') -> list[Test]:
         '''
@@ -390,7 +393,7 @@ class Tester:
     tester_count = 0
 
     def __init__(self, path: Path, name: str, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
-                 containers: list[TricotContainer], plugins: list[Plugin]) -> None:
+                 containers: list[TricotContainer], plugins: list[Plugin], error_mode: str) -> None:
         '''
         Initializes a new Tester object.
 
@@ -403,6 +406,7 @@ class Tester:
             testers     List of Tester object, that allows to nest tester objects
             containers  List of TricotContainer objects for the test
             plugins     List of Plugin objects for the test
+            error_mode  Decides what to do if a plugin fails (break|continue)
         '''
         self.name = name
         self.title = title or name
@@ -411,6 +415,7 @@ class Tester:
         self.testers = testers
         self.containers = containers
         self.plugins = plugins
+        self.error_mode = error_mode
 
     def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
                   path: Path = None, e_mode: str = None) -> Tester:
@@ -464,9 +469,9 @@ class Tester:
                 tests = Test.from_list(path, definitions, variables, error_mode)
 
             elif not tester_list:
-                raise TesterKeyError('definitions', path, optional='testers')
+                raise TesterKeyError('tests', path, optional='testers')
 
-            return Tester(path, t['name'], t.get('title'), variables, tests, tester_list, containers, plugins)
+            return Tester(path, t['name'], t.get('title'), variables, tests, tester_list, containers, plugins, error_mode)
 
         except KeyError as e:
             raise TesterKeyError(str(e), path)
@@ -573,12 +578,25 @@ class Tester:
             None
         '''
         for tester in self.testers:
+            try:
 
-            if self.name in testers:
-                tester.run(numbers=numbers, hotplug_variables=hotplug_variables)
+                if self.name in testers:
+                    tester.run(numbers=numbers, hotplug_variables=hotplug_variables)
 
-            else:
-                tester.run(testers, numbers, hotplug_variables)
+                else:
+                    tester.run(testers, numbers, hotplug_variables)
+
+            except tricot.PluginException as e:
+
+                tricot.Logger.print("")
+
+                if self.error_mode == 'break':
+                    raise e
+
+                else:
+                    tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'during plugin execution.', e=True)
+                    tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
+                    tricot.Logger.print_blue('Tester is skipped.', e=True)
 
     def increase() -> None:
         '''

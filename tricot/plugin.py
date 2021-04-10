@@ -325,10 +325,11 @@ class OsCommandPlugin(Plugin):
 
         plugins:
             - os_command:
-                timeout: 5
+                init: 1
                 cmd:
-                    - touch
-                    - /tmp/test
+                    - nc
+                    - -vlp
+                    - 4444
     '''
     param_type = dict
     inner_types = {
@@ -366,20 +367,15 @@ class OsCommandPlugin(Plugin):
         self.process = subprocess.Popen(command, cwd=self.path.parent, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         if timeout > 0:
-
-            try:
-                self.process.communicate(timeout=timeout)
-
-            except subprocess.TimeoutExpired:
-                pass
+            self.process.communicate(timeout=timeout)
 
         elif not background:
             self.process.wait()
-            self.on_exit(command)
 
         elif init > 0:
             time.sleep(init)
-            self.on_exit(command)
+
+        self.on_exit(command)
 
     def stop(self) -> None:
         '''

@@ -174,7 +174,7 @@ class Validator:
     def check_inner_types(self) -> None:
         '''
         Validators that require a dictionary or list can specify the static class variable 'inner_types'
-        to specify which inner types are expecetd within the collection types. When a list is used,
+        to specify which inner types are expected within the collection types. When a list is used,
         'inner_types' is expected to contain a list with allowed types. In case of a dict, 'inner_types'
         is expected to contain a dict, containing the possible parameters as keys and a dict of
         {'required': bool, 'type': type} as value.
@@ -382,7 +382,7 @@ class MatchValidator(Validator):
     '''
     The MatchValidator checks whether there is an exact match of the command output and the
     specified value. The value is expected within the 'value' key. Additionally, the validator
-    accepts the 'ignore_case_ key, to specify whether the case should be ignored.
+    accepts the 'ignore_case' key, to specify whether the case should be ignored.
 
     Example:
                 validators:
@@ -413,9 +413,7 @@ class MatchValidator(Validator):
 
 class RegexValidator(Validator):
     '''
-    The RegexValidator checks whether the command output matches the specified regex. The
-    regex needs to be specified in an additional 'regex' key. Furthermore, the 'type' key can
-    be used to determine the regex search/match type.
+    The RegexValidator checks whether the command output matches the specified regex.
 
     Example:
                 validators:
@@ -490,7 +488,7 @@ class ErrorValidator(Validator):
 class FileExistsValidator(Validator):
     '''
     The FileExistsValidator takes a list of filenames and checks whether they exist on the file
-    system. This can be useful, when your testing command is expecetd to create files.
+    system. This can be useful, when your testing command is expected to create files.
 
     Example:
                 validators:
@@ -541,7 +539,7 @@ class FileExistsValidator(Validator):
 class DirectoryExistsValidator(Validator):
     '''
     The DirectoryExistsValidator takes a list of directory names and checks whether they exist
-    on the file system. This can be useful, when your testing command is expecetd to create
+    on the file system. This can be useful, when your testing command is expected to create
     directories.
 
     Example:
