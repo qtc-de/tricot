@@ -82,7 +82,7 @@ def main():
             tricot.Logger.print_blue(str(e), e=True)
             tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
 
-        except tricot.utils.TricotRuntimeError as e:
+        except tricot.utils.TricotRuntimeVariableError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
             tricot.Logger.print('Runtime variables should only be used in library mode.', e=True)
