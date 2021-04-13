@@ -97,11 +97,14 @@ class MyValidator(tricot.Validator):
             'key': {'required': True, 'type': str},
     }
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Run during validation.
         '''
-        if cmd_output[0] != 0:
+        if self.command.status != 0:
+            raise tricot.ValidationException(f'Failure Reason')
+
+        if 'key' not in self.get_output():
             raise tricot.ValidationException(f'Failure Reason')
 
 
