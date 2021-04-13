@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import yaml
-import subprocess
+import glob
 from pathlib import Path
 from typing import Any, Union
 
@@ -12,18 +12,7 @@ from tricot.docker import TricotContainer
 from tricot.logging import Logger
 from tricot.validation import Validator, ValidationException
 from tricot.plugin import Plugin
-
-
-class TricotRuntimeError(Exception):
-    '''
-    Custom exception class for exceptions raised when running the external command.
-    '''
-    def __init__(self, exception: Exception) -> None:
-        '''
-        Custom exception class that stores the original exception within a variable.
-        '''
-        self.original = exception
-        super().__init__('Runtime Error')
+from tricot.command import Command
 
 
 class TricotException(Exception):
@@ -132,7 +121,7 @@ class Test:
         self.title = title
         self.error_mode = error_mode
         self.variables = variables
-        self.command = command
+        self.command = Command(command)
         self.timeout = timeout
         self.validators = validators
 
@@ -214,7 +203,7 @@ class Test:
 
                 command += arguments
 
-            Test.check_keys(input_dict)
+            tricot.utils.check_keys(Test.expected_keys, input_dict)
             return Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators)
 
         except KeyError as e:
@@ -273,19 +262,19 @@ class Test:
         Logger.print_blue(f'{prefix} {self.title}...', end=' ', flush=True)
         success = True
 
-        output = self.run_wrapper(hotplug_variables)
+        self.command.run(self.path.parent, self.timeout, hotplug_variables)
 
         for validator in self.validators:
 
             try:
-                validator._run(output, hotplug_variables)
+                validator._run(self.command, hotplug_variables)
 
             except Exception as e:
 
                 if success:
                     Logger.print_plain_red("failed.")
 
-                Logger.handle_error(e, validator, self.command)
+                Logger.handle_error(e, validator)
 
                 if self.error_mode == "break":
                     Logger.decrease_indent()
@@ -297,90 +286,8 @@ class Test:
         if success:
             Logger.print_plain_green("success.")
 
-        hotplug_variables['$prev'] = output
-        hotplug_variables['$prev-cmd'] = self.command
+        hotplug_variables['$prev'] = self.command
         Logger.decrease_indent()
-
-    def run_wrapper(self, hotplug_variables: dict[str, Any] = None) -> str:
-        '''
-        Just a wrapper around the actual command execution function. It is basically used
-        to reduce the complexity of the run function and to handle the special case of
-        the ${prev} variable within the command specification.
-
-        Parameters:
-            hotplug_variables   Variables that are applied at runtime.
-
-        Returns:
-            cmd_output      Command output in the form [status_code, stdout & stderr]
-        '''
-        if self.command[0] != '${prev}':
-            self.command = Test.apply_variables(self.command, hotplug_variables)
-
-            try:
-                output = self._run()
-
-            except Exception as e:
-                Logger.print_plain_red("error.")
-                raise TricotRuntimeError(e)
-
-            except KeyboardInterrupt as e:
-                Logger.print_plain_red("canceled.")
-                raise KeyboardInterrupt(e)
-
-        else:
-            prev = hotplug_variables.get('$prev')
-            prev_cmd = hotplug_variables.get('$prev-cmd')
-
-            if prev is not None and prev_cmd is not None:
-                output = prev
-                self.command = prev_cmd
-
-            else:
-                Logger.print_plain_red("error.")
-                raise TricotException("Special '${prev}' variable was used, but no previous output exists.")
-
-        return output
-
-    def _run(self) -> list[int, str]:
-        '''
-        This is a helper method that performs the actual command execution. It returns
-        the output of a command in form of a list that contains the status code at first
-        and the command output as second element.
-
-        Parameters:
-            None
-
-        Returns:
-            cmd_output      Command output in the form [status_code, stdout & stderr]
-        '''
-        try:
-            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path.parent)
-            output, _ = process.communicate(timeout=self.timeout)
-            return_code = process.returncode
-
-        except subprocess.TimeoutExpired:
-            process.kill()
-            output, _ = process.communicate(timeout=self.timeout)
-            return_code = 99
-
-        except subprocess.CalledProcessError as e:
-            output = e.output
-            return_code = e.returncode
-
-        return [return_code, output.decode('utf-8')]
-
-    def check_keys(yaml_dict: dict) -> None:
-        '''
-        What happes quite some time is that validators are indented incorrectly and appear within the test
-        section of the .yml definition. This is annoying, as your test seems to work, but was actually never
-        validated. This function checks for unexpcted keys within .yml files and prints a warning if one is
-        encountered.
-        '''
-        for key in yaml_dict.keys():
-            if key not in Test.expected_keys:
-                Logger.print_yellow('Warning:', end=' ')
-                Logger.print_mixed_blue_plain('Test', yaml_dict['title'], 'contains unexpected key', end=': ')
-                Logger.print_yellow_plain(key)
 
 
 class Tester:
@@ -461,8 +368,9 @@ class Tester:
                     if not Path(f).is_absolute():
                         f = path.parent.joinpath(f)
 
-                    tester = Tester.from_file(f, variables, runtime_vars, error_mode)
-                    tester_list.append(tester)
+                    for ff in glob.glob(str(f)):
+                        tester = Tester.from_file(ff, variables, runtime_vars, error_mode)
+                        tester_list.append(tester)
 
             tests = None
             if definitions and type(definitions) is list:

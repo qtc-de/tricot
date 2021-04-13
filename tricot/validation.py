@@ -9,6 +9,7 @@ from pathlib import Path
 
 import tricot
 import tricot.utils
+from tricot.command import Command
 
 
 this = sys.modules[__name__]
@@ -147,7 +148,7 @@ class Validator:
         self.variables = variables
         self.check_param_type()
 
-        self.command_output = None
+        self.command = None
 
     def check_param_type(self) -> None:
         '''
@@ -170,6 +171,7 @@ class Validator:
             raise ValidatorError(self.path, message)
 
         self.check_inner_types()
+        self.check_streams()
 
     def check_inner_types(self) -> None:
         '''
@@ -282,30 +284,6 @@ class Validator:
 
         return validators
 
-    def _run(self, cmd_output: list[int, str], hotplug_variables: dict[str, Any] = None) -> None:
-        '''
-        This method is called internally to perform the validation process. It is basically
-        a wrapper to the user defined 'run' method that stores the command result in an
-        additional class variable.
-
-        Parameters:
-            cmd_output          Command output in the form: list(status_code, stderr | stdout)
-            hotplug_variables   Variables to apply at runtime
-
-        Returns:
-            None
-        '''
-        self.command_output = cmd_output
-
-        self.param = tricot.utils.apply_variables(self.param, hotplug_variables)
-        self.run(cmd_output)
-
-    def run(self, cmd_output: list[int, str]) -> None:
-        '''
-        Dummy run method. This one needs to be overwritten by the actual validator implementations.
-        '''
-        return None
-
     def resolve_path(self, path: str) -> str:
         '''
         Resolves the specified path relative to the current validator definition (file location of
@@ -322,6 +300,86 @@ class Validator:
 
         return self.path.parent.joinpath(path)
 
+    def check_streams(self) -> None:
+        '''
+        Used to validate stream names if specified. Is run during parsing of tests to prevent
+        errors at runtime. Stream names can be specified for each validator that accepts parameters
+        as dictionary values.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        if type(self.param) != dict:
+            return
+
+        stream = self.param.get('stream')
+
+        if stream is not None:
+            
+            if type(stream) != str or stream not in ['stdout', 'stderr', 'both']:
+                raise ValidatorError(self.path, "When specified, stream needs to be one of 'stdout', 'stderr' or 'both'.")
+
+    def get_output(self) -> str:
+        '''
+        Helper function to obtain the actual output of a command execution. Each validator accepts
+        the special key 'stream' within of it's parameters. 'stream' is expected to be either 'both',
+        'stdout' or 'stderr'. If it was not specified 'both' is taken as the default. The return value
+        of this function is the command output that was captured for the correspoding stream.
+
+        Parameters:
+            None
+
+        Returns:
+            output      Output captured from stdout, stderr or both
+        '''
+        if type(self.param) != dict:
+            return self.command.get_output()
+
+        stream = self.param.get('stream')
+
+        if stream == 'stdout':
+            return self.command.stdout
+
+        elif stream == 'stderr':
+            return self.command.stderr
+
+        elif stream == 'both' or stream is None:
+            return self.command.get_output()
+
+        raise ValidatorError(self.path, f"Encountered unexpected value for the 'stream' key: {stream}")
+
+    def _run(self, command: Command, hotplug_variables: dict[str, Any] = None) -> None:
+        '''
+        This method is called internally to perform the validation process. It is basically
+        a wrapper to the user defined 'run' method that stores the command result in an
+        additional class variable.
+
+        Parameters:
+            command             Command object associated with the current tests
+            hotplug_variables   Variables to apply to the validator at runtime
+
+        Returns:
+            None
+        '''
+        self.command = command
+        self.param = tricot.utils.apply_variables(self.param, hotplug_variables)
+        self.run()
+
+    def run(self) -> None:
+        '''
+        Dummy run method. This one needs to be overwritten by the actual validator implementations.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        return None
+
 
 class ContainsValidator(Validator):
     '''
@@ -331,15 +389,16 @@ class ContainsValidator(Validator):
     to invert the match.
 
     Example:
-                validators:
-                    - contains:
-                        ignore_case: True
-                        values:
-                            - match this
-                            - and this
-                        invert:
-                            - not match this
-                            - and this
+
+        validators:
+            - contains:
+                ignore_case: True
+                values:
+                    - match this
+                    - and this
+                invert:
+                    - not match this
+                    - and this
     '''
     param_type = dict
     inner_types = {
@@ -348,11 +407,11 @@ class ContainsValidator(Validator):
             'invert': {'required': True, 'type': list, 'alternatives': ['values']}
     }
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check whether the command output contains the specified string value.
         '''
-        cmd_output = cmd_output[1]
+        cmd_output = self.get_output()
 
         invert = self.param.get('invert', [])
         values = self.param.get('values', [])
@@ -385,10 +444,11 @@ class MatchValidator(Validator):
     accepts the 'ignore_case' key, to specify whether the case should be ignored.
 
     Example:
-                validators:
-                    - match:
-                        ignore_case: True
-                        value: Match this!
+
+        validators:
+            - match:
+                ignore_case: True
+                value: Match this!
     '''
     param_type = dict
     inner_types = {
@@ -396,11 +456,11 @@ class MatchValidator(Validator):
             'value': {'required': True, 'type': str}
     }
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check whether command output matches the specified value.
         '''
-        cmd_output = cmd_output[1]
+        cmd_output = self.get_output()
 
         if self.param.get('ignore_case') is True:
             if self.param.lower() != cmd_output.lower():
@@ -416,8 +476,9 @@ class RegexValidator(Validator):
     The RegexValidator checks whether the command output matches the specified regex.
 
     Example:
-                validators:
-                    - regex: .+(match this| or this).+
+
+        validators:
+            - regex: .+(match this| or this).+
     '''
     param_type = str
 
@@ -434,11 +495,11 @@ class RegexValidator(Validator):
         except Exception:
             raise ValidatorError(self.path, f"Specified regex '{self.param}' is invalid!")
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check whether command output contains the specified regex.
         '''
-        cmd_output = cmd_output[1]
+        cmd_output = self.get_output()
 
         if not self.regex.search(cmd_output):
             raise ValidationException(f"Regex '{self.param}' was not found in command output.")
@@ -449,16 +510,17 @@ class StatusCodeValidator(Validator):
     The StatusCodeValidator checks whether the exit code of the command matches the specified value.
 
     Example:
-                validators:
-                    - status: 0
+
+        validators:
+            - status: 0
     '''
     param_type = int
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check whether the exit code of the command matches the specified value.
         '''
-        status = cmd_output[0]
+        status = self.command.status
 
         if self.param != status:
             raise ValidationException(f"Obtained status code '{status}' does not match the expected code '{self.param}'.")
@@ -470,16 +532,17 @@ class ErrorValidator(Validator):
     Validator was used with False as argument, it checks the other way around.
 
     Example:
-                validators:
-                    - error: False
+
+        validators:
+            - error: False
     '''
     param_type = bool
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check that status code of command is not equal 0.
         '''
-        status = cmd_output[0]
+        status = self.command.status
 
         if status == 0 and self.param is True:
             raise ValidationException("Obtained no error, despite error was expected.")
@@ -491,13 +554,14 @@ class FileExistsValidator(Validator):
     system. This can be useful, when your testing command is expected to create files.
 
     Example:
-                validators:
-                    - file_exists:
-                        cleanup: True
-                        files:
-                            - /tmp/test1
-                            - /tmp/test2
-                            ...
+
+        validators:
+            - file_exists:
+                cleanup: True
+                files:
+                    - /tmp/test1
+                    - /tmp/test2
+                    ...
     '''
     param_type = dict
     inner_types = {
@@ -506,7 +570,7 @@ class FileExistsValidator(Validator):
             'invert': {'required': True, 'type': list, 'alternatives': ['files']}
     }
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check the existence of files and optionally clean them up.
         '''
@@ -543,14 +607,15 @@ class DirectoryExistsValidator(Validator):
     directories.
 
     Example:
-                validators:
-                    - dir_exists:
-                        cleanup: True
-                        force: False
-                        dirs:
-                            - /tmp/test1
-                            - /tmp/test2
-                            ...
+
+        validators:
+            - dir_exists:
+                cleanup: True
+                force: False
+                dirs:
+                    - /tmp/test1
+                    - /tmp/test2
+                    ...
     '''
     param_type = dict
     inner_types = {
@@ -560,7 +625,7 @@ class DirectoryExistsValidator(Validator):
             'invert': {'required': True, 'type': list, 'alternatives': ['dirs']}
     }
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check the existence of directories and optionally clean them up.
         '''
@@ -603,22 +668,22 @@ class FileContainsValidator(Validator):
     expected content. It when validates whether the files contain the corresponding content.
 
     Example:
-                validators:
-                    - file_contains:
-                        - file: /etc/passwd
-                          contains:
-                            - root
-                            - bin
-                        - file: /etc/hosts
-                          contains:
-                            - localhost
-                            - 127.0.0.1
 
+        validators:
+            - file_contains:
+                - file: /etc/passwd
+                  contains:
+                    - root
+                    - bin
+                - file: /etc/hosts
+                  contains:
+                    - localhost
+                    - 127.0.0.1
     '''
     param_type = list
     inner_types = [dict]
 
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Check the specified files for their expected content.
         '''

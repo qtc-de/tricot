@@ -170,20 +170,20 @@ class Logger:
         for line in lines:
             Logger.print_blue(line, e=e)
 
-    def handle_error(e: Exception, val: Validator, command: list) -> None:
+    def handle_error(e: Exception, val: Validator) -> None:
         '''
         This function is called when a Validator failed to handle the error
         logging. It is basically a wrapper around '_handle_error', which
         performs the real error handling.
         '''
         Logger.increase_indent()
-        Logger._handle_error(e, val, command)
+        Logger._handle_error(e, val)
         Logger.decrease_indent()
 
         if Logger.verbosity != 0:
             Logger.print('', e=True)
 
-    def _handle_error(e: Exception, val: Validator, command: list) -> None:
+    def _handle_error(e: Exception, val: Validator) -> None:
         '''
         This functions handles Exceptions that are raised by validators.
         Depending on the current 'verbosity' level, a different amount of information
@@ -213,14 +213,21 @@ class Logger:
         if Logger.verbosity > 1:
             Logger.print('', e=True)
             Logger.print_yellow('  Command:', e=True, end=' ')
-            print(command)
+            print(val.command.command)
             Logger.print_yellow('  Status code:', e=True, end=' ')
-            cprint(val.command_output[0], color='blue')
+            cprint(val.command.status, color='blue')
 
-            Logger.print_yellow('  Command output:', e=True)
-            Logger.increase_indent()
-            Logger.print_with_indent(val.command_output[1], e=True)
-            Logger.decrease_indent()
+            Logger.print_yellow('  Command stdout:', e=True)
+            if val.command.stdout:
+                Logger.increase_indent()
+                Logger.print_with_indent(val.command.stdout, e=True)
+                Logger.decrease_indent()
+
+            Logger.print_yellow('  Command stderr:', e=True)
+            if val.command.stderr:
+                Logger.increase_indent()
+                Logger.print_with_indent(val.command.stderr, e=True)
+                Logger.decrease_indent()
 
             Logger.print_yellow('  Validator parameters:', e=True)
             Logger.increase_indent()
