@@ -217,6 +217,34 @@ validators:
 ```
 
 
+### RuntimeValidator
+
+----
+
+The ``RuntimeValidator`` checks whether the overall runtime of the command was lower or greater
+than the user specified value. It also supports equal, but this should be useles :D
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+        'lt': {'required': True, 'type': int, 'alternatives': ['gt', 'eq']},
+        'gt': {'required': True, 'type': int, 'alternatives': ['lt', 'eq']},
+        'eq': {'required': True, 'type': int, 'alternatives': ['lt', 'gt']},
+}
+```
+
+**Example:**
+
+```yaml
+validators:
+    - runtime:
+        lt: 10
+        gt: 5
+```
+
+
 ### StatusCodeValidator
 
 ----

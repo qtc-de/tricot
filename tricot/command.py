@@ -5,6 +5,7 @@ from __future__ import annotations
 import timeit
 import subprocess
 from typing import Any
+from pathlin import Path
 
 import tricot
 

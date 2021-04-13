@@ -318,7 +318,7 @@ class Validator:
         stream = self.param.get('stream')
 
         if stream is not None:
-            
+
             if type(stream) != str or stream not in ['stdout', 'stderr', 'both']:
                 raise ValidatorError(self.path, "When specified, stream needs to be one of 'stdout', 'stderr' or 'both'.")
 
@@ -706,6 +706,47 @@ class FileContainsValidator(Validator):
                         raise ValidationException(f"String '{item}' was found in {file_name}.")
 
 
+class RuntimeValidator(Validator):
+    '''
+    The RuntimeValidator checks whether the overall runtime of the command was lower or greater
+    than the user specified value. It also supports equal, but this should be useles :D
+
+    Example:
+
+        validators:
+            - runtime:
+                lt: 10
+                gt: 5
+    '''
+    param_type = dict
+    inner_types = {
+            'lt': {'required': True, 'type': int, 'alternatives': ['gt', 'eq']},
+            'gt': {'required': True, 'type': int, 'alternatives': ['lt', 'eq']},
+            'eq': {'required': True, 'type': int, 'alternatives': ['lt', 'gt']},
+    }
+
+    def run(self) -> None:
+        '''
+        Check that the runtime fulfills the user specified condition.
+        '''
+        for operation in self.param.keys():
+
+            if operation == 'lt':
+                if self.command.runtime >= self.param['lt']:
+                    expected = f"(expected: runtime < {self.param['lt']})"
+                    raise ValidationException(f"Command execution took {self.command.runtime} {expected}")
+
+            if operation == 'gt':
+                if self.command.runtime <= self.param['gt']:
+                    expected = f"(expected: runtime > {self.param['gt']})"
+                    raise ValidationException(f"Command execution took {self.command.runtime} {expected}")
+
+            if operation == 'eq':
+                if self.command.runtime == self.param['eq']:
+                    expected = f"(expected: runtime == {self.param['eq']})"
+                    raise ValidationException(f"Command execution took {self.command.runtime} {expected}")
+
+
 register_validator("contains", ContainsValidator)
 register_validator("match", MatchValidator)
 register_validator("regex", RegexValidator)
@@ -714,3 +755,4 @@ register_validator("error", ErrorValidator)
 register_validator("file_exists", FileExistsValidator)
 register_validator("dir_exists", DirectoryExistsValidator)
 register_validator("file_contains", FileContainsValidator)
+register_validator("runtime", RuntimeValidator)
