@@ -460,15 +460,16 @@ class MatchValidator(Validator):
         '''
         Check whether command output matches the specified value.
         '''
-        cmd_output = self.get_output()
+        value = self.param['value'].rstrip('\n')
+        cmd_output = self.get_output().rstrip('\n')
 
         if self.param.get('ignore_case') is True:
-            if self.param.lower() != cmd_output.lower():
-                raise ValidationException(f"String '{self.param}' does not match command output.")
+            if value.lower() != cmd_output.lower():
+                raise ValidationException(f"String '{value}' does not match command output.")
 
         else:
-            if self.param != cmd_output:
-                raise ValidationException(f"String '{self.param}' does not match command output.")
+            if value != cmd_output:
+                raise ValidationException(f"String '{value}' does not match command output.")
 
 
 class RegexValidator(Validator):
