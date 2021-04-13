@@ -5,7 +5,7 @@ from __future__ import annotations
 import timeit
 import subprocess
 from typing import Any
-from pathlin import Path
+from pathlib import Path
 
 import tricot
 
@@ -162,4 +162,13 @@ class Command:
         Returns:
             output      Returns merged stdout and stderr output
         '''
-        return self.stdout + '\n' + self.stderr
+        output = ''
+
+        if self.stdout:
+            output += self.stdout
+
+        if self.stderr:
+            output += '\n'
+            output += self.stderr
+
+        return output
