@@ -1,0 +1,4 @@
+This is a text file.
+It contains some contents.
+It is used for testing tricot.
+It is basically a replacement for comamnd output.
