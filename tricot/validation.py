@@ -298,7 +298,7 @@ class Validator:
         if os.path.isabs(path):
             return path
 
-        return self.path.parent.joinpath(path)
+        return str(self.path.parent.joinpath(path).resolve())
 
     def check_streams(self) -> None:
         '''
@@ -548,6 +548,9 @@ class ErrorValidator(Validator):
         if status == 0 and self.param is True:
             raise ValidationException("Obtained no error, despite error was expected.")
 
+        if status != 0 and self.param is False:
+            raise ValidationException("Obtained error, despite no error was expected.")
+
 
 class FileExistsValidator(Validator):
     '''
@@ -594,11 +597,12 @@ class FileExistsValidator(Validator):
 
         if not_found:
             file_names = ', '.join(not_found)
-            raise ValidationException(f'File(s) {file_names} did not exist.')
+            raise ValidationException(f"File '{file_names}' does not exist.")
 
         for file_name in invert:
+            file_name = self.resolve_path(file_name)
             if os.path.isfile(file_name):
-                raise ValidationException(f'File(s) {file_name} does exist.')
+                raise ValidationException(f"File '{file_name}' does exist.")
 
 
 class DirectoryExistsValidator(Validator):
@@ -656,11 +660,12 @@ class DirectoryExistsValidator(Validator):
 
         if not_found:
             dir_names = ', '.join(not_found)
-            raise ValidationException(f'File(s) {dir_names} did not exist.')
+            raise ValidationException(f"Directory '{dir_names}' does not exist.")
 
         for dir_name in invert:
+            dir_name = self.resolve_path(dir_name)
             if os.path.isdir(dir_name):
-                raise ValidationException(f'File {dir_name} does exist.')
+                raise ValidationException(f"Directory '{dir_name}' does exist.")
 
 
 class FileContainsValidator(Validator):
@@ -694,17 +699,19 @@ class FileContainsValidator(Validator):
             contains = check.get('contains', [])
 
             file_name = self.resolve_path(check['file'])
+            if not os.path.isfile(file_name):
+                raise ValidationException(f"Specified file '{file_name}' does not exist.")
 
             with open(file_name) as f:
                 content = f.read()
 
                 for item in contains:
                     if item not in content:
-                        raise ValidationException(f"String '{item}' not found in {file_name}.")
+                        raise ValidationException(f"String '{item}' was not found in '{file_name}'.")
 
                 for item in invert:
                     if item in content:
-                        raise ValidationException(f"String '{item}' was found in {file_name}.")
+                        raise ValidationException(f"String '{item}' was found in '{file_name}'.")
 
 
 class RuntimeValidator(Validator):
