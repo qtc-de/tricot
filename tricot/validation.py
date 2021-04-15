@@ -479,9 +479,20 @@ class RegexValidator(Validator):
     Example:
 
         validators:
-            - regex: .+(match this| or this).+
+            - regex:
+                match: ^match this$
+                multiline: true
+                ignore_case: true
+
     '''
-    param_type = str
+    param_type = dict
+    inner_types = {
+            'ascii': {'required': False, 'type': bool},
+            'dotall': {'required': False, 'type': bool},
+            'ignore_case': {'required': False, 'type': bool},
+            'multiline': {'required': False, 'type': bool},
+            'match': {'required': True, 'type': str}
+    }
 
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -490,8 +501,19 @@ class RegexValidator(Validator):
         '''
         super().__init__(*args, **kwargs)
 
+        flags = 0
+
+        if self.param.get('ascii'):
+            flags = flags | re.ASCII
+        if self.param.get('dotall'):
+            flags = flags | re.DOTALL
+        if self.param.get('ignore_case'):
+            flags = flags | re.IGNORECASE
+        if self.param.get('multiline'):
+            flags = flags | re.MULTILINE
+
         try:
-            self.regex = re.compile(self.param)
+            self.regex = re.compile(self.param['match'], flags)
 
         except Exception:
             raise ValidatorError(self.path, f"Specified regex '{self.param}' is invalid!")
@@ -503,7 +525,7 @@ class RegexValidator(Validator):
         cmd_output = self.get_output()
 
         if not self.regex.search(cmd_output):
-            raise ValidationException(f"Regex '{self.param}' was not found in command output.")
+            raise ValidationException(f"Regex '{self.param['match']}' was not found in command output.")
 
 
 class StatusCodeValidator(Validator):
