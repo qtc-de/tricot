@@ -201,19 +201,30 @@ validators:
 
 ----
 
-The ``RegexValidator`` checks whether the command output matches the specified regex.
+The ``RegexValidator`` checks whether the command output matches the specified regex. Several
+flags can be specified for matching, with corresponding meanings as python's ``re`` module.
 
 **Type Validation**:
 
 ```python
-param_type = str
+param_type = dict
+inner_types = {
+        'ascii': {'required': False, 'type': bool},
+        'dotall': {'required': False, 'type': bool},
+        'ignore_case': {'required': False, 'type': bool},
+        'multiline': {'required': False, 'type': bool},
+        'match': {'required': True, 'type': str}
+}
 ```
 
 **Example:**
 
 ```yaml
 validators:
-    - regex: .+(match this| or this).+
+    - regex:
+        match: ^match this$
+        multiline: true
+        ignore_case: true
 ```
 
 
