@@ -6,7 +6,6 @@ import pytest
 
 from pathlib import Path
 
-
 file_1 = 'file-exists-test-one'
 file_2 = 'file-exists-test-two'
 
@@ -20,13 +19,17 @@ result_list = [True, True, False, False, True]
 file_deleted = [False, False, False, False, True]
 
 
+def resolve(path: str) -> Path:
+    '''
+    '''
+    return Path(__file__).parent.joinpath(path)
+
+
 @pytest.mark.parametrize('config, result, deleted', zip(config_list, result_list, file_deleted))
 def test_contains_validator(config: dict, result: bool, deleted: bool):
     '''
     '''
     val = tricot.get_validator(Path(__file__), 'file_exists', config, {})
-    Path(file_1).touch()
-    Path(file_2).touch()
 
     dummy_command = tricot.Command([])
 
@@ -38,7 +41,20 @@ def test_contains_validator(config: dict, result: bool, deleted: bool):
             val._run(dummy_command)
 
     if deleted:
-        assert not os.path.isfile(file_1)
+        assert not resolve(file_1).is_file()
 
     else:
-        assert os.path.isfile(file_2)
+        assert resolve(file_2).is_file()
+
+
+@pytest.fixture(autouse=True)
+def resource():
+    '''
+    '''
+    resolve(file_1).touch()
+    resolve(file_2).touch()
+
+    yield "wait"
+
+    resolve(file_1).unlink(missing_ok=True)
+    resolve(file_2).unlink(missing_ok=True)
