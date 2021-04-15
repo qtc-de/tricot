@@ -763,18 +763,18 @@ class RuntimeValidator(Validator):
 
             if operation == 'lt':
                 if self.command.runtime >= self.param['lt']:
-                    expected = f"(expected: runtime < {self.param['lt']})"
-                    raise ValidationException(f"Command execution took {self.command.runtime} {expected}")
+                    expected = f"(expected: runtime < {self.param['lt']}s)"
+                    raise ValidationException(f"Command execution took {self.command.runtime}s {expected}")
 
             if operation == 'gt':
                 if self.command.runtime <= self.param['gt']:
-                    expected = f"(expected: runtime > {self.param['gt']})"
-                    raise ValidationException(f"Command execution took {self.command.runtime} {expected}")
+                    expected = f"(expected: runtime > {self.param['gt']}s)"
+                    raise ValidationException(f"Command execution took {self.command.runtime}s {expected}")
 
             if operation == 'eq':
-                if self.command.runtime == self.param['eq']:
-                    expected = f"(expected: runtime == {self.param['eq']})"
-                    raise ValidationException(f"Command execution took {self.command.runtime} {expected}")
+                if self.command.runtime != self.param['eq']:
+                    expected = f"(expected: runtime == {self.param['eq']}s)"
+                    raise ValidationException(f"Command execution took {self.command.runtime}s {expected}")
 
 
 class CountValidator(Validator):
