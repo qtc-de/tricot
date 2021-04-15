@@ -5,12 +5,14 @@
 This document contains a list of validators that are available per default when using *tricot*.
 
 - [ContainsValidator](#containsvalidator)
+- [CountValidator](#countvalidator)
 - [DirectoryExistsValidator](#directoryexistsvalidator)
 - [ErrorValidator](#errorvalidator)
 - [FileContainsValidator](#filecontainsvalidator)
 - [FileExistsValidator](#fileexistsvalidator)
 - [MatchValidator](#matchvalidator)
 - [RegexValidator](#regexvalidator)
+- [RuntimeValidator](#runtimevalidator)
 - [StatusCodeValidator](#statuscodevalidator)
 
 
@@ -46,6 +48,42 @@ validators:
         invert:
             - not match this
             - and this
+```
+
+
+### CountValidator
+
+----
+
+Takes several strings as argument and an expected count on how often the string should be
+encountered within the command output. Theoretically, we could use the syntax ``match: count``
+to specify that ``match`` should be appear ``count`` times, as the YAML spec is not that strict
+when it comes to allowed characters within of keys. However, to prevent problems with the python
+parser, two separate lists are used.
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+        'counts': {'required': True, 'type': list},
+        'ignore_case': {'required': False, 'type': bool},
+        'values': {'required': True, 'type': list}
+}
+```
+
+**Example:**
+
+```yaml
+validators:
+    - count:
+        ignore_case: True
+        values:
+            - match one
+            - match two
+        counts:
+            - 3
+            - 4
 ```
 
 

@@ -777,6 +777,64 @@ class RuntimeValidator(Validator):
                     raise ValidationException(f"Command execution took {self.command.runtime} {expected}")
 
 
+class CountValidator(Validator):
+    '''
+    Takes several strings as argument and an expected count on how often the string should be
+    encountered within the command output. Theoretically, we could use the syntax 'match: count'
+    to specify that 'match' should be appear 'count' times, as the YAML spec is not that strict
+    when it comes to allowed characters within of keys. However, to prevent problems with the python
+    parser, two separate lists are used.
+
+    Example:
+
+        validators:
+            - count:
+                ignore_case: True
+                values:
+                    - match one
+                    - match two
+                counts:
+                    - 3
+                    - 4
+    '''
+    param_type = dict
+    inner_types = {
+            'counts': {'required': True, 'type': list},
+            'ignore_case': {'required': False, 'type': bool},
+            'values': {'required': True, 'type': list}
+    }
+
+    def __init__(self, *args, **kwargs) -> None:
+        '''
+        Count initializer. This makes sure that the values list has the same length
+        as the count list.
+        '''
+        super().__init__(*args, **kwargs)
+
+        if len(self.param['counts']) != len(self.param['values']):
+            raise ValidatorError(self.path, "The 'counts' and 'values' lists need to have the same size.")
+
+        for value in self.param['counts']:
+            if type(value) != int:
+                raise ValidatorError(self.path, "The 'counts' list can only contain numeric items.")
+
+        for value in self.param['values']:
+            if type(value) != str:
+                raise ValidatorError(self.path, "The 'values' list can only contain string items.")
+
+    def run(self) -> None:
+        '''
+        Check that the counts are matching.
+        '''
+        output = self.get_output()
+
+        for value, count in zip(self.param['values'], self.param['counts']):
+
+            n = output.count(value)
+            if count != n:
+                raise ValidationException(self.path, f"String '{value}' was found {n} times, but was expected {count} times.")
+
+
 register_validator("contains", ContainsValidator)
 register_validator("match", MatchValidator)
 register_validator("regex", RegexValidator)
@@ -786,3 +844,4 @@ register_validator("file_exists", FileExistsValidator)
 register_validator("dir_exists", DirectoryExistsValidator)
 register_validator("file_contains", FileContainsValidator)
 register_validator("runtime", RuntimeValidator)
+register_validator("count", CountValidator)
