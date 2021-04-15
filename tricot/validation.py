@@ -827,12 +827,17 @@ class CountValidator(Validator):
         Check that the counts are matching.
         '''
         output = self.get_output()
+        if self.param.get('ignore_case'):
+            output = output.lower()
 
         for value, count in zip(self.param['values'], self.param['counts']):
 
+            if self.param.get('ignore_case'):
+                value = value.lower()
+
             n = output.count(value)
             if count != n:
-                raise ValidationException(self.path, f"String '{value}' was found {n} times, but was expected {count} times.")
+                raise ValidationException(f"String '{value}' was found {n} times, but was expected {count} times.")
 
 
 register_validator("contains", ContainsValidator)
