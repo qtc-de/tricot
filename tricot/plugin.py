@@ -373,7 +373,7 @@ class OsCommandPlugin(Plugin):
         elif not background:
             self.process.wait()
 
-        elif init > 0:
+        if init > 0:
             time.sleep(init)
 
         self.on_exit(command)
