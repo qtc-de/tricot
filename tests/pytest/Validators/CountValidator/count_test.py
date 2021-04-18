@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-import os
 import tricot
 import pytest
+
 
 content = '''This is a text file.
 It contains some contents.
@@ -22,8 +22,18 @@ hotplug_list = [None, None, None, None, {'var1': 'EX'}]
 
 
 @pytest.mark.parametrize('config, result, variables, hotplug', zip(config_list, result_list, variable_list, hotplug_list))
-def test_contains_validator(config: dict, result: bool, variables: dict, hotplug: dict):
+def test_count_validator(config: dict, result: bool, variables: dict, hotplug: dict):
     '''
+    Simulates some command output and performs count validations on it.
+
+    Parameters:
+        config      Validator configuration
+        result      Validation result (True = No Exception, False = Exception)
+        variables   Variables to apply on the validator
+        hotplug     Hotplug Variables to apply on the validator
+
+    Returns:
+        None
     '''
     val = tricot.get_validator(None, 'count', config, variables)
 

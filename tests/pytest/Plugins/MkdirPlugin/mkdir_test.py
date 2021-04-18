@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
-import os
 import tricot
 import pytest
 
 from pathlib import Path
+from functools import partial
+
+
+resolve = partial(tricot.resolve, __file__)
 
 test_dir = 'mkdir-test-dir'
 test_dir2 = 'mkdir-test-dir2'
@@ -25,18 +28,21 @@ cleaned_list.append([test_dir2])
 cleaned_list.append([test_dir, test_dir2])
 
 
-def resolve(path: str) -> Path:
-    '''
-    '''
-    return Path(__file__).parent.joinpath(path)
-
-
 @pytest.mark.parametrize('config, created, cleaned', zip(config_list, created_list, cleaned_list))
-def test_contains_validator(config: dict, created: list, cleaned: list):
+def test_mkdir_plugin(config: dict, created: list, cleaned: list):
     '''
+    Attempts to create some test directories and optionally tries to delete them.
+
+    Parameters:
+        config          Plugin configuration
+        created         List of filenames that should be created
+        cleaned         List of filenames that should be removed
+
+    Returns:
+        None
     '''
     plug = tricot.get_plugin(Path(__file__), 'mkdir', config, {})
-    plug.run()
+    plug._run()
 
     f = resolve(test_dir).joinpath("test")
     f.touch()
@@ -49,12 +55,19 @@ def test_contains_validator(config: dict, created: list, cleaned: list):
 
     for item in cleaned:
         item = resolve(item)
-        assert item.is_dir() == False
+        assert item.is_dir() is False
 
 
 @pytest.fixture(autouse=True)
 def resource():
     '''
+    Removes leftover directories that were not cleaned by the plugin.
+
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
     yield "wait"
 

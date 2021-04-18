@@ -5,18 +5,22 @@ import pytest
 import timeit
 
 from pathlib import Path
+from functools import partial
+
 
 test_dir = 'mkdir-test-dir'
+resolve = partial(tricot.resolve, __file__)
 
 
-def resolve(path: str) -> Path:
+def test_os_command_plain():
     '''
-    '''
-    return Path(__file__).parent.joinpath(path)
+    Test if plain command execution is working by creating a directory.
 
+    Parameters:
+        None
 
-def test_plain():
-    '''
+    Returns:
+        None
     '''
     config = {'cmd': ['mkdir', test_dir]}
 
@@ -28,8 +32,15 @@ def test_plain():
     r.rmdir()
 
 
-def test_fail():
+def test_os_command_fail():
     '''
+    Test if a wrong command specification leads to a PluginException.
+
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
     config = {'cmd': ['nopenopenope']}
 
@@ -38,8 +49,15 @@ def test_fail():
         plug._run()
 
 
-def test_fail2():
+def test_os_command_fail2():
     '''
+    Test that a command that exits with a non zero status code leads to an error.
+
+    Parameters:
+            None
+
+        Returns:
+                None
     '''
     config = {'cmd': ['cat', 'nopenopenope']}
 
@@ -48,8 +66,16 @@ def test_fail2():
         plug._run()
 
 
-def test_ignore():
+def test_os_command_ignore():
     '''
+    Test that a command that exits with a non zero status code is ignored then
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    'ignore_error' was specified.
     '''
     config = {'cmd': ['cat', 'nopenopenopenope'], 'ignore_error': True}
 
@@ -57,8 +83,15 @@ def test_ignore():
     plug._run()
 
 
-def test_timeout():
+def test_os_command_timeout():
     '''
+    Test that plugins timeout correctly and throw a PluginException.
+
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
     config = {'cmd': ['sleep', '5'], 'timeout': 1}
 
@@ -67,12 +100,55 @@ def test_timeout():
         plug._run()
 
 
-def test_background():
+def test_os_command_background():
     '''
+    Test that commands can be launched in the background.
+
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
     config = {'cmd': ['sleep', '5'], 'background': True}
 
     plug = tricot.get_plugin(Path(__file__), 'os_command', config, {})
-        
+
     timer = timeit.Timer(lambda: plug._run())
     assert timer.timeit(number=1) < 1
+
+
+def test_os_command_init():
+    '''
+    Test that init waits the specified amount of seconds before the test continues.
+
+    Parameters:
+            None
+
+    Returns:
+            None
+    '''
+    config = {'cmd': ['ls', '-l'], 'init': 2}
+
+    plug = tricot.get_plugin(Path(__file__), 'os_command', config, {})
+
+    timer = timeit.Timer(lambda: plug._run())
+    assert timer.timeit(number=1) > 2
+
+
+@pytest.fixture(autouse=True)
+def resource():
+    '''
+    Handle cleanup of temporary created directories.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    yield "wait"
+
+    d = resolve(test_dir)
+    if d.is_dir():
+        d.rmdir()

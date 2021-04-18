@@ -1,10 +1,13 @@
 #!/usr/bin/python3
 
-import os
 import tricot
 import pytest
 
 from pathlib import Path
+from functools import partial
+
+
+resolve = partial(tricot.resolve, __file__)
 
 file_1 = 'file-exists-test-one'
 file_2 = 'file-exists-test-two'
@@ -19,15 +22,18 @@ result_list = [True, True, False, False, True]
 file_deleted = [False, False, False, False, True]
 
 
-def resolve(path: str) -> Path:
-    '''
-    '''
-    return Path(__file__).parent.joinpath(path)
-
-
 @pytest.mark.parametrize('config, result, deleted', zip(config_list, result_list, file_deleted))
-def test_contains_validator(config: dict, result: bool, deleted: bool):
+def test_file_exists_validator(config: dict, result: bool, deleted: bool):
     '''
+    Takes file lists as argument and performs file exists validations on them.
+
+    Parameters:
+        config      Validator configuration
+        result      Validation result (True = No Exception, False = Exception)
+        deleted     Whether or not the files should be deleted by the cleanup action.
+
+    Returns:
+        None
     '''
     val = tricot.get_validator(Path(__file__), 'file_exists', config, {})
 
@@ -40,16 +46,27 @@ def test_contains_validator(config: dict, result: bool, deleted: bool):
         with pytest.raises(tricot.ValidationException, match=r"File '.+' does (:?not )?exist."):
             val._run(dummy_command)
 
-    if deleted:
-        assert not resolve(file_1).is_file()
+        return
 
-    else:
-        assert resolve(file_2).is_file()
+    for filename in config['files']:
+        if deleted:
+            assert not resolve(filename).is_file()
+
+        else:
+            assert resolve(filename).is_file()
 
 
 @pytest.fixture(autouse=True)
 def resource():
     '''
+    Creates required ressources and cleans them up (if not already
+    done by the validator).
+
+    Parameters:
+        None
+
+    Returns:
+        None
     '''
     resolve(file_1).touch()
     resolve(file_2).touch()
