@@ -135,11 +135,11 @@ class HelloWorldValidator(tricot.Validator):
         validators:
             - hello_world:
     '''
-    def run(self, cmd_output: list[int, str]) -> None:
+    def run(self) -> None:
         '''
         Run during validation.
         '''
-        if "Hello World" not in cmd_output[1]:
+        if "Hello World" not in self.get_output():
             raise tricot.ValidationException("String 'Hello World' was not found in command output.")
 
 
@@ -189,14 +189,29 @@ the validator will raise a ``ValidationException``:
 [-]             
 [-]               Command: ['echo', 'Ciao World :)']
 [-]               Status code: 0
-[-]               Command output:
+[-]               Command stdout:
 [-]                 Ciao World :)
 [-]                 
+[-]               Command stderr:  
 [-]               Validator parameters:
 [-]                 null
 [-]  
 ```
 
+
+### Accessing Command Information from an Validator
+
+----
+
+Validators get access to the command output and some meta information using their ``self.command`` attribute.
+This attribute contains the [Command object](/tricot/command.py) that is associated with the current validation.
+The command object contains the default outputs (``stdout`` and ``stderr``) as well as some meta information
+like the status code or the overall runtime.
+
+Each dicitionary based validator (see next section for more details) should add support for the implicit ``stream``
+key. ``stream`` is expected to be one of ``stdout``, ``stderr`` or ``both`` and is parsed an validated automatically
+by tricot. Dictionary based validators should use the ``self.get_output()`` function to obtain command output, as this
+function returns the command output associated with the user specified stream.
 
 ### Parameter Types and their Validation
 

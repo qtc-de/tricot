@@ -1,9 +1,12 @@
+from __future__ import annotations
+
+import tricot
 from typing import Any
 
 
-class TricotRuntimeError(Exception):
+class TricotRuntimeVariableError(Exception):
     '''
-    A TricotRuntimeError is raised, when a runtime variable was specified within
+    A TricotRuntimeVariableError is raised, when a runtime variable was specified within
     the .yml test configuration, but was not defined at runtime.
     '''
     pass
@@ -15,7 +18,7 @@ def resolve_runtime_variables(variables: dict[str, Any], key: str, value: Any) -
     When a variable contains the value '$runtime' it checks the
     '$runtime' key within the variables dict for the corresponding
     dictionary key. If it is found, the corresponding value is
-    returned. If not, a RuntimeError is raised.
+    returned. If not, a TricotRuntimeVariableError is raised.
 
     When the value of a variables is not '$runtime', it is simply
     returned.
@@ -35,7 +38,7 @@ def resolve_runtime_variables(variables: dict[str, Any], key: str, value: Any) -
         return (variables['$runtime'])[key]
 
     except KeyError:
-        raise TricotRuntimeError(f"Unable to find runtime variable '{key}'.")
+        raise TricotRuntimeVariableError(f"Unable to find runtime variable '{key}'.")
 
 
 def apply_variables(candidate: Any, var_dict: dict[str, Any] = None) -> Any:
@@ -98,3 +101,24 @@ def make_ordinal(n: int) -> str:
     if 11 <= (n % 100) <= 13:
         suffix = 'th'
     return str(n) + suffix
+
+
+def check_keys(expected_keys: list[str], yaml_dict: dict) -> None:
+    '''
+    What happes quite some time is that validators are indented incorrectly and appear within the test
+    section of the .yml definition. This is annoying, as your test seems to work, but was actually never
+    validated. This function checks for unexpcted keys within .yml files and prints a warning if one is
+    encountered.
+
+    Parameters:
+        expected_keys   List of keys that are expected to appear
+        yaml_dict       Python dirctionary that represents the .yml file
+
+    Returns:
+        None
+    '''
+    for key in yaml_dict.keys():
+        if key not in expected_keys:
+            tricot.Logger.print_yellow('Warning:', end=' ')
+            tricot.Logger.print_mixed_blue_plain('Test', yaml_dict['title'], 'contains unexpected key', end=': ')
+            tricot.Logger.print_yellow_plain(key)

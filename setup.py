@@ -21,7 +21,8 @@ setuptools.setup(
     packages=['tricot'],
     install_requires=[
                         'PyYAML',
-                        'termcolor'
+                        'termcolor',
+                        'docker'
                      ],
     scripts=[
                 'bin/tricot',

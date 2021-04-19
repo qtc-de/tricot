@@ -5,12 +5,14 @@
 This document contains a list of validators that are available per default when using *tricot*.
 
 - [ContainsValidator](#containsvalidator)
+- [CountValidator](#countvalidator)
 - [DirectoryExistsValidator](#directoryexistsvalidator)
 - [ErrorValidator](#errorvalidator)
 - [FileContainsValidator](#filecontainsvalidator)
 - [FileExistsValidator](#fileexistsvalidator)
 - [MatchValidator](#matchvalidator)
 - [RegexValidator](#regexvalidator)
+- [RuntimeValidator](#runtimevalidator)
 - [StatusCodeValidator](#statuscodevalidator)
 
 
@@ -46,6 +48,42 @@ validators:
         invert:
             - not match this
             - and this
+```
+
+
+### CountValidator
+
+----
+
+Takes several strings as argument and an expected count on how often the string should be
+encountered within the command output. Theoretically, we could use the syntax ``match: count``
+to specify that ``match`` should be appear ``count`` times, as the YAML spec is not that strict
+when it comes to allowed characters within of keys. However, to prevent problems with the python
+parser, two separate lists are used.
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+        'counts': {'required': True, 'type': list},
+        'ignore_case': {'required': False, 'type': bool},
+        'values': {'required': True, 'type': list}
+}
+```
+
+**Example:**
+
+```yaml
+validators:
+    - count:
+        ignore_case: True
+        values:
+            - match one
+            - match two
+        counts:
+            - 3
+            - 4
 ```
 
 
@@ -201,19 +239,66 @@ validators:
 
 ----
 
-The ``RegexValidator`` checks whether the command output matches the specified regex.
+The ``RegexValidator`` checks whether the command output matches the specified regex. Several
+flags can be specified for matching, with corresponding meanings as in python's ``re`` module.
+It is also possible to invert the match, which makes the validator fail if the specified regex
+was found.
 
 **Type Validation**:
 
 ```python
-param_type = str
+param_type = dict
+inner_types = {
+        'ascii': {'required': False, 'type': bool},
+        'dotall': {'required': False, 'type': bool},
+        'ignore_case': {'required': False, 'type': bool},
+        'multiline': {'required': False, 'type': bool},
+        'match': {'required': True, 'type': list, 'alternatives': ['invert']},
+        'invert': {'required': True, 'type': list, 'alternatives': ['values']}
+}
 ```
 
 **Example:**
 
 ```yaml
 validators:
-    - regex: .+(match this| or this).+
+    - regex:
+        match:
+            - ^match this$
+            - ^and this.+
+        invert:
+            - but not this.*
+            - ^or this.*
+        multiline: true
+        ignore_case: true
+```
+
+
+### RuntimeValidator
+
+----
+
+The ``RuntimeValidator`` checks whether the overall runtime of the command was lower or greater
+than the user specified value. It also supports equal, but this should be useles :D
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+        'lt': {'required': True, 'type': int, 'alternatives': ['gt', 'eq']},
+        'gt': {'required': True, 'type': int, 'alternatives': ['lt', 'eq']},
+        'eq': {'required': True, 'type': int, 'alternatives': ['lt', 'gt']},
+}
+```
+
+**Example:**
+
+```yaml
+validators:
+    - runtime:
+        lt: 10
+        gt: 5
 ```
 
 

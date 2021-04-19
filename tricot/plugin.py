@@ -5,6 +5,7 @@ import sys
 import time
 import shutil
 import atexit
+import socket
 import functools
 import threading
 import subprocess
@@ -372,7 +373,7 @@ class OsCommandPlugin(Plugin):
         elif not background:
             self.process.wait()
 
-        elif init > 0:
+        if init > 0:
             time.sleep(init)
 
         self.on_exit(command)
@@ -468,6 +469,18 @@ class HttpListenerPlugin(Plugin):
                   }
     instances = []
 
+    def __init__(self, *args, **kwargs) -> None:
+        '''
+        Make sure that directory exists and port is valid before running the server.
+        '''
+        super().__init__(*args, **kwargs)
+
+        if not os.path.isdir(self.param['dir']):
+            raise PluginError(self.path, f"Specified directory '{self.param['dir']}' does not exist.")
+
+        if self.param['port'] <= 0 or self.param['port'] > 65535:
+            raise PluginError(self.path, f"Specified port '{self.param['port']}' is invalid. Needs to be between 0-65535.")
+
     class CustomHandler(http.server.SimpleHTTPRequestHandler):
         '''
         Custom HTTPRequestHandler that uses the base functioanlity of SimpleHTTPRequestHandler
@@ -495,6 +508,11 @@ class HttpListenerPlugin(Plugin):
         self.thread = threading.Thread(name=f'http-{port}', target=self.start_server, args=(port, directory))
         self.thread.setDaemon(True)
         self.thread.start()
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        while sock.connect_ex(('127.0.0.1', port)) != 0:
+            time.sleep(0.1)
+        sock.close()
 
         HttpListenerPlugin.instances.append(port)
 
