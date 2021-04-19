@@ -240,7 +240,9 @@ validators:
 ----
 
 The ``RegexValidator`` checks whether the command output matches the specified regex. Several
-flags can be specified for matching, with corresponding meanings as python's ``re`` module.
+flags can be specified for matching, with corresponding meanings as in python's ``re`` module.
+It is also possible to invert the match, which makes the validator fail if the specified regex
+was found.
 
 **Type Validation**:
 
@@ -251,7 +253,8 @@ inner_types = {
         'dotall': {'required': False, 'type': bool},
         'ignore_case': {'required': False, 'type': bool},
         'multiline': {'required': False, 'type': bool},
-        'match': {'required': True, 'type': str}
+        'match': {'required': True, 'type': list, 'alternatives': ['invert']},
+        'invert': {'required': True, 'type': list, 'alternatives': ['values']}
 }
 ```
 
@@ -260,7 +263,12 @@ inner_types = {
 ```yaml
 validators:
     - regex:
-        match: ^match this$
+        match:
+            - ^match this$
+            - ^and this.+
+        invert:
+            - but not this.*
+            - ^or this.*
         multiline: true
         ignore_case: true
 ```

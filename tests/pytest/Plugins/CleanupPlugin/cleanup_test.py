@@ -12,20 +12,24 @@ resolve = partial(tricot.resolve, __file__)
 file_1 = 'cleanup-test-one'
 file_2 = 'cleanup-test-two'
 test_dir = 'cleanup-test'
+files = [file_1, file_2, test_dir]
 
 config_list = [{'items': [file_1, file_2]}]
 config_list.append({'items': [test_dir, file_2]})
 config_list.append({'items': [f'{test_dir}/{file_1}', f'{test_dir}/{file_2}', test_dir, file_2]})
 config_list.append({'items': [test_dir, file_1], 'force': True})
 config_list.append({'items': [test_dir, 'nope'], 'force': True})
-
-files = [file_1, file_2, test_dir]
+config_list.append({'items': ['${var1}', '${hvar}'], 'force': '${var2}'})
 
 files_deleted = [[file_1, file_2]]
 files_deleted.append([file_2])
 files_deleted.append([test_dir, file_2])
 files_deleted.append([test_dir, file_1])
 files_deleted.append([test_dir])
+files_deleted.append([test_dir, file_1])
+
+variables = {'var1': test_dir, 'var2': True}
+hotplug = {'hvar': file_1}
 
 
 @pytest.mark.parametrize('config, files_deleted', zip(config_list, files_deleted))
@@ -38,8 +42,8 @@ def test_cleanup_plugin(config: dict, files_deleted: list):
         config          Plugin configuration
         files_deleted   List of files that should be deleted
     '''
-    plug = tricot.get_plugin(Path(__file__), 'cleanup', config, {})
-    plug._run()
+    plug = tricot.get_plugin(Path(__file__), 'cleanup', config, variables)
+    plug._run(hotplug)
     plug.stop()
 
     for file in files:

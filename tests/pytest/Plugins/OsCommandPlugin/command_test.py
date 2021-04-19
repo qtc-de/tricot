@@ -32,6 +32,46 @@ def test_os_command_plain():
     r.rmdir()
 
 
+def test_os_command_variable():
+    '''
+    Test if plain command execution is working by creating a directory.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    config = {'cmd': ['mkdir', '${var}']}
+
+    plug = tricot.get_plugin(Path(__file__), 'os_command', config, {'var': test_dir})
+    plug._run()
+
+    r = resolve(test_dir)
+    assert r.is_dir()
+    r.rmdir()
+
+
+def test_os_command_hotplug():
+    '''
+    Test if plain command execution is working by creating a directory.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    config = {'cmd': ['mkdir', '${var}']}
+
+    plug = tricot.get_plugin(Path(__file__), 'os_command', config, {})
+    plug._run({'var': test_dir})
+
+    r = resolve(test_dir)
+    assert r.is_dir()
+    r.rmdir()
+
+
 def test_os_command_fail():
     '''
     Test if a wrong command specification leads to a PluginException.

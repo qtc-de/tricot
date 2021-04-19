@@ -16,9 +16,11 @@ config_list = [{'dirs': [test_dir, test_dir2]}]
 config_list.append({'dirs': [test_dir]})
 config_list.append({'dirs': [test_dir, test_dir2], 'cleanup': True})
 config_list.append({'dirs': [test_dir, test_dir2], 'cleanup': True, 'force': True})
+config_list.append({'dirs': ['${var1}', '${hvar}'], 'cleanup': '${var2}', 'force': True})
 
 created_list = [[test_dir, test_dir2]]
 created_list.append([test_dir])
+created_list.append([test_dir, test_dir2])
 created_list.append([test_dir, test_dir2])
 created_list.append([test_dir, test_dir2])
 
@@ -26,6 +28,10 @@ cleaned_list = [[]]
 cleaned_list.append([])
 cleaned_list.append([test_dir2])
 cleaned_list.append([test_dir, test_dir2])
+cleaned_list.append([test_dir, test_dir2])
+
+variables = {'var1': test_dir, 'var2': True}
+hotplug = {'hvar': test_dir2}
 
 
 @pytest.mark.parametrize('config, created, cleaned', zip(config_list, created_list, cleaned_list))
@@ -41,8 +47,8 @@ def test_mkdir_plugin(config: dict, created: list, cleaned: list):
     Returns:
         None
     '''
-    plug = tricot.get_plugin(Path(__file__), 'mkdir', config, {})
-    plug._run()
+    plug = tricot.get_plugin(Path(__file__), 'mkdir', config, variables)
+    plug._run(hotplug)
 
     f = resolve(test_dir).joinpath("test")
     f.touch()

@@ -480,7 +480,12 @@ class RegexValidator(Validator):
 
         validators:
             - regex:
-                match: ^match this$
+                match:
+                    - ^match this$
+                    - ^and this.+
+                invert:
+                    - but not this.*
+                    - ^or this.*
                 multiline: true
                 ignore_case: true
 
@@ -491,7 +496,8 @@ class RegexValidator(Validator):
             'dotall': {'required': False, 'type': bool},
             'ignore_case': {'required': False, 'type': bool},
             'multiline': {'required': False, 'type': bool},
-            'match': {'required': True, 'type': str}
+            'match': {'required': True, 'type': list, 'alternatives': ['invert']},
+            'invert': {'required': True, 'type': list, 'alternatives': ['match']}
     }
 
     def __init__(self, *args, **kwargs) -> None:
@@ -502,6 +508,8 @@ class RegexValidator(Validator):
         super().__init__(*args, **kwargs)
 
         flags = 0
+        self.match = list()
+        self.invert = list()
 
         if self.param.get('ascii'):
             flags = flags | re.ASCII
@@ -512,11 +520,21 @@ class RegexValidator(Validator):
         if self.param.get('multiline'):
             flags = flags | re.MULTILINE
 
-        try:
-            self.regex = re.compile(self.param['match'], flags)
+        for expr in self.param.get('match', []):
 
-        except Exception:
-            raise ValidatorError(self.path, f"Specified regex '{self.param}' is invalid!")
+            try:
+                self.match.append(re.compile(expr, flags))
+
+            except Exception:
+                raise ValidatorError(self.path, f"Specified regex '{expr}' is invalid!")
+
+        for expr in self.param.get('invert', []):
+
+            try:
+                self.invert.append(re.compile(expr, flags))
+
+            except Exception:
+                raise ValidatorError(self.path, f"Specified regex '{expr}' is invalid!")
 
     def run(self) -> None:
         '''
@@ -524,8 +542,13 @@ class RegexValidator(Validator):
         '''
         cmd_output = self.get_output()
 
-        if not self.regex.search(cmd_output):
-            raise ValidationException(f"Regex '{self.param['match']}' was not found in command output.")
+        for regex in self.match:
+            if not regex.search(cmd_output):
+                raise ValidationException(f"Regex '{regex.pattern}' was not found in command output.")
+
+        for regex in self.invert:
+            if regex.search(cmd_output):
+                raise ValidationException(f"Regex '{regex.pattern}' was found in command output.")
 
 
 class StatusCodeValidator(Validator):

@@ -7,7 +7,7 @@ import pytest
 content = '''This is a text file.
 It contains some contents.
 It is used for testing tricot.
-It is basically a replacement for comamnd output.
+It is basically a replacement for command output.
 '''
 
 config_list = [{'ignore_case': False, 'values': ['This is a text file', 'It is basically'], 'invert': ['Pancake']}]
