@@ -471,12 +471,9 @@ class HttpListenerPlugin(Plugin):
 
     def __init__(self, *args, **kwargs) -> None:
         '''
-        Make sure that directory exists and port is valid before running the server.
+        Make sure that the specified port is valid before running the server.
         '''
         super().__init__(*args, **kwargs)
-
-        if not os.path.isdir(self.param['dir']):
-            raise PluginError(self.path, f"Specified directory '{self.param['dir']}' does not exist.")
 
         if self.param['port'] <= 0 or self.param['port'] > 65535:
             raise PluginError(self.path, f"Specified port '{self.param['port']}' is invalid. Needs to be between 0-65535.")
@@ -504,6 +501,8 @@ class HttpListenerPlugin(Plugin):
             return
 
         directory = self.resolve_path(directory)
+        if not directory.is_dir():
+            raise FileNotFoundError(f"Specified directory '{directory.absolute()}' does not exist.")
 
         self.thread = threading.Thread(name=f'http-{port}', target=self.start_server, args=(port, directory))
         self.thread.setDaemon(True)

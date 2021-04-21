@@ -18,7 +18,6 @@ test_file = 'http-test-file.txt'
 config_list = [{'port': 8000, 'dir': www}]
 config_list.append({'port': 8000, 'dir': www})
 config_list.append({'port': 999999, 'dir': www})
-config_list.append({'port': 8000, 'dir': 'wwwwww'})
 
 result = [True, True, False, False]
 files = [test_file, 'nope', None, None]
