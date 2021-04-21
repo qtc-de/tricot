@@ -138,7 +138,7 @@ def main():
             if args.debug:
                 raise e
 
-            tricot.Logger.print_mixed_blue('Caught', 'unexpected Exception', e=True)
+            tricot.Logger.print_mixed_yellow('Caught', 'unexpected Exception', e=True)
             tricot.Logger.increase_indent()
             tricot.Logger.print_with_indent_blue(str(e), e=True)
 
