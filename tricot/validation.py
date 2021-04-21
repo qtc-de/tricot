@@ -520,21 +520,20 @@ class RegexValidator(Validator):
         if self.param.get('multiline'):
             flags = flags | re.MULTILINE
 
-        for expr in self.param.get('match', []):
+        last = ''
 
-            try:
+        try:
+
+            for expr in self.param.get('match', []):
+                last = expr
                 self.match.append(re.compile(expr, flags))
 
-            except Exception:
-                raise ValidatorError(self.path, f"Specified regex '{expr}' is invalid!")
-
-        for expr in self.param.get('invert', []):
-
-            try:
+            for expr in self.param.get('invert', []):
+                last = expr
                 self.invert.append(re.compile(expr, flags))
 
-            except Exception:
-                raise ValidatorError(self.path, f"Specified regex '{expr}' is invalid!")
+        except Exception:
+            raise ValidatorError(self.path, f"Specified regex '{last}' is invalid!")
 
     def run(self) -> None:
         '''
