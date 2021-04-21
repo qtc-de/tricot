@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tricot
 from typing import Any
+from pathlib import Path
 
 
 class TricotRuntimeVariableError(Exception):
@@ -122,3 +123,25 @@ def check_keys(expected_keys: list[str], yaml_dict: dict) -> None:
             tricot.Logger.print_yellow('Warning:', end=' ')
             tricot.Logger.print_mixed_blue_plain('Test', yaml_dict['title'], 'contains unexpected key', end=': ')
             tricot.Logger.print_yellow_plain(key)
+
+
+def merge_environment(new: dict, current: dict, path: Path) -> dict:
+    '''
+    Helper function to merge two environment dictionaries. Is mainly used to handle
+    the case where the new environment is not a dictionary.
+
+    Parameters:
+        new             New environment variables to add
+        current         Current set of environment variables
+        path            Path of the currently parsed configuration file
+
+    Returns:
+        environment     Merged environment variables
+    '''
+    if new is None:
+        return current or {}
+
+    if type(new) is not dict:
+        raise tricot.TestKeyError(None, path, "Key 'env' needs to be a dictionary in the ")
+
+    return {**new, **current}
