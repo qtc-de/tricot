@@ -15,6 +15,7 @@ parser.add_argument('file', metavar='file', nargs='+', help='file system path to
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='enable verbose logging during tests')
 parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
 parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='enable debug output')
+parser.add_argument('-l', '--logfile', dest='log', type=argparse.FileType('w'), help='enable debug output')
 parser.add_argument('--plugin', dest='plugins', action='append', default=[], metavar='file', type=argparse.FileType('r'), help='additional plugin files')
 parser.add_argument('--validator', dest='vals', action='append', default=[], metavar='file', type=argparse.FileType('r'), help='additional validator files')
 parser.add_argument('--tester', dest='tester', action='append', default=[], metavar='name', help='only run the specified testers')
@@ -53,6 +54,13 @@ def main():
     if args.quite:
         tricot.Logger.set_verbosity(0)
 
+    if args.debug:
+        tricot.Logger.set_verbosity(3)
+
+    if args.log:
+        args.log.close()
+        tricot.Logger.set_logfile(args.log.name)
+
     for plugin in args.plugins:
         exec(plugin.read())
         plugin.close()
@@ -73,20 +81,24 @@ def main():
             tricot.Logger.increase_indent()
             tricot.Logger.print_blue(str(e), e=True)
             tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+            sys.exit(tricot.constants.VALIDATOR_ERROR)
 
         except tricot.ValidationException:
             tricot.Logger.print_mixed_yellow('Caught', 'ValidationException', 'while error mode is set to break.', e=True)
             tricot.Logger.print_blue('Stopping test.', e=True)
+            sys.exit(tricot.constants.VALIDATION_EXCEPTION)
 
         except (tricot.TestKeyError, tricot.TesterKeyError) as e:
             tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
             tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+            sys.exit(tricot.constants.TEST_KEY_ERROR)
 
         except tricot.utils.TricotRuntimeVariableError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
             tricot.Logger.print('Runtime variables should only be used in library mode.', e=True)
+            sys.exit(tricot.constants.RUNTIME_VARIABLE_ERROR)
 
         except tricot.PluginError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'PluginError', 'while parsing test configuration.', e=True)
@@ -94,6 +106,7 @@ def main():
             tricot.Logger.increase_indent()
             tricot.Logger.print_blue(str(e), e=True)
             tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+            sys.exit(tricot.constants.PLUGIN_ERROR)
 
         except tricot.PluginException as e:
             tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'from', end='', e=True)
@@ -101,18 +114,22 @@ def main():
             tricot.Logger.print_yellow_plain(e.path.absolute())
             tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
             tricot.Logger.print_blue('Stopping test.', e=True)
+            sys.exit(tricot.constants.PLUGIN_EXCEPTION)
 
         except tricot.TricotException as e:
             tricot.Logger.print('Encountered an error during test execution.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
+            sys.exit(tricot.constants.TRICOT_EXCEPTION)
 
         except yaml.parser.ParserError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'ParseError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_with_indent_blue(str(e), e=True)
+            sys.exit(tricot.constants.PARSER_ERROR)
 
         except FileNotFoundError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'FileNotFoundError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_with_indent_blue(str(e), e=True)
+            sys.exit(tricot.constants.FILE_NOT_FOUND)
 
         except docker.errors.APIError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'docker APIError', 'while parsing test configuration.', e=True)
@@ -123,18 +140,21 @@ def main():
             tricot.Logger.print_yellow('Original Error:', e=True)
             tricot.Logger.increase_indent()
             tricot.Logger.print_with_indent_blue(str(e), e=True)
+            sys.exit(tricot.constants.DOCKER_API)
 
         except tricot.TricotRuntimeError as e:
             tricot.Logger.print_mixed_blue('Caught', 'unexpected Exception', 'while running the test command.', e=True)
             tricot.Logger.print_yellow('Original Error:', e=True)
             tricot.Logger.increase_indent()
             tricot.Logger.print_with_indent_blue(str(e.original), e=True)
+            sys.exit(tricot.constants.RUNTIME_ERROR)
 
         except KeyboardInterrupt:
             tricot.Logger.reset_indent()
             tricot.Logger.print('')
             tricot.Logger.print_mixed_yellow('Caught', 'KeyboardInterrupt', 'from user.')
             tricot.Logger.print('Stopping current test.')
+            sys.exit(tricot.constants.KEYBOARD_INTERRUPT)
 
         except Exception as e:
             if args.debug:
@@ -143,6 +163,7 @@ def main():
             tricot.Logger.print_mixed_yellow('Caught', 'unexpected Exception', e=True)
             tricot.Logger.increase_indent()
             tricot.Logger.print_with_indent_blue(str(e), e=True)
+            sys.exit(tricot.constants.UNKNOWN)
 
         finally:
             tricot.Logger.reset_indent()

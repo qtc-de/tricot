@@ -1,6 +1,10 @@
+from __future__ import annotations
+
+import sys
 import json
 from termcolor import cprint
 
+from tricot.command import Command
 from tricot.validation import Validator, ValidationException, ValidatorError
 
 
@@ -19,6 +23,7 @@ class Logger:
         Value: 1 -> Print 'failed' and show the Validator message
         Value: 2 -> Print 'failed', the validator message + cmd_output
     '''
+    tee = None
     indent = 0
     verbosity = 1
 
@@ -27,6 +32,12 @@ class Logger:
         Print with prefix and indentation.
         '''
         print(Logger.get_prefix(e), string, *args, end=end)
+
+    def print_plain(string: str, *args, end: str = None) -> None:
+        '''
+        Print with prefix.
+        '''
+        print(string, *args, end=end)
 
     def print_plain_green(string: str, end: str = None) -> None:
         '''
@@ -171,7 +182,8 @@ class Logger:
         Takes a string, spilts it on newlines and prints each single line
         with the current prefix and indent.
         '''
-        lines = string.split('\n')
+        content = string.replace('\x0d', '\n')
+        lines = content.split('\n')
         for line in lines:
             Logger.print(line, e=e)
 
@@ -180,9 +192,22 @@ class Logger:
         Takes a string, spilts it on newlines and prints each single line
         with the current prefix and indent in blue.
         '''
-        lines = string.split('\n')
+        content = string.replace('\x0d', '\n')
+        lines = content.split('\n')
         for line in lines:
             Logger.print_blue(line, e=e)
+
+    def set_logfile(path: str) -> None:
+        '''
+        Mirrors all output of tricot to the specified logfile.
+
+        Parameters:
+            path        File system path of the logfile
+
+        Returns:
+            None
+        '''
+        Logger.tee = Tee(path)
 
     def handle_error(e: Exception, val: Validator) -> None:
         '''
@@ -229,8 +254,8 @@ class Logger:
         if Logger.verbosity > 1:
             Logger.print('', e=True)
             Logger.print_yellow('  Command:', e=True, end=' ')
-            print(val.command.command)
-            Logger.print_yellow('  Status code:', e=True, end=' ')
+            Logger.print_plain(val.command.command)
+            Logger.print_yellow('  Command exit code:', end=' ', e=True)
             cprint(val.command.status, color='blue')
 
             Logger.print_yellow('  Command stdout:', e=True)
@@ -249,3 +274,76 @@ class Logger:
             Logger.increase_indent()
             Logger.print_with_indent(json.dumps(val.param, indent=4).replace(r'\n', '\n').replace(r'\t', '\t'), e=True)
             Logger.decrease_indent()
+
+    def handle_success(cmd: Command, val: list[Validator]) -> None:
+        '''
+        This function is called when all Validators have been passed.
+        It is basically a wrapper around '_handle_success'.
+        '''
+        if Logger.verbosity != 3:
+            return
+
+        Logger.increase_indent()
+        Logger._handle_success(cmd, val)
+        Logger.decrease_indent()
+        Logger.print('')
+
+    def _handle_success(cmd: Command, val: list[Validator]) -> None:
+        '''
+        This functions handles Exceptions that are raised by validators.
+        Depending on the current 'verbosity' level, a different amount of information
+        is printed.
+        '''
+        Logger.print_mixed_yellow('-', 'Debug output:')
+        Logger.increase_indent()
+        Logger.print_yellow('Command:', end=' ')
+        Logger.print_plain(cmd.command)
+        Logger.print_yellow('Command exit code:', end=' ')
+        cprint(cmd.status, color='blue')
+
+        Logger.print_yellow('Command stdout:')
+        if cmd.stdout:
+            Logger.increase_indent()
+            Logger.print_with_indent(cmd.stdout)
+            Logger.decrease_indent()
+
+        Logger.print_yellow('Command stderr:')
+        if cmd.stderr:
+            Logger.increase_indent()
+            Logger.print_with_indent(cmd.stderr)
+            Logger.decrease_indent()
+
+        Logger.print_yellow('Validators:')
+        Logger.increase_indent()
+        for validator in val:
+            Logger.print_yellow('Validator name:', end=' ')
+            cprint(validator.name, color='blue')
+            Logger.print_yellow('Validator parameters:')
+            Logger.increase_indent()
+            Logger.print_with_indent(json.dumps(validator.param, indent=4).replace(r'\n', '\n').replace(r'\t', '\t'))
+            Logger.decrease_indent()
+
+        Logger.decrease_indent()
+        Logger.decrease_indent()
+
+
+class Tee(object):
+    '''
+    Helper class to log stdout to a file. Copied from:
+    https://stackoverflow.com/questions/616645/how-to-duplicate-sys-stdout-to-a-log-file
+    '''
+    def __init__(self, name):
+        self.file = open(name, 'w')
+        self.stdout = sys.stdout
+        sys.stdout = self
+
+    def __del__(self):
+        sys.stdout = self.stdout
+        self.file.close()
+
+    def write(self, data):
+        self.file.write(data)
+        self.stdout.write(data)
+
+    def flush(self):
+        self.file.flush()

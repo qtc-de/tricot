@@ -292,6 +292,7 @@ class Test:
 
         if success:
             Logger.print_plain_green("success.")
+            Logger.handle_success(self.command, self.validators)
 
         hotplug_variables['$prev'] = self.command
         Logger.decrease_indent()
