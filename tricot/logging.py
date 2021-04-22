@@ -63,7 +63,7 @@ class Logger:
     def print_mixed_yellow(str1: str, str2: str, *args, e: bool = False,  end: str = None) -> None:
         '''
         Print with prefix and indent, first arg in normal text color, second arg
-        in yellow and the rest of the args in normal text color again..
+        in yellow and the rest of the args in normal text color again.
         '''
         print(Logger.get_prefix(e), str1, end=' ')
 
@@ -77,7 +77,7 @@ class Logger:
     def print_mixed_red(str1: str, str2: str, *args, e: bool = False,  end: str = None) -> None:
         '''
         Print with prefix and indent, first arg in normal text color, second arg
-        in red and the rest of the args in normal text color again..
+        in red and the rest of the args in normal text color again.
         '''
         print(Logger.get_prefix(e), str1, end=' ')
 
@@ -91,7 +91,7 @@ class Logger:
     def print_mixed_blue(str1: str, str2: str, *args, e: bool = False, end: str = None) -> None:
         '''
         Print with prefix and indent, first arg in normal text color, second arg
-        in blue and the rest of the args in normal text color again..
+        in blue and the rest of the args in normal text color again.
         '''
         print(Logger.get_prefix(e), str1, end=' ')
 
@@ -105,7 +105,7 @@ class Logger:
     def print_mixed_blue_plain(str1: str, str2: str, *args, e: bool = False, end: str = None) -> None:
         '''
         Print first arg in normal text color, second arg
-        in blue and the rest of the args in normal text color again..
+        in blue and the rest of the args in normal text color again.
         '''
         print(str1, end=' ')
 
@@ -115,6 +115,20 @@ class Logger:
 
         else:
             cprint(str2, color='blue', end=end)
+
+    def print_mixed_red_plain(str1: str, str2: str, *args, e: bool = False, end: str = None) -> None:
+        '''
+        Print first arg in normal text color, second arg
+        in red and the rest of the args in normal text color again.
+        '''
+        print(str1, end=' ')
+
+        if(args):
+            cprint(str2, color='red', end=' ')
+            print(*args, end=end)
+
+        else:
+            cprint(str2, color='red', end=end)
 
     def increase_indent() -> None:
         '''
@@ -199,9 +213,11 @@ class Logger:
             return
 
         elif type(e) is ValidationException:
-            Logger.print_mixed_yellow('- Caught', 'ValidationException', 'raised by the', end=' ', e=True)
-            cprint(val.name, color='red', end='')
-            print(' validator.')
+            Logger.print_mixed_yellow('- Caught', 'ValidationException', 'raised by the', end='', e=True)
+            Logger.print_mixed_red_plain('', val.name, 'validator.')
+            Logger.print_mixed_blue('  Configuration file:', val.path.absolute(), e=True)
+            Logger.print('', e=True)
+
             Logger.print('  Validator run failed because of the following reason:', e=True)
             Logger.print_with_indent_blue('  ' + str(e), e=True)
 

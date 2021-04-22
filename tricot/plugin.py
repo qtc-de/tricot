@@ -77,11 +77,14 @@ class PluginException(Exception):
     PluginExceptions are raised by plugins when they throw any other kind of exception.
     They contain the original exception as parameter.
     '''
-    def __init__(self, exception: Exception) -> None:
+    def __init__(self, exception: Exception, name: str, path: Path) -> None:
         '''
         Custom exception class that stores the original exception within a variable.
         '''
         self.original = exception
+        self.name = name
+        self.path = path
+
         super().__init__('PluginException')
 
 
@@ -260,7 +263,7 @@ class Plugin:
             self.run()
 
         except Exception as e:
-            raise PluginException(e)
+            raise PluginException(e, self.name, self.path)
 
     def run(self) -> None:
         '''
@@ -292,7 +295,7 @@ class Plugin:
             self.stopped = True
 
         except Exception as e:
-            raise PluginException(e)
+            raise PluginException(e, self.name, self.path)
 
     def stop(self) -> None:
         '''

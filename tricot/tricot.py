@@ -98,7 +98,7 @@ class Test:
     specified variables and the required validators. During a test, Test objects are
     evaluated by executing their 'run' method.
     '''
-    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout']
+    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env']
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: list,
                  timeout: int, validators: list[Validator], env: dict) -> None:
@@ -513,7 +513,9 @@ class Tester:
                     raise e
 
                 else:
-                    tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'during plugin execution.', e=True)
+                    tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'from', end='', e=True)
+                    tricot.Logger.print_mixed_blue_plain('', e.name, 'plugin in', end=' ')
+                    tricot.Logger.print_yellow_plain(e.path.absolute())
                     tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
                     tricot.Logger.print_blue('Tester is skipped.', e=True)
 

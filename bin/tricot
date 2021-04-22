@@ -96,7 +96,9 @@ def main():
             tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
 
         except tricot.PluginException as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'during plugin execution.', e=True)
+            tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'from', end='', e=True)
+            tricot.Logger.print_mixed_blue_plain('', e.name, 'plugin in', end=' ')
+            tricot.Logger.print_yellow_plain(e.path.absolute())
             tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
             tricot.Logger.print_blue('Stopping test.', e=True)
 
