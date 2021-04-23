@@ -73,7 +73,7 @@ def apply_variables(candidate: Any, var_dict: dict[str, Any] = None) -> Any:
         for var, var_value in var_dict.items():
 
             var_value = resolve_runtime_variables(var_dict, var, var_value)
-            variable_key = '${'+var+'}'
+            variable_key = '${'+str(var)+'}'
 
             if candidate == variable_key:
                 candidate = var_value

@@ -147,8 +147,8 @@ class Test:
 
         for key, value in variables.items():
 
-            key = '${'+key+'}'
             value = tricot.utils.resolve_runtime_variables(variables, key, value)
+            key = '${'+str(key)+'}'
 
             if type(val) is str:
                 if val == key and type(value) is list:

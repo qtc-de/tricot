@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import io
 import sys
 import yaml
 import docker
@@ -16,38 +17,70 @@ parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help
 parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
 parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='enable debug output')
 parser.add_argument('-l', '--logfile', dest='log', type=argparse.FileType('w'), help='enable debug output')
-parser.add_argument('--plugin', dest='plugins', action='append', default=[], metavar='file', type=argparse.FileType('r'), help='additional plugin files')
-parser.add_argument('--validator', dest='vals', action='append', default=[], metavar='file', type=argparse.FileType('r'), help='additional validator files')
-parser.add_argument('--tester', dest='tester', action='append', default=[], metavar='name', help='only run the specified testers')
+parser.add_argument('-p', '--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
+parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', default=[], help='runtime variables')
+parser.add_argument('--plugins', dest='plugins', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional plugin files')
+parser.add_argument('--validators', dest='vals', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional validator files')
+parser.add_argument('--testers', dest='testers', metavar='name', nargs='+', default=[], help='only run the specified testers')
 parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator'], help='write a template file')
-parser.add_argument('--number', dest='number', action='append', default=[], metavar='int', type=int, help='only run the specified test numbers')
+parser.add_argument('--numbers', dest='numbers', metavar='int', type=int, nargs='+', default=[], help='only run the specified test numbers')
 
 
-def main():
+def split_variable(var: str, variables: dict) -> None:
     '''
-    Simply executes a tricot test using the file system paths specified on the command line.
+    Attempts to split a key=value string at the equal sign and
+    adds it to the variables dictionary.
 
     Parameters:
-        None
+        var         key=value string
+        variables   Dictionary to add the key, value pair to
 
     Returns:
         None
     '''
-    args = parser.parse_args()
+    try:
+        key, value = var.split('=')
+        variables[key] = value
 
-    if args.template:
+    except ValueError:
+        tricot.Logger.print_mixed_yellow(f"Variable '{var}' does not match the 'key=value' pattern.")
+        sys.exit(tricot.constants.VALUE_ERROR)
 
-        try:
-            tricot.Logger.print_mixed_yellow('Writing template file', args.file[0])
-            tricot.write_template(args.file[0], args.template)
 
-        except Exception as e:
-            tricot.Logger.print_mixed_blue('Caught', 'unexpected Exception', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_with_indent_blue(str(e), e=True)
+def write_template(path: str, template_type: str) -> None:
+    '''
+    Handles the --template option and writes the desired template to the specified
+    location. Exits the program afterwards as no other actions are expected.
 
+    Parameters:
+        path            Path to write the template file to
+        template_type   Type of template to write
+
+    Returns:
+        None
+    '''
+    try:
+        tricot.Logger.print_mixed_yellow('Writing template file to', path)
+        tricot.write_template(path, template_type)
         sys.exit(0)
 
+    except Exception as e:
+        tricot.Logger.print_mixed_blue('Caught', 'unexpected Exception', e=True)
+        tricot.Logger.increase_indent()
+        tricot.Logger.print_with_indent_blue(str(e), e=True)
+        sys.exit(tricot.constants.UNKNOWN)
+
+
+def initialize_logger(args: argparse.Namespace) -> None:
+    '''
+    Sets the verbosity level and log file according to the specified options.
+
+    Parameters:
+        args        Namespace parsed by argparse
+
+    Returns:
+        None
+    '''
     if args.verbose:
         tricot.Logger.set_verbosity(2)
 
@@ -61,19 +94,67 @@ def main():
         args.log.close()
         tricot.Logger.set_logfile(args.log.name)
 
-    for plugin in args.plugins:
-        exec(plugin.read())
+
+def load(files: list[io.TextIOWrapper]) -> None:
+    '''
+    Loads the content of the specified, opened files and closes them.
+
+    Parameters:
+        files       List of opened files by argparse
+
+    Returns:
+        None
+    '''
+    for file in files:
+        exec(file.read())
         plugin.close()
 
-    for validator in args.vals:
-        exec(validator.read())
-        validator.close()
+
+def prepare_variables(args: argparse.Namespace) -> dict:
+    '''
+    Parses the variables specified on the command line and returns them within a dictionary.
+
+    Parameters:
+        args        Namespace parsed by argparse
+
+    Returns:
+        variables   Dictionary containing the variables
+    '''
+    variables = dict()
+
+    for ctr in range(len(args.pos)):
+        variables[ctr + 1] = args.pos[ctr]
+
+    for var in args.vars:
+        split_variable(var, variables)
+
+    return variables
+
+
+def main():
+    '''
+    Simply executes a tricot test using the file system paths specified on the command line.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    args = parser.parse_args()
+    initialize_logger(args)
+
+    if args.template:
+        write_template(args.file[0], args.template)
+
+    load(args.plugins + args.vals)
+    variables = prepare_variables(args)
 
     for yml_file in args.file:
 
         try:
-            tester = tricot.Tester.from_file(yml_file)
-            tester.run(args.tester, args.number)
+            tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
+            tester.run(args.testers, args.numbers)
 
         except tricot.ValidatorError as e:
             tricot.Logger.print_mixed_red('Caught', 'ValidatorError', 'while parsing test configuration.', e=True)
@@ -97,7 +178,6 @@ def main():
         except tricot.utils.TricotRuntimeVariableError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
-            tricot.Logger.print('Runtime variables should only be used in library mode.', e=True)
             sys.exit(tricot.constants.RUNTIME_VARIABLE_ERROR)
 
         except tricot.PluginError as e:

@@ -241,7 +241,9 @@ class Logger:
             Logger.print_mixed_yellow('- Caught', 'ValidationException', 'raised by the', end='', e=True)
             Logger.print_mixed_red_plain('', val.name, 'validator.')
             Logger.print_mixed_blue('  Configuration file:', val.path.absolute(), e=True)
-            Logger.print('', e=True)
+
+            if Logger.verbosity > 1:
+                Logger.print('', e=True)
 
             Logger.print('  Validator run failed because of the following reason:', e=True)
             Logger.print_with_indent_blue('  ' + str(e), e=True)
