@@ -315,7 +315,7 @@ class Plugin:
             resolved    Resolved file system path
         '''
         if os.path.isabs(path):
-            return path
+            return Path(path)
 
         return self.path.parent.joinpath(path)
 
@@ -610,7 +610,6 @@ class CopyPlugin(Plugin):
     param_type = dict
     inner_types = {
                     'cleanup': {'required': False, 'type': bool},
-                    'recursive': {'required': False, 'type': bool},
                     'from': {'required': True, 'type': list},
                     'to': {'required': True, 'type': list}
                   }
@@ -631,21 +630,20 @@ class CopyPlugin(Plugin):
 
         for ctr in range(len(files)):
 
-            src_path = Path(files[ctr])
-            dest_path = Path(dest[ctr])
+            src_path = self.resolve_path(files[ctr])
+            dest_path = self.resolve_path(dest[ctr])
 
-            if dest_path.is_dir():
-                self.cleanup.append(dest_path.joinpath(src_path.name))
+            if src_path.is_file():
+                created = shutil.copy(src_path, dest_path)
+                self.cleanup.append(Path(created))
 
-            else:
-                self.cleanup.append(dest_path)
+            elif src_path.is_dir():
 
-            if not self.param.get('recursive', False):
-                shutil.copy(files[ctr], dest[ctr])
+                if dest_path.is_dir():
+                    dest_path = dest_path.joinpath(src_path.name)
 
-            else:
-                shutil.copytree(files[ctr], dest[ctr])
-
+                created = shutil.copytree(src_path, dest_path)
+                self.cleanup.append(Path(created))
 
     def stop(self) -> None:
         '''
@@ -654,16 +652,19 @@ class CopyPlugin(Plugin):
         if not self.param.get('cleanup', False):
             return
 
-        for file in self.cleanup:
+        for item in self.cleanup:
 
-            if file in CopyPlugin.blacklist:
-                raise ValueError("Plugin attempted to remove the blacklisted ressource '{file}'.")
+            if not item.exists():
+                continue
 
-            if file.is_file():
-                file.unlink()
+            elif item.absolute() in CopyPlugin.blacklist:
+                raise ValueError("Plugin attempted to remove the blacklisted ressource '{item}'.")
 
-            else:
-                shutil.rmtree(str(file.absolute()))
+            elif item.is_file():
+                item.unlink()
+
+            elif item.is_dir():
+                shutil.rmtree(str(item.absolute()))
 
 
 register_plugin("os_command", OsCommandPlugin)
