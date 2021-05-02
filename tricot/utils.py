@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import tricot
 from typing import Any
 from pathlib import Path
@@ -138,10 +139,25 @@ def merge_environment(new: dict, current: dict, path: Path) -> dict:
     Returns:
         environment     Merged environment variables
     '''
+    current = current or {}
+
     if new is None:
-        return current or {}
+        return current
 
     if type(new) is not dict:
         raise tricot.TestKeyError(None, path, "Key 'env' needs to be a dictionary in the ")
 
     return {**new, **current}
+
+
+def merge_default_environment(env: dict) -> dict:
+    '''
+    Merges the current user environment with the specifies environment dictionary.
+
+    Parameters:
+        new             dict to combine with the default environment
+
+    Returns:
+        environment     Merged environment variables
+    '''
+    return {**os.environ, **env}

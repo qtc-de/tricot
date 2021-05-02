@@ -101,8 +101,10 @@ class Command:
         Returns:
             cmd_output      Command output in the form [status_code, stdout & stderr]
         '''
+        envi = tricot.utils.merge_default_environment(env)
+
         try:
-            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path, env=env)
+            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path, env=envi)
             self.stdout, self.stderr = process.communicate(timeout=timeout)
             self.status = process.returncode
 
