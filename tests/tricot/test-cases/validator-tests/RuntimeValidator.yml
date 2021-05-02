@@ -1,0 +1,49 @@
+tester:
+  name: runtime
+  title: RuntimeValidator Tests
+  description: |-
+    "Performs tests on the RuntimeValidator"
+
+tests:
+  - title: Test Case 1 - Success
+    description: >
+      'Test case 1'
+    command:
+      - sleep
+      - 2
+    validators:
+      - runtime:
+          gt: 1
+          lt: 3
+
+
+  - title: Test Case 2 - Success
+    description: >
+      'Test case 2'
+    command:
+      - sleep
+      - 1
+    validators:
+      - runtime:
+          gt: 0
+          lt: 2
+
+  - title: Test Case 3 - Fail
+    description: >
+      'Test case 3'
+    command:
+      - sleep
+      - 2
+    validators:
+      - runtime:
+          gt: 3
+
+  - title: Test Case 4 - Fail
+    description: >
+      'Test case 4'
+    command:
+      - sleep
+      - 2
+    validators:
+      - runtime:
+          lt: 1

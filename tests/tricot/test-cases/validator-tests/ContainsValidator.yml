@@ -1,0 +1,87 @@
+tester:
+  name: contains
+  title: ContainsValidator Tests
+  description: |-
+    "Performs tests on the ContainsValidator"
+
+tests:
+  - title: Values - Success
+    description: >
+      'Checks whether operation with values is handeled correctly'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - contains:
+          values:
+            - root
+            - nobody
+
+  - title: Invert - Success
+    description: >
+      'Checks whether operation with invert is handeled correctly'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - contains:
+          invert:
+            - harry
+            - dave
+
+  - title: Values and Invert - Success
+    description: >
+      'Checks whether operation with values and invert is handeled correctly'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - contains:
+          values:
+            - root
+            - nobody
+          invert:
+            - harry
+            - dave
+
+  - title: Case Insensitive - Success
+    description: >
+      'Checks whether the ignore_case switch is working'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - contains:
+          ignore_case: True
+          values:
+            - rOOt
+            - nObOdy
+          invert:
+            - hArry
+            - dAve
+
+  - title: Check Failure Values - Fail
+    description: >
+      'Checks that missing value items lead to an error'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - contains:
+          ignore_case: False
+          values:
+            - rOOt
+            - nObOdy
+
+  - title: Check Failure Invert - Fail
+    description: >
+      'Checks that present invert items lead to an error'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - contains:
+          ignore_case: False
+          invert:
+            - root
+            - nobody

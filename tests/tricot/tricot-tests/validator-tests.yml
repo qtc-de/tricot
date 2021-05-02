@@ -1,0 +1,231 @@
+tester:
+  name: val-tests
+  title: Validator Tests
+  description: |-
+    "Performs tests on all tricot validators"
+
+
+tests:
+  - title: ContainsValidator
+    description: |-
+      'Starts the test cases for the ContainsValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/ContainsValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 4
+            - 2
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+
+  - title: CountValidator
+    description: |-
+      'Starts the test cases for the CountValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/CountValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 1
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+
+  - title: DirectoryExistsValidator
+    description: |-
+      'Starts the test cases for the DirectoryExistsValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/DirectoryExistsValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 5
+            - 2
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+
+  - title: ErrorValidator
+    description: |-
+      'Starts the test cases for the ErrorValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/ErrorValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 2
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+
+  - title: FileContainsValidator
+    description: |-
+      'Starts the test cases for the FileContainsValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/FileContainsValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 3
+            - 4
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: FileExistsValidator
+    description: |-
+      'Starts the test cases for the FileExistsValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/FileExistsValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 5
+            - 2
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: MatchValidator
+    description: |-
+      'Starts the test cases for the MatchValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/MatchValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 1
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: RuntimeValidator
+    description: |-
+      'Starts the test cases for the RuntimeValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/RuntimeValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 2
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: StatusCodeValidator
+    description: |-
+      'Starts the test cases for the StatusCodeValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/StatusCodeValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 2
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: RegexValidator
+    description: |-
+      'Starts the test cases for the RegexValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/RegexValidator.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 5
+            - 4
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed

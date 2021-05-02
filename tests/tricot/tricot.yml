@@ -1,0 +1,15 @@
+tester:
+  name: tricot
+  title: 'tricot Tests'
+  error_mode: break
+  description: >
+    'Launches some tricot tests for tricot'
+  env:
+    ANSI_COLORS_DISABLED: 'True'
+
+variables:
+  VAL: ../test-cases/validator-tests/
+  PLUG: ../test-cases/plugin-tests/
+
+testers:
+  - ./tricot-tests/validator-tests.yml

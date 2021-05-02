@@ -1,0 +1,98 @@
+tester:
+  name: file_exists
+  title: FileExistsValidator Tests
+  description: |-
+    "Performs tests on the FileExistsValidator"
+
+
+variables:
+  file1: test-file1
+  file2: test-file2
+
+plugins:
+  - copy:
+      from:
+        - /etc/passwd
+        - /etc/passwd
+      to:
+        - ${file1}
+        - ${file2}
+    
+      
+tests:
+  - title: Plain Run - Success
+    description: >
+      'Checks whether general operation is working'
+    command:
+      - whoami
+    validators:
+      - file_exists:
+          files:
+            - /etc/passwd
+
+  - title: Plain Run - Fail
+    description: >
+      'Checks whether general operation is working'
+    command:
+      - whoami
+    validators:
+      - file_exists:
+          files:
+            - /etc/nope
+
+  - title: Variables - Success
+    description: >
+      'Checks whether general operation is working with variables'
+    command:
+      - whoami
+    validators:
+      - file_exists:
+          files:
+            - ${file1}
+            - ${file2}
+
+  - title: Invert - Success
+    description: >
+      'Checks whether invert operation is working'
+    command:
+      - whoami
+    validators:
+      - file_exists:
+          files:
+            - ${file1}
+            - ${file2}
+          invert:
+            - /etc/nope
+
+  - title: Invert - Fail
+    description: >
+      'Checks whether invert operation is working'
+    command:
+      - whoami
+    validators:
+      - file_exists:
+          invert:
+            - ${file1}
+
+  - title: Cleanup - Success
+    description: >
+      'Checks whether cleanup operation is working. Cleanup is verified in the next test'
+    command:
+      - whoami
+    validators:
+      - file_exists:
+          files:
+            - ${file1}
+            - ${file2}
+          cleanup: True
+
+  - title: Cleanup Verify - Success
+    description: >
+      'Checks whether cleanup operation is working'
+    command:
+      - whoami
+    validators:
+      - file_exists:
+          invert:
+            - ${file1}
+            - ${file2}
