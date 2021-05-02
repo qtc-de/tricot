@@ -725,7 +725,10 @@ class FileContainsValidator(Validator):
                   contains:
                     - root
                     - bin
+                  invert:
+                    - unexpected
                 - file: /etc/hosts
+                  ignore_case: True
                   contains:
                     - localhost
                     - 127.0.0.1
@@ -741,6 +744,7 @@ class FileContainsValidator(Validator):
 
             invert = check.get('invert', [])
             contains = check.get('contains', [])
+            ignore_case = check.get('ignore_case', False)
 
             file_name = self.resolve_path(check['file'])
             if not os.path.isfile(file_name):
@@ -748,6 +752,11 @@ class FileContainsValidator(Validator):
 
             with open(file_name) as f:
                 content = f.read()
+
+                if ignore_case:
+                    content = content.lower()
+                    contains = list(map(lambda x: x.lower(), contains))
+                    invert = list(map(lambda x: x.lower(), invert))
 
                 for item in contains:
                     if item not in content:

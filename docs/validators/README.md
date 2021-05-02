@@ -167,7 +167,10 @@ validators:
           contains:
             - root
             - bin
+          invert:
+            - unexpected
         - file: /etc/hosts
+          ignore_case: True
           contains:
             - localhost
             - 127.0.0.1
