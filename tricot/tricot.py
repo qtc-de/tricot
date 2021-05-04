@@ -281,6 +281,7 @@ class Test:
                 if success:
                     Logger.print_plain_red("failed.")
 
+                tricot.constants.LAST_ERROR = tricot.constants.VALIDATION_EXCEPTION
                 Logger.handle_error(e, validator)
 
                 if self.error_mode == "break":
@@ -519,6 +520,8 @@ class Tester:
                     tricot.Logger.print_yellow_plain(e.path.absolute())
                     tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
                     tricot.Logger.print_blue('Tester is skipped.', e=True)
+
+                    tricot.constants.LAST_ERROR = tricot.constants.PLUGIN_EXCEPTION
 
     def increase() -> None:
         '''
