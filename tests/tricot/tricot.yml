@@ -1,7 +1,7 @@
 tester:
   name: tricot
   title: 'tricot Tests'
-  error_mode: break
+  error_mode: continue
   description: >
     'Launches some tricot tests for tricot'
   env:
@@ -12,4 +12,5 @@ variables:
   PLUG: ../test-cases/plugin-tests/
 
 testers:
+  - ./tricot-tests/plugin-tests.yml
   - ./tricot-tests/validator-tests.yml

@@ -1,0 +1,28 @@
+tester:
+  name: copy_verify
+  title: CopyPlugin Verification
+  description: |-
+    'Verify that the cleanup operation of the plugin deleted all previously
+    created files.'
+
+plugins:
+  - cleanup:
+      force: true
+      items:
+        - ${dir1}
+        - ${dir2}
+
+tests:
+  - title: Verify Dirs - Success
+    description: >
+      'Verify cleanup'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          invert:
+            - ${dir2}/${dir1}
+      - file_exists:
+          invert:
+            - ${dir1}/${file1}
+            - ${dir1}/${file2}

@@ -15,7 +15,7 @@ tests:
       - ${VAL}/ContainsValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -38,7 +38,7 @@ tests:
       - ${VAL}/CountValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -61,7 +61,7 @@ tests:
       - ${VAL}/DirectoryExistsValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -84,7 +84,7 @@ tests:
       - ${VAL}/ErrorValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -107,7 +107,7 @@ tests:
       - ${VAL}/FileContainsValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -129,7 +129,7 @@ tests:
       - ${VAL}/FileExistsValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -151,7 +151,7 @@ tests:
       - ${VAL}/MatchValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -173,7 +173,7 @@ tests:
       - ${VAL}/RuntimeValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -195,7 +195,7 @@ tests:
       - ${VAL}/StatusCodeValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success
@@ -217,7 +217,7 @@ tests:
       - ${VAL}/RegexValidator.yml
 
     validators:
-      - error: False
+      - status: 12
       - count:
           values:
             - Success... success

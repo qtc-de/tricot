@@ -1,0 +1,17 @@
+tester:
+  name: mkdir_verify
+  title: MkdirPlugin Verification
+  description: |-
+    'Verifies that the plugin successfully cleans up created directories'
+
+tests:
+  - title: Verify Dirs - Success
+    description: >
+      'Verify that previously created test directories do no longer exist'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          invert:
+            - ${dir1}
+            - ${dir2}

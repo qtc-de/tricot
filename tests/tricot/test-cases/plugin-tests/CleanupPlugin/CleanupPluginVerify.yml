@@ -1,0 +1,22 @@
+tester:
+  name: cleanup_verify
+  title: CleanupPlugin Verification
+  description: |-
+    'Checks whether the cleanup plugin worked and all desired ressources
+    have been cleaned up.'
+
+
+tests:
+  - title: Verify Cleanup - Success
+    description: >
+      'Verify that ressources have been cleaned up'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          invert:
+            - ${dir1}
+            - ${dir2}
+      - file_exists:
+          invert:
+            - ${file}

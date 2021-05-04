@@ -1,0 +1,46 @@
+tester:
+  name: http_listener
+  title: HttpListenerPlugin Tests
+  description: |-
+    'Tests the correct functionality of the HttpListenerPlugin'
+
+variables:
+  src: /etc/passwd
+  www: test-dir-1
+  dst: passwd
+
+plugins:
+  - mkdir:
+      dirs:
+        - ${www}
+  - copy:
+      from:
+        - ${src}
+      to:
+        - ${www}
+  - cleanup:
+      force: true
+      items:
+        - ${www}
+        - ${www}/${dst}
+  - http_listener:
+      port: 8000
+      dir: ${www}
+
+
+tests:
+  - title: Verify HTTP - Success
+    description: >
+      'Verify that the HTTP server is running and serves the correct file'
+    command:
+      - curl
+      - http://127.0.0.1:8000/passwd
+    validators:
+      - contains:
+          values:
+            - root
+            - daemon
+            - bin
+      - regex:
+          match:
+            - '^root:x:'

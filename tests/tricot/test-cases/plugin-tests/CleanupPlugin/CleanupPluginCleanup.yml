@@ -1,0 +1,42 @@
+tester:
+  name: cleanup_cleanup
+  title: CleanupPlugin Tests
+  description: |-
+    "Performs tests on the CleanupPlugin. To check for correct funcitonality, it
+    is required to run a second test and verify that the desired directories have
+    been cleaned up."
+
+plugins:
+  - mkdir:
+      dirs:
+        - ${dir1}
+        - ${dir2}
+  - copy:
+      from:
+        - /etc/passwd
+        - /etc/passwd
+      to:
+        - ${dir2}/${file}
+        - ${file}
+  - cleanup:
+      force: True
+      items:
+        - ${file}
+        - ${dir1}
+        - ${dir2}
+        
+tests:
+  - title: Verify Dirs - Success
+    description: >
+      'Verify that ressources existed during the test run'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - ${dir1}
+            - ${dir2}
+      - file_exists:
+          files:
+            - ${file}
+            - ${dir2}/${file}
