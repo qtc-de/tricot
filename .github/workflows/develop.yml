@@ -49,3 +49,7 @@ jobs:
     - name: Test with pytest
       run: |
         pytest tests/pytest
+
+    - name: Test with tricot
+      run: |
+        tricot tests/tricot/tricot.yml
