@@ -1,5 +1,5 @@
 tester:
-  name: plug-tests
+  name: plugin
   title: Plugin Tests
   description: |-
     "Performs tests on all tricot plugins"

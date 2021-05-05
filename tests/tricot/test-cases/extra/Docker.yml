@@ -1,0 +1,56 @@
+tester:
+  name: docker
+  title: Docker Tests
+  description: |-
+    'Checks whether the docker integration is working'
+
+
+variables:
+  volume: local-volume
+
+
+containers:
+  - name: 'nginx'
+    image: 'nginx:alpine'
+    volumes:
+      - './${volume}:/usr/share/nginx/html:ro'
+      - './Docker/templates:/etc/nginx/templates:ro'
+    aliases:
+      DOCKER-nginx-IP: DOCKER-IP
+    env:
+      NGINX_PORT: '8000'
+
+
+plugins:
+  - mkdir:
+      cleanup: true
+      force: true
+      dirs:
+        - ${volume}
+  - copy:
+      from:
+        - /etc/passwd
+      to:
+        - ${volume}
+
+
+tests:
+  - title: Verify HTTP - Success
+    description: >
+      'Verify that the HTTP server is running and serves the correct file'
+    command:
+      - curl
+      - http://${DOCKER-IP}:8000/passwd
+    validators:
+      - contains:
+          values:
+            - root
+            - daemon
+            - bin
+      - regex:
+          match:
+            - '^root:x:'
+
+
+testers:
+  - Docker/Docker.yml

@@ -1,5 +1,5 @@
 tester:
-  name: val-tests
+  name: validator
   title: Validator Tests
   description: |-
     "Performs tests on all tricot validators"
