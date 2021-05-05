@@ -1,0 +1,118 @@
+tester:
+  name: regex
+  title: RegexValidator Tests
+  description: |-
+    "Performs tests on the RegexValidator"
+
+tests:
+  - title: Match - Success
+    description: >
+      'Checks that plain regex match works'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          match:
+            - ^root.+sh
+            - nobody.+nologin
+
+  - title: Invert - Success
+    description: >
+      'Checks that invert regex match works'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          invert:
+            - ^rOOt.+sh$
+
+  - title: Match Ignore Case - Success
+    description: >
+      'Checks that plain regex match with ignore case works'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          ignore_case: True
+          match:
+            - ^rOOt.+sh
+            - nObOdy.+nologin
+
+  - title: Match Multiline - Success
+    description: >
+      'Checks that plain regex match with MULTILINE option works'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          ignore_case: True
+          multiline: True
+          match:
+            - ^rOOt.+sh$
+            - ^nObOdy.+nologin$
+
+  - title: Match Dotall - Success
+    description: >
+      'Checks that plain regex match with DOTALL option works'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          ignore_case: True
+          dotall: True
+          match:
+            - ^rOOt.+sh.daemon
+
+  - title: Invert - Fail
+    description: >
+      'Checks that invert regex match works'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          ignore_case: True
+          invert:
+            - ^rOOt.+sh
+
+  - title: Match Ignore Case Missing - Fail
+    description: >
+      'Checks that plain regex match with missing ignore case leads to an error'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          match:
+            - ^rOOt.+sh
+            - nObOdy.+nologin
+
+  - title: Match Multiline Missing - Fail
+    description: >
+      'Checks that plain regex match with missing MULTINLINE leads to an error'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          ignore_case: True
+          match:
+            - ^rOOt.+sh$
+            - ^nObOdy.+nologin$
+
+  - title: Match Dotall Missing - Fail
+    description: >
+      'Checks that plain regex match with missing DOTALL leads to an error'
+    command:
+      - cat
+      - /etc/passwd
+    validators:
+      - regex:
+          ignore_case: True
+          match:
+            - ^rOOt.+sh.daemon

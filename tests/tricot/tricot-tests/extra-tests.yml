@@ -1,0 +1,53 @@
+tester:
+  name: extra
+  title: Extra Tests
+  description: |-
+    'Perfors some additional tests on tricot, not related to plugins
+    or validators.'
+
+
+tests:
+  - title: Docker
+    description: |-
+      'Test tricots docker integration'
+
+    command:
+      - tricot
+      - ${EXTRA}/Docker.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: Env
+    description: |-
+      'Test tricots environment integration'
+
+    command:
+      - tricot
+      - ${EXTRA}/Env.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 9
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+

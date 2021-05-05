@@ -77,11 +77,14 @@ class PluginException(Exception):
     PluginExceptions are raised by plugins when they throw any other kind of exception.
     They contain the original exception as parameter.
     '''
-    def __init__(self, exception: Exception) -> None:
+    def __init__(self, exception: Exception, name: str, path: Path) -> None:
         '''
         Custom exception class that stores the original exception within a variable.
         '''
         self.original = exception
+        self.name = name
+        self.path = path
+
         super().__init__('PluginException')
 
 
@@ -260,7 +263,7 @@ class Plugin:
             self.run()
 
         except Exception as e:
-            raise PluginException(e)
+            raise PluginException(e, self.name, self.path)
 
     def run(self) -> None:
         '''
@@ -292,7 +295,7 @@ class Plugin:
             self.stopped = True
 
         except Exception as e:
-            raise PluginException(e)
+            raise PluginException(e, self.name, self.path)
 
     def stop(self) -> None:
         '''
@@ -312,7 +315,7 @@ class Plugin:
             resolved    Resolved file system path
         '''
         if os.path.isabs(path):
-            return path
+            return Path(path)
 
         return self.path.parent.joinpath(path)
 
@@ -471,12 +474,9 @@ class HttpListenerPlugin(Plugin):
 
     def __init__(self, *args, **kwargs) -> None:
         '''
-        Make sure that directory exists and port is valid before running the server.
+        Make sure that the specified port is valid before running the server.
         '''
         super().__init__(*args, **kwargs)
-
-        if not os.path.isdir(self.param['dir']):
-            raise PluginError(self.path, f"Specified directory '{self.param['dir']}' does not exist.")
 
         if self.param['port'] <= 0 or self.param['port'] > 65535:
             raise PluginError(self.path, f"Specified port '{self.param['port']}' is invalid. Needs to be between 0-65535.")
@@ -504,6 +504,8 @@ class HttpListenerPlugin(Plugin):
             return
 
         directory = self.resolve_path(directory)
+        if not directory.is_dir():
+            raise FileNotFoundError(f"Specified directory '{directory.absolute()}' does not exist.")
 
         self.thread = threading.Thread(name=f'http-{port}', target=self.start_server, args=(port, directory))
         self.thread.setDaemon(True)
@@ -589,7 +591,84 @@ class CleanupPlugin(Plugin):
                 continue
 
 
+class CopyPlugin(Plugin):
+    '''
+    The CopyPlugin can be used to copy files before a test runs. It also offers a cleanup
+    action to remove copied files after the test.
+
+    Example:
+
+        plugins:
+            - copy:
+                cleanup: True
+                recursive: False
+                from:
+                    - /tmp/from-here
+                to:
+                    - /opt/to-there
+    '''
+    param_type = dict
+    inner_types = {
+                    'cleanup': {'required': False, 'type': bool},
+                    'from': {'required': True, 'type': list},
+                    'to': {'required': True, 'type': list}
+                  }
+
+    blacklist = ['/', '/home', '/opt', '/var']
+
+    def run(self) -> None:
+        '''
+        Copy the specified files into the target location.
+        '''
+        self.cleanup = []
+
+        dest = self.param.get('to', [])
+        files = self.param.get('from', [])
+
+        if len(dest) != len(files):
+            raise ValueError("The 'from' and 'to' parameters need to be equally sized lists.")
+
+        for ctr in range(len(files)):
+
+            src_path = self.resolve_path(files[ctr])
+            dest_path = self.resolve_path(dest[ctr])
+
+            if src_path.is_file():
+                created = shutil.copy(src_path, dest_path)
+                self.cleanup.append(Path(created))
+
+            elif src_path.is_dir():
+
+                if dest_path.is_dir():
+                    dest_path = dest_path.joinpath(src_path.name)
+
+                created = shutil.copytree(src_path, dest_path)
+                self.cleanup.append(Path(created))
+
+    def stop(self) -> None:
+        '''
+        Removed copied files if desired.
+        '''
+        if not self.param.get('cleanup', False):
+            return
+
+        for item in self.cleanup:
+
+            if not item.exists():
+                continue
+
+            elif item.absolute() in CopyPlugin.blacklist:
+                raise ValueError("Plugin attempted to remove the blacklisted ressource '{item}'.")
+
+            elif item.is_file():
+                item.unlink()
+
+            elif item.is_dir():
+                shutil.rmtree(str(item.absolute()))
+
+
 register_plugin("os_command", OsCommandPlugin)
 register_plugin("mkdir", MkdirPlugin)
 register_plugin("http_listener", HttpListenerPlugin)
 register_plugin("cleanup", CleanupPlugin)
+register_plugin("copy", CopyPlugin)

@@ -4,6 +4,7 @@ import time
 import docker
 import atexit
 from typing import Any
+from pathlib import Path
 
 import tricot
 
@@ -118,7 +119,7 @@ class TricotContainer:
 
         return variables
 
-    def from_list(input_list: list, variables: dict[str, Any]) -> list[TricotContainer]:
+    def from_list(input_list: list, path: Path, variables: dict[str, Any]) -> list[TricotContainer]:
         '''
         Returns a list of TricotContainer that were created according to the input list.
         The input list is expected to be the result read in from the containers section
@@ -126,6 +127,7 @@ class TricotContainer:
 
         Parameters:
             input_list      Input list containing container specifications
+            path            Path object to the yaml file where the container was defined in
             variables       Variables to apply.
 
         Returns:
@@ -143,7 +145,17 @@ class TricotContainer:
 
                 for volume in volumes:
                     split = volume.split(':')
-                    volume_dict[split[0]] = {'bind': split[1], 'mode': 'rw'}
+
+                    if '/' in split[0]:
+                        p = Path(split[0])
+
+                        if not p.is_absolute():
+                            p = path.parent.joinpath(p).absolute()
+
+                    if len(split) < 3:
+                        split[2] = 'rw'
+
+                    volume_dict[str(p)] = {'bind': split[1], 'mode': split[2]}
 
                 name = tricot.utils.apply_variables(item['name'])
                 image = tricot.utils.apply_variables(item['image'])

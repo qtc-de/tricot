@@ -1,0 +1,40 @@
+tester:
+  name: status
+  title: StatusCodeValidator Tests
+  description: |-
+    "Performs tests on the StatusCodeValidator"
+
+tests:
+  - title: 0 - Success
+    description: >
+      'Status code is zero - Expected is zero'
+    command:
+      - whoami
+    validators:
+      - status: 0
+
+  - title: 0 - Fail
+    description: >
+      'Status code is zero - Expected is one'
+    command:
+      - whoami
+    validators:
+      - status: 1
+
+  - title: 2 - Fail
+    description: >
+      'Status code is two - Expected is zero'
+    command:
+      - ls
+      - /hundekuchen
+    validators:
+      - status: 0
+
+  - title: 0 - Success
+    description: >
+      'Status code is two - Expected is two'
+    command:
+      - ls
+      - /hundekuchen
+    validators:
+      - status: 2

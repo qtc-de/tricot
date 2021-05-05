@@ -46,7 +46,7 @@ class Command:
 
         self.command = command
 
-    def run(self, path: Path, timeout: int, hotplug_variables: dict[str, Any] = None):
+    def run(self, path: Path, timeout: int, hotplug_variables: dict[str, Any] = None, env: dict = {}):
         '''
         Just a wrapper around the actual command execution function. It is basically used
         to reduce the complexity of the run function and to handle the special case of
@@ -57,6 +57,7 @@ class Command:
             path                File system path where the command is run in
             timeout             Timeout to use during command execution
             hotplug_variables   Variables that are applied at runtime.
+            env                 Environment variables
 
         Returns:
             None
@@ -66,7 +67,7 @@ class Command:
 
             try:
                 self.path = path
-                timer = timeit.Timer(lambda: self._run(path, timeout))
+                timer = timeit.Timer(lambda: self._run(path, timeout, env))
                 self.runtime = timer.timeit(number=1)
 
             except Exception as e:
@@ -87,7 +88,7 @@ class Command:
                 tricot.Logger.print_plain_red("error.")
                 raise tricot.TricotException("Special '${prev}' variable was used, but no previous output exists.")
 
-    def _run(self, path: Path, timeout: int) -> None:
+    def _run(self, path: Path, timeout: int, env: dict = {}) -> None:
         '''
         Performs the actual command execution via subprocess.Popen. All relevant outputs and
         status codes are saved within of object attributes.
@@ -95,12 +96,15 @@ class Command:
         Parameters:
             path                File system path where the command is run in
             timeout             Timeout to use during command execution
+            env                 Environment variables
 
         Returns:
             cmd_output      Command output in the form [status_code, stdout & stderr]
         '''
+        envi = tricot.utils.merge_default_environment(env)
+
         try:
-            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path)
+            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path, env=envi)
             self.stdout, self.stderr = process.communicate(timeout=timeout)
             self.status = process.returncode
 

@@ -98,10 +98,10 @@ class Test:
     specified variables and the required validators. During a test, Test objects are
     evaluated by executing their 'run' method.
     '''
-    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout']
+    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env']
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: list,
-                 timeout: int, validators: list[Validator]) -> None:
+                 timeout: int, validators: list[Validator], env: dict) -> None:
         '''
         Initializer for a Test object.
 
@@ -113,6 +113,7 @@ class Test:
             command         The command that is run by this test
             timeout         Timeout in seconds to wait for the specified command
             validators      List of validators to apply on the command output
+            env             Environment variables
 
         Returns:
             None
@@ -124,6 +125,7 @@ class Test:
         self.command = Command(command)
         self.timeout = timeout
         self.validators = validators
+        self.env = env
 
     def apply_variables(val: Union(str, list), variables: dict[str, Any], k: str = 'command') -> list:
         '''
@@ -145,8 +147,8 @@ class Test:
 
         for key, value in variables.items():
 
-            key = '${'+key+'}'
             value = tricot.utils.resolve_runtime_variables(variables, key, value)
+            key = '${'+str(key)+'}'
 
             if type(val) is str:
                 if val == key and type(value) is list:
@@ -168,7 +170,8 @@ class Test:
 
         return val
 
-    def from_dict(path: Path, input_dict: dict, variables: dict[str, Any] = {}, error_mode: str = 'continue') -> Test:
+    def from_dict(path: Path, input_dict: dict, variables: dict[str, Any] = {},
+                  error_mode: str = 'continue', environment: dict = {}) -> Test:
         '''
         Creates a Test object from a dictionary. The dictionary is expected to be the content
         read in of a .yml file and needs all keys that are required for a test (validators,
@@ -179,6 +182,7 @@ class Test:
             input_dict      Dictionary that defines all required information for a test
             variables       Variables that should be inherited from the global scope
             error_mode      Decides whether to break or continue on failure
+            environment     Environment variables
 
         Returns:
             Test            Newly generated Test object
@@ -189,6 +193,7 @@ class Test:
             validators = Validator.from_list(path, j['validators'], var)
 
             e_mode = j.get('error_mode') or error_mode
+            env = tricot.utils.merge_environment(j.get('env'), environment, path)
 
             command = Test.apply_variables(j['command'], var)
             arguments = Test.apply_variables(j.get('arguments'), var, 'arguments')
@@ -204,7 +209,7 @@ class Test:
                 command += arguments
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
-            return Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators)
+            return Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, env)
 
         except KeyError as e:
             raise TestKeyError(str(e), path)
@@ -212,7 +217,8 @@ class Test:
         except ValueError as e:
             raise TestKeyError(None, path, str(e))
 
-    def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue') -> list[Test]:
+    def from_list(path: Path, input_list: list, variables: dict[str, Any] = {},
+                  error_mode: str = 'continue', env: dict = {}) -> list[Test]:
         '''
         Within .yml files, Tests are specified in form of a list. This function takes such a list,
         that contains each single test definition as another dictionary (like it is created when
@@ -223,6 +229,7 @@ class Test:
             input_list      List of test definitions as read in from a .yml file
             variables       Variables that should be inherited from the global scope
             error_mode      Decides whether to break or continue on failure
+            env             Environment variables
 
         Returns
             list[Test]      List of Test objects created from the .yml input
@@ -235,7 +242,7 @@ class Test:
         for ctr in range(len(input_list)):
 
             try:
-                test = Test.from_dict(path, input_list[ctr], variables, error_mode)
+                test = Test.from_dict(path, input_list[ctr], variables, error_mode, env)
                 tests.append(test)
 
             except TestKeyError as e:
@@ -262,7 +269,7 @@ class Test:
         Logger.print_blue(f'{prefix} {self.title}...', end=' ', flush=True)
         success = True
 
-        self.command.run(self.path.parent, self.timeout, hotplug_variables)
+        self.command.run(self.path.parent, self.timeout, hotplug_variables, self.env)
 
         for validator in self.validators:
 
@@ -274,6 +281,7 @@ class Test:
                 if success:
                     Logger.print_plain_red("failed.")
 
+                tricot.constants.LAST_ERROR = tricot.constants.VALIDATION_EXCEPTION
                 Logger.handle_error(e, validator)
 
                 if self.error_mode == "break":
@@ -285,6 +293,7 @@ class Test:
 
         if success:
             Logger.print_plain_green("success.")
+            Logger.handle_success(self.command, self.validators)
 
         hotplug_variables['$prev'] = self.command
         Logger.decrease_indent()
@@ -325,7 +334,7 @@ class Tester:
         self.error_mode = error_mode
 
     def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
-                  path: Path = None, e_mode: str = None) -> Tester:
+                  path: Path = None, e_mode: str = None, environment: dict = {}) -> Tester:
         '''
         Creates a new Tester object from a python dictionary. The dictionary is expected to be
         created by reading a .yml file that contains test defintions. It requires all keys that
@@ -338,6 +347,7 @@ class Tester:
             runtime_vars    Runtime variables (only specifiable when using tricot as library)
             path            Path object to the testers configuration file
             e_mode          Error mode that was mayve inherited by the parent tester
+            environment     Dictionary of environment variables to use within the test
 
         Returns:
             Tester          Tester object created from the dictionary
@@ -346,6 +356,7 @@ class Tester:
             g = input_dict
             t = input_dict['tester']
 
+            env = tricot.utils.merge_environment(t.get('env'), environment, path)
             error_mode = t.get('error_mode') or e_mode
             testers = g.get('testers')
             definitions = g.get('tests')
@@ -355,7 +366,7 @@ class Tester:
             variables['cwd'] = path.parent
 
             plugins = Plugin.from_list(path, g.get('plugins'), variables)
-            containers = TricotContainer.from_list(g.get('containers', list()), variables)
+            containers = TricotContainer.from_list(g.get('containers', list()), path, variables)
 
             if runtime_vars is not None:
                 variables['$runtime'] = runtime_vars
@@ -369,12 +380,12 @@ class Tester:
                         f = path.parent.joinpath(f)
 
                     for ff in glob.glob(str(f)):
-                        tester = Tester.from_file(ff, variables, runtime_vars, error_mode)
+                        tester = Tester.from_file(ff, variables, runtime_vars, error_mode, env)
                         tester_list.append(tester)
 
             tests = None
             if definitions and type(definitions) is list:
-                tests = Test.from_list(path, definitions, variables, error_mode)
+                tests = Test.from_list(path, definitions, variables, error_mode, env)
 
             elif not tester_list:
                 raise TesterKeyError('tests', path, optional='testers')
@@ -385,7 +396,7 @@ class Tester:
             raise TesterKeyError(str(e), path)
 
     def from_file(filename: str, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
-                  error_mode: str = None) -> Tester:
+                  error_mode: str = None, env: dict = {}) -> Tester:
         '''
         Creates a new Tester object from a .yml file. The .yml file obviously needs to be in the
         expected format and requires all keys that are needed to construct a Tester object.
@@ -394,6 +405,8 @@ class Tester:
             filename        File system path to the corresponding .yml file
             initial_vars    Additional variables. This is used internally when nesting Testers
             runtime_vars    Runtime variables (only specifiable when using tricot as library)
+            error_mode      Current error mode setting
+            env             Current environment variables
 
         Returns:
             Tester          Tester object created from the file
@@ -401,7 +414,7 @@ class Tester:
         with open(filename, 'r') as f:
             config_dict = yaml.safe_load(f.read())
 
-        return Tester.from_dict(config_dict, initial_vars, runtime_vars, Path(filename), error_mode)
+        return Tester.from_dict(config_dict, initial_vars, runtime_vars, Path(filename), error_mode, env)
 
     def contains_testers(self, testers: list[str]) -> bool:
         '''
@@ -428,20 +441,22 @@ class Tester:
 
         return False
 
-    def run(self, testers: list[str] = (), numbers: list[str] = (), hotplug_variables: dict[str, Any] = {}) -> None:
+    def run(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] = (),
+            hotplug_variables: dict[str, Any] = {}) -> None:
         '''
         Runs the test: Prints the title of the tester and iterates over all contained
         Test objects and calls their 'run' method.
 
         Parameters:
-            tester              Can be specified to only run tests within the specified testers
-            numbers             Can be specified to only run the specified test numbers
+            tester              Only run testers that match the specified names
+            numbers             Only run tests that match the specified numbers
+            exclude             Exclude the specified tester names
             hotplug_variables   Dictionary of variables that are applied at runtime.
 
         Returns:
             None
         '''
-        if not self.contains_testers(testers):
+        if not self.contains_testers(testers) or self.name in exclude:
             return
 
         Tester.increase()
@@ -450,12 +465,12 @@ class Tester:
 
         Logger.increase_indent()
 
+        for plugin in self.plugins:
+            plugin._run(hotplug)
+
         for container in self.containers:
             container.start_container()
             hotplug = {**hotplug, **container.get_container_variables()}
-
-        for plugin in self.plugins:
-            plugin._run(hotplug)
 
         if self.tests and (len(testers) == 0 or self.name in testers):
             Logger.print('')
@@ -463,7 +478,7 @@ class Tester:
                 if len(numbers) == 0 or str(ctr+1) in numbers:
                     self.tests[ctr].run(f'{ctr+1}.', hotplug)
 
-        self.run_childs(testers, numbers, hotplug)
+        self.run_childs(testers, numbers, exclude, hotplug)
 
         for container in self.containers:
             container.stop_container()
@@ -473,13 +488,15 @@ class Tester:
 
         Logger.decrease_indent()
 
-    def run_childs(self, testers: list[str] = (), numbers: list[str] = (), hotplug_variables: dict[str, Any] = {}) -> None:
+    def run_childs(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] = (),
+                   hotplug_variables: dict[str, Any] = {}) -> None:
         '''
         Runs the child testers of the current tester.
 
         Parameters:
-            tester              Can be specified to only run tests within the specified testers
-            numbers             Can be specified to only run the specified test numbers
+            tester              Only run testers that match the specified names
+            numbers             Only run tests that match the specified numbers
+            exclude             Exclude the specified tester names
             hotplug_variables   Dictionary of variables that are applied at runtime.
 
         Returns:
@@ -489,10 +506,10 @@ class Tester:
             try:
 
                 if self.name in testers:
-                    tester.run(numbers=numbers, hotplug_variables=hotplug_variables)
+                    tester.run(numbers=numbers, exluce=exclude, hotplug_variables=hotplug_variables)
 
                 else:
-                    tester.run(testers, numbers, hotplug_variables)
+                    tester.run(testers, numbers, exclude, hotplug_variables)
 
             except tricot.PluginException as e:
 
@@ -502,9 +519,13 @@ class Tester:
                     raise e
 
                 else:
-                    tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'during plugin execution.', e=True)
+                    tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'from', end='', e=True)
+                    tricot.Logger.print_mixed_blue_plain('', e.name, 'plugin in', end=' ')
+                    tricot.Logger.print_yellow_plain(e.path.absolute())
                     tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
                     tricot.Logger.print_blue('Tester is skipped.', e=True)
+
+                    tricot.constants.LAST_ERROR = tricot.constants.PLUGIN_EXCEPTION
 
     def increase() -> None:
         '''

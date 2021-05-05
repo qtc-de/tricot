@@ -1,0 +1,42 @@
+tester:
+  name: copy
+  title: CopyPlugin Tests
+  description: |-
+    'Tests the correct functionality of the CopyPlugin'
+
+
+plugins:
+  - mkdir:
+      dirs:
+        - ${dir1}
+        - ${dir2}
+  - copy:
+      from:
+        - /etc/${file1}
+        - /etc/${file1}
+        - ${dir1}
+      to:
+        - ${dir1}
+        - ${dir1}/${file2}
+        - ${dir2}
+      cleanup: true
+
+
+tests:
+  - title: Verify Dirs - Success
+    description: >
+      'Verify that ressources were copied and exist during the run'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - ${dir1}
+            - ${dir2}
+            - ${dir2}/${dir1}
+      - file_exists:
+          files:
+            - ${dir1}/${file1}
+            - ${dir1}/${file2}
+            - ${dir2}/${dir1}/${file1}
+            - ${dir2}/${dir1}/${file2}

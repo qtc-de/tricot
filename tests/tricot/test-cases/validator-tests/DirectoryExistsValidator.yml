@@ -1,0 +1,107 @@
+tester:
+  name: dir_exists
+  title: DirectoryExistsValidator Tests
+  description: |-
+    "Performs tests on the DirectoryExistsValidator"
+
+
+variables:
+  file: test-file
+  dir1: /tmp/test-dir-1
+  dir2: /tmp/test-dir-2
+
+plugins:
+  - mkdir:
+      dirs:
+        - ${dir1}
+        - ${dir2}
+  - copy:
+      from:
+        - /etc/passwd
+      to:
+        - ${dir2}/${file}
+    
+      
+
+tests:
+  - title: Plain Run - Success
+    description: >
+      'Checks whether general operation is working'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - /
+            - /etc
+
+  - title: Variables - Success
+    description: >
+      'Checks whether general operation is working with variables'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - ${dir1}
+            - ${dir2}
+
+  - title: Cleanup - Success
+    description: >
+      'Checks whether cleanup operation is working. Cleanup is verified in the next test'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - ${dir1}
+            - ${dir2}
+          cleanup: True
+
+  - title: Cleanup Verify - Success
+    description: >
+      'Checks whether cleanup operation is working. Only dir1 is cleaned, as dir2 contains
+      files. Also start forced cleanup with this one to clear dir2.'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - ${dir2}
+          invert:
+            - ${dir1}
+          cleanup: True
+          force: True
+
+  - title: Cleanup Verify Fored - Success
+    description: >
+      'Verify that the forced cleaup worked as expected'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          invert:
+            - ${dir1}
+            - ${dir2}
+
+  - title: Non Existent - Fail
+    description: >
+      'Verify that non existing dirs lead to an error'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - /here
+            - /there
+
+  - title: Invert Existent - Fail
+    description: >
+      'Verify that existing dirs in an invert lead to an error'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          invert:
+            - /
+            - /etc

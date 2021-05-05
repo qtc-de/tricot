@@ -1,0 +1,16 @@
+tester:
+  name: mkdir
+  title: MkdirPlugin Launcher
+  description: |-
+    "The MkdirPlugin needs to be tested in mutliple steps to verify
+    that it's cleanup operation is working correctly. This tester
+    launches these tests"
+
+variables:
+  file: /etc/passwd
+  dir1: test-dir-1
+  dir2: test-dir-2
+
+testers:
+  - MkdirPlugin/MkdirPlugin.yml
+  - MkdirPlugin/MkdirPluginVerify.yml

@@ -1,9 +1,10 @@
-from .tricot import *
-from .logging import *
-from .validation import *
+from .command import *
+from .constants import *
 from .docker import *
+from .logging import *
 from .plugin import *
 from .template import *
-from .command import *
+from .tricot import *
+from .validation import *
 
 name = 'tricot'

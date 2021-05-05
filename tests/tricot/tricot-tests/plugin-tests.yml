@@ -1,0 +1,117 @@
+tester:
+  name: plugin
+  title: Plugin Tests
+  description: |-
+    "Performs tests on all tricot plugins"
+
+
+tests:
+  - title: CleanupPlugin
+    description: |-
+      'Starts the test cases for the CleanupPlugin'
+
+    command:
+      - tricot
+      - ${PLUG}/CleanupPlugin.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: CopyPlugin
+    description: |-
+      'Starts the test cases for the CopyPlugin'
+
+    command:
+      - tricot
+      - ${PLUG}/CopyPlugin.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: HttpListenerPlugin
+    description: |-
+      'Starts the test cases for the HttpListenerPlugin'
+
+    command:
+      - tricot
+      - ${PLUG}/HttpListenerPlugin.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 1
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: MkdirPlugin
+    description: |-
+      'Starts the test cases for the MkdirPlugin'
+
+    command:
+      - tricot
+      - ${PLUG}/MkdirPlugin.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+  - title: OsCommandPlugin
+    description: |-
+      'Starts the test cases for the OsCommandPlugin'
+
+    command:
+      - tricot
+      - ${PLUG}/OsCommandPlugin.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 1
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed

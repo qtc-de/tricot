@@ -1,0 +1,23 @@
+tester:
+  name: docker_nested
+  title: Docker Nested Test
+  description: |-
+    'Checks whether containers stay alive for nested testers'
+
+
+tests:
+  - title: Verify HTTP - Success
+    description: >
+      'Verify that the HTTP server is running and serves the correct file'
+    command:
+      - curl
+      - http://${DOCKER-IP}:8000/passwd
+    validators:
+      - contains:
+          values:
+            - root
+            - daemon
+            - bin
+      - regex:
+          match:
+            - '^root:x:'

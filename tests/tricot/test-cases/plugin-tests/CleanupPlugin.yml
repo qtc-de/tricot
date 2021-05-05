@@ -1,0 +1,17 @@
+tester:
+  name: cleanup
+  title: CleanupPlugin Scheduler
+  description: |-
+    'Is used as a launcher for the CleanupPlugin test. As the cleanup
+    triggers during test termination, it is only possible to test the
+    plugin using two testers. These two testers are scheduled by this
+    tester.'
+
+variables:
+  file: test-file
+  dir1: /tmp/test-dir-1
+  dir2: /tmp/test-dir-2
+
+testers:
+  - ./CleanupPlugin/CleanupPluginCleanup.yml
+  - ./CleanupPlugin/CleanupPluginVerify.yml

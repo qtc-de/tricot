@@ -1,0 +1,43 @@
+tester:
+  name: error
+  title: ErrorValidator Tests
+  description: |-
+    "Performs tests on the ErrorValidator"
+
+tests:
+  - title: Success Command - Success
+    description: >
+      'Successfully run a command and expect no error'
+    command:
+      - whoami
+    validators:
+      - error: False
+
+
+  - title: Success Command - Fail
+    description: >
+      'Successfully run a command and expect error'
+    command:
+      - whoami
+    validators:
+      - error: True
+
+
+  - title: Fail Command - Success
+    description: >
+      'Run a command with error and expect an error'
+    command:
+      - ls
+      - /hundekuchen
+    validators:
+      - error: True
+
+
+  - title: Fail Command - Fail
+    description: >
+      'Run a command with error and expect no error'
+    command:
+      - ls
+      - /hundekuchen
+    validators:
+      - error: False

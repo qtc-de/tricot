@@ -1,0 +1,16 @@
+tester:
+  name: copy
+  title: CopyPlugin Launcher
+  description: |-
+    'To test the cleanup functionailty of the CopyPlugin, two separate testers are
+    required. These are launched by this tester.'
+
+variables:
+  file1: passwd
+  file2: test-file
+  dir1: test-dir-1
+  dir2: test-dir-2
+
+testers:
+  - CopyPlugin/CopyPlugin.yml
+  - CopyPlugin/CopyPluginVerify.yml

@@ -1,0 +1,109 @@
+tester:
+  name: file_contains
+  title: FileContainsValidator Tests
+  description: |-
+    "Performs tests on the FileContainsValidator"
+
+tests:
+  - title: Values - Success
+    description: >
+      'Checks whether operation with values is handeled correctly'
+    command:
+      - whoami
+    validators:
+      - file_contains:
+        - file: /etc/passwd
+          contains:
+            - root
+            - nobody
+        - file: /etc/passwd
+          contains:
+            - bin
+            - sys
+
+  - title: Invert - Success
+    description: >
+      'Checks whether operation with invert is handeled correctly'
+    command:
+      - whoami
+    validators:
+      - file_contains:
+        - file: /etc/passwd
+          contains:
+            - root
+            - nobody
+          invert:
+            - harry
+            - hirsch
+        - file: /etc/passwd
+          invert:
+            - susi
+            - sorglos
+
+  - title: Values Ignore Case - Success
+    description: >
+      'Checks whether operation with values and ignored case is handeled correctly'
+    command:
+      - whoami
+    validators:
+      - file_contains:
+        - file: /etc/passwd
+          ignore_case: True
+          contains:
+            - rOOt
+            - nObOdy
+        - file: /etc/passwd
+          ignore_case: True
+          contains:
+            - bIn
+            - sYs
+
+  - title: Invert Ignore Case - Fail
+    description: >
+      'Checks whether operation with invert and ignored_case is handeled correctly'
+    command:
+      - whoami
+    validators:
+      - file_contains:
+        - file: /etc/passwd
+          ignore_case: True
+          contains:
+            - root
+            - nobody
+          invert:
+            - rOOt
+
+  - title: File Not Found - Fail
+    description: >
+      'Checks that missing files are handeled correctly'
+    command:
+      - whoami
+    validators:
+      - file_contains:
+        - file: /etc/nope
+          contains:
+            - root
+
+  - title: Missing Value - Fail
+    description: >
+      'Checks whether missing values are handeled correctly'
+    command:
+      - whoami
+    validators:
+      - file_contains:
+        - file: /etc/passwd
+          contains:
+            - rOOt
+            - nObOdy
+
+  - title: Missing Invert - Fail
+    description: >
+      'Checks whether existing inverts are handeled correctly'
+    command:
+      - whoami
+    validators:
+      - file_contains:
+        - file: /etc/passwd
+          invert:
+            - root
+            - nobody

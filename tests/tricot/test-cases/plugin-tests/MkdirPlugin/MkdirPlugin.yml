@@ -1,0 +1,32 @@
+tester:
+  name: mkdir
+  title: MkdirPlugin Tests
+  description: |-
+    'Tests that directories are successfully created by the plugin.'
+
+plugins:
+  - mkdir:
+      cleanup: true
+      force: true
+      dirs:
+        - ${dir1}
+        - ${dir2}
+        - ${dir2}/${dir1}
+  - copy:
+      from:
+        - ${file}
+      to:
+        - ${dir1}
+
+tests:
+  - title: Verify Dirs - Success
+    description: >
+      'Verify that ressources were created and exist during the run'
+    command:
+      - whoami
+    validators:
+      - dir_exists:
+          dirs:
+            - ${dir1}
+            - ${dir2}
+            - ${dir2}/${dir1}

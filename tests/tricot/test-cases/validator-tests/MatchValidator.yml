@@ -1,0 +1,38 @@
+tester:
+  name: match
+  title: MatchValidator Tests
+  description: |-
+    "Performs tests on the MatchValidator"
+
+tests:
+  - title: Value - Success
+    description: >
+      'Checks whether operation with value is handeled correctly'
+    command:
+      - echo
+      - 'Hello World :D'
+    validators:
+      - match:
+          value: 'Hello World :D'
+
+  - title: Ignore Case - Success
+    description: >
+      'Checks whether operation with value is handeled correctly'
+    command:
+      - echo
+      - 'Hello World :D'
+    validators:
+      - match:
+          ignore_case: True
+          value: 'hello world :d'
+
+  - title: Missmatch - Fail
+    description: >
+      'Checks that missmatch causes a fail'
+    command:
+      - echo
+      - 'Hello World :D'
+    validators:
+      - match:
+          ignore_case: False
+          value: 'hello world :d'

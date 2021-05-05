@@ -520,21 +520,20 @@ class RegexValidator(Validator):
         if self.param.get('multiline'):
             flags = flags | re.MULTILINE
 
-        for expr in self.param.get('match', []):
+        last = ''
 
-            try:
+        try:
+
+            for expr in self.param.get('match', []):
+                last = expr
                 self.match.append(re.compile(expr, flags))
 
-            except Exception:
-                raise ValidatorError(self.path, f"Specified regex '{expr}' is invalid!")
-
-        for expr in self.param.get('invert', []):
-
-            try:
+            for expr in self.param.get('invert', []):
+                last = expr
                 self.invert.append(re.compile(expr, flags))
 
-            except Exception:
-                raise ValidatorError(self.path, f"Specified regex '{expr}' is invalid!")
+        except Exception:
+            raise ValidatorError(self.path, f"Specified regex '{last}' is invalid!")
 
     def run(self) -> None:
         '''
@@ -726,7 +725,10 @@ class FileContainsValidator(Validator):
                   contains:
                     - root
                     - bin
+                  invert:
+                    - unexpected
                 - file: /etc/hosts
+                  ignore_case: True
                   contains:
                     - localhost
                     - 127.0.0.1
@@ -742,6 +744,7 @@ class FileContainsValidator(Validator):
 
             invert = check.get('invert', [])
             contains = check.get('contains', [])
+            ignore_case = check.get('ignore_case', False)
 
             file_name = self.resolve_path(check['file'])
             if not os.path.isfile(file_name):
@@ -749,6 +752,11 @@ class FileContainsValidator(Validator):
 
             with open(file_name) as f:
                 content = f.read()
+
+                if ignore_case:
+                    content = content.lower()
+                    contains = list(map(lambda x: x.lower(), contains))
+                    invert = list(map(lambda x: x.lower(), invert))
 
                 for item in contains:
                     if item not in content:

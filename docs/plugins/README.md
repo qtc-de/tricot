@@ -5,6 +5,7 @@
 This document contains a list of plugins that are available per default when using *tricot*.
 
 - [CleanupPlugin](#cleanupplugin)
+- [CopyPlugin](#copyplugin)
 - [HttpListenerPlugin](#httplistenerplugin)
 - [MkdirPlugin](#mkdirplugin)
 - [OsCommandPlugin](#oscommandplugin)
@@ -38,6 +39,42 @@ plugins:
         items:
             - /tmp/test
             - /tmp/test2
+```
+
+
+### CopyPlugin
+
+----
+
+The ``CopyPlugin`` can be used to copy files and directories before a test runs. It also offers a cleanup
+action to remove copied files after the test. File to copy are specified within the ``from`` list and
+their destination is the corresponding index in the ``to`` list.
+
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+                'cleanup': {'required': False, 'type': bool},
+                'from': {'required': True, 'type': list},
+                'to': {'required': True, 'type': list}
+              }
+```
+
+**Example:**
+
+```yaml
+plugins:
+    - copy:
+        cleanup: True
+        recursive: False
+        from:
+            - /tmp/from-here
+            - /tmp/and-here
+        to:
+            - /opt/to-there
+            - /home/user/and-there
 ```
 
 
