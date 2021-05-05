@@ -488,7 +488,7 @@ class Tester:
 
         Logger.decrease_indent()
 
-    def run_childs(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] =(),
+    def run_childs(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] = (),
                    hotplug_variables: dict[str, Any] = {}) -> None:
         '''
         Runs the child testers of the current tester.
