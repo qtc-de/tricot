@@ -366,7 +366,7 @@ class Tester:
             variables['cwd'] = path.parent
 
             plugins = Plugin.from_list(path, g.get('plugins'), variables)
-            containers = TricotContainer.from_list(g.get('containers', list()), variables)
+            containers = TricotContainer.from_list(g.get('containers', list()), path, variables)
 
             if runtime_vars is not None:
                 variables['$runtime'] = runtime_vars
