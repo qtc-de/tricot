@@ -6,6 +6,13 @@ This folder contains some supplementary documentation that would be to long for 
 main [README.md](/README.md) of this project. Don't expect it to be complete or helpful
 on it's own.
 
+- [Validator and Plugin List](#validator-and-plugin-list)
+- [Writing Custom Plugins](#writing-custom-plugins)
+- [Writing Custom Validators](#writing-custom-validators)
+- [Accessing Command Information from an Validator](#accessing-command-information-from-an-validator)
+- [Writing Custom Validators](#writing-custom-validators)
+- [Environment Variables](#environment-variables)
+
 
 ### Validator and Plugin List
 
@@ -213,6 +220,7 @@ key. ``stream`` is expected to be one of ``stdout``, ``stderr`` or ``both`` and 
 by tricot. Dictionary based validators should use the ``self.get_output()`` function to obtain command output, as this
 function returns the command output associated with the user specified stream.
 
+
 ### Parameter Types and their Validation
 
 ----
@@ -252,3 +260,41 @@ plugins:
 
 The parameter validation described above is very basic and has obviously limitations. In future, we probably
 want a parameter validation that is easier to use and has an arbitrary recursion depth.
+
+
+### Environment Variables
+
+----
+
+Environment variables can be specified on the tester level and are added to the current users environment.
+E.g. when using the following tester definition:
+
+```yml
+tester:
+  name: env
+  title: EnvironmentVariables Tests
+  description: |-
+    'Checks whether environment variables are set correctly'
+  env:
+    test: test123
+    test2: Hello World :D
+```
+
+The environment variables ``test=test123`` and ``test2="Hello World :D"`` are added to the current user environment
+while running commands.
+
+Environment variables for docker containers can be specified in the corresponding container section. The following
+example shows an example for the ``nginx`` container:
+
+```yml
+containers:
+  - name: 'nginx'
+    image: 'nginx:alpine'
+    volumes:
+      - './${volume}:/usr/share/nginx/html:ro'
+      - './Docker/templates:/etc/nginx/templates:ro'
+    aliases:
+      DOCKER-nginx-IP: DOCKER-IP
+    env:
+      NGINX_PORT: '8000'
+```
