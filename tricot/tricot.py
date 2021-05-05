@@ -441,20 +441,22 @@ class Tester:
 
         return False
 
-    def run(self, testers: list[str] = (), numbers: list[str] = (), hotplug_variables: dict[str, Any] = {}) -> None:
+    def run(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] = (),
+            hotplug_variables: dict[str, Any] = {}) -> None:
         '''
         Runs the test: Prints the title of the tester and iterates over all contained
         Test objects and calls their 'run' method.
 
         Parameters:
-            tester              Can be specified to only run tests within the specified testers
-            numbers             Can be specified to only run the specified test numbers
+            tester              Only run testers that match the specified names
+            numbers             Only run tests that match the specified numbers
+            exclude             Exclude the specified tester names
             hotplug_variables   Dictionary of variables that are applied at runtime.
 
         Returns:
             None
         '''
-        if not self.contains_testers(testers):
+        if not self.contains_testers(testers) or self.name in exclude:
             return
 
         Tester.increase()
@@ -463,12 +465,12 @@ class Tester:
 
         Logger.increase_indent()
 
+        for plugin in self.plugins:
+            plugin._run(hotplug)
+
         for container in self.containers:
             container.start_container()
             hotplug = {**hotplug, **container.get_container_variables()}
-
-        for plugin in self.plugins:
-            plugin._run(hotplug)
 
         if self.tests and (len(testers) == 0 or self.name in testers):
             Logger.print('')
@@ -476,7 +478,7 @@ class Tester:
                 if len(numbers) == 0 or str(ctr+1) in numbers:
                     self.tests[ctr].run(f'{ctr+1}.', hotplug)
 
-        self.run_childs(testers, numbers, hotplug)
+        self.run_childs(testers, numbers, exclude, hotplug)
 
         for container in self.containers:
             container.stop_container()
@@ -486,13 +488,15 @@ class Tester:
 
         Logger.decrease_indent()
 
-    def run_childs(self, testers: list[str] = (), numbers: list[str] = (), hotplug_variables: dict[str, Any] = {}) -> None:
+    def run_childs(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] =(),
+                   hotplug_variables: dict[str, Any] = {}) -> None:
         '''
         Runs the child testers of the current tester.
 
         Parameters:
-            tester              Can be specified to only run tests within the specified testers
-            numbers             Can be specified to only run the specified test numbers
+            tester              Only run testers that match the specified names
+            numbers             Only run tests that match the specified numbers
+            exclude             Exclude the specified tester names
             hotplug_variables   Dictionary of variables that are applied at runtime.
 
         Returns:
@@ -502,10 +506,10 @@ class Tester:
             try:
 
                 if self.name in testers:
-                    tester.run(numbers=numbers, hotplug_variables=hotplug_variables)
+                    tester.run(numbers=numbers, exluce=exclude, hotplug_variables=hotplug_variables)
 
                 else:
-                    tester.run(testers, numbers, hotplug_variables)
+                    tester.run(testers, numbers, exclude, hotplug_variables)
 
             except tricot.PluginException as e:
 

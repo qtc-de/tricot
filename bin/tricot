@@ -14,18 +14,19 @@ parser = argparse.ArgumentParser(description='''tricot v1.0.0 - a trivial comman
                                                 commands or executables behave as expected. It uses .yml files for test
                                                 definitions and can be used from the command line or as a python library.''')
 
-parser.add_argument('file', metavar='file', nargs='+', help='file system path to a .yml file')
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='enable verbose logging during tests')
-parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
 parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='enable debug output')
+parser.add_argument('-e', '--exclude', metavar='name', nargs='+', default=[], help='exclude the specified testers')
+parser.add_argument('file', metavar='file', nargs='+', help='file system path to a .yml file')
 parser.add_argument('-l', '--logfile', dest='log', type=argparse.FileType('w'), help='enable debug output')
-parser.add_argument('-p', '--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
-parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', default=[], help='runtime variables')
-parser.add_argument('--plugins', dest='plugins', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional plugin files')
-parser.add_argument('--validators', dest='vals', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional validator files')
-parser.add_argument('--testers', dest='testers', metavar='name', nargs='+', default=[], help='only run the specified testers')
-parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator'], help='write a template file')
 parser.add_argument('--numbers', dest='numbers', metavar='int', type=int, nargs='+', default=[], help='only run the specified test numbers')
+parser.add_argument('--plugins', dest='plugins', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional plugin files')
+parser.add_argument('-p', '--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
+parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
+parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator'], help='write a template file')
+parser.add_argument('--testers', dest='testers', metavar='name', nargs='+', default=[], help='only run the specified testers')
+parser.add_argument('--validators', dest='vals', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional validator files')
+parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', default=[], help='runtime variables')
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='enable verbose logging during tests')
 
 
 def split_variable(var: str, variables: dict) -> None:
@@ -156,7 +157,7 @@ def main():
 
         try:
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
-            tester.run(args.testers, args.numbers)
+            tester.run(args.testers, args.numbers, args.exclude)
 
         except tricot.ValidatorError as e:
             tricot.Logger.print_mixed_red('Caught', 'ValidatorError', 'while parsing test configuration.', e=True)
