@@ -12,6 +12,8 @@ on it's own.
 - [Accessing Command Information from an Validator](#accessing-command-information-from-an-validator)
 - [Writing Custom Validators](#writing-custom-validators)
 - [Environment Variables](#environment-variables)
+- [Runtime Variables](#runtime-variables)
+- [Additional Command Line Switches](#additional-command-line-switches)
 
 
 ### Validator and Plugin List
@@ -298,3 +300,76 @@ containers:
     env:
       NGINX_PORT: '8000'
 ```
+
+
+### Runtime Variables
+
+----
+
+Wheras ordinary variables are specified as key value pairs within of test definitions, *runtime variables* are
+expected to be passed to *tricot* on the command line or via it's library interface. Nonetheless, it is required
+to declare them in the variable sections of a test in oder to use them. The following tests shows an example:
+
+```yml
+tester:
+  name: example
+  title: example
+  description: |-
+    example
+
+variables:
+  1: $runtime
+  var: $runtime
+
+tests:
+  - title: Positional Test
+    description: |-
+      Positional Test
+
+    command:
+      - echo
+      - ${1}
+      - ${var}
+
+    validators:
+      - contains:
+          values:
+            - Not there
+```
+
+Running this tester in verbose mode leads to the following output:
+
+```console
+[qtc@host ~]$ tricot -v --variables var=test1 --positionals test2 -- bla.yml
+[+] Starting test: mytest
+[+]
+[+]         1. Positional Test... failed.
+[-]             - Caught ValidationException raised by the contains validator.
+[-]               Configuration file: /home/qtc/bla.yml
+[-]
+[-]               Validator run failed because of the following reason:
+[-]               String 'Not there' was not found in command output.
+[-]
+[-]               Command: ['echo', 'test2', 'test1']
+[-]               Command exit code: 0
+[-]               Command stdout:
+[-]                 test2 test1
+[-]
+[-]               Command stderr:
+[-]               Validator parameters:
+[-]                 {
+[-]                     "values": [
+[-]                         "Not there"
+[-]                     ]
+[-]                 }
+```
+
+
+### Additional Command Line Switches
+
+----
+
+Here is some more detailed explanation on some of *tricots* command line switches:
+
+* ``--logfile`` - Mirrors all tricot output into a logfile
+* ``--debug`` - Show details on each tester that runs, even when successful
