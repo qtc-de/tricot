@@ -199,6 +199,14 @@ def main():
             tricot.Logger.print_blue('Stopping test.', e=True)
             sys.exit(tricot.constants.PLUGIN_EXCEPTION)
 
+        except tricot.ConditionFormatException as e:
+            tricot.Logger.print_mixed_yellow('Caught', 'ConditionFormatException', 'while parsing test configuration.', e=True)
+            tricot.Logger.print('Condition instantiation caused the following error:', e=True)
+            tricot.Logger.increase_indent()
+            tricot.Logger.print_blue(str(e), e=True)
+            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+            sys.exit(tricot.constants.CONDITION_FORMAT_ERROR)
+
         except tricot.TricotException as e:
             tricot.Logger.print('Encountered an error during test execution.', e=True)
             tricot.Logger.print_blue(str(e), e=True)

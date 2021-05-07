@@ -217,7 +217,7 @@ This attribute contains the [Command object](/tricot/command.py) that is associa
 The command object contains the default outputs (``stdout`` and ``stderr``) as well as some meta information
 like the status code or the overall runtime.
 
-Each dicitionary based validator (see next section for more details) should add support for the implicit ``stream``
+Each dictionary based validator (see next section for more details) should add support for the implicit ``stream``
 key. ``stream`` is expected to be one of ``stdout``, ``stderr`` or ``both`` and is parsed an validated automatically
 by tricot. Dictionary based validators should use the ``self.get_output()`` function to obtain command output, as this
 function returns the command output associated with the user specified stream.
@@ -306,9 +306,9 @@ containers:
 
 ----
 
-Wheras ordinary variables are specified as key value pairs within of test definitions, *runtime variables* are
+Whereas ordinary variables are specified as key value pairs within of test definitions, *runtime variables* are
 expected to be passed to *tricot* on the command line or via it's library interface. Nonetheless, it is required
-to declare them in the variable sections of a test in oder to use them. The following tests shows an example:
+to declare them in the variable sections of a test in order to use them. The following tests shows an example:
 
 ```yml
 tester:
@@ -365,6 +365,92 @@ Running this tester in verbose mode leads to the following output:
 ```
 
 
+### Reusing Output
+
+----
+
+Sometimes it is not suitable to put all desired validators within a single test. In these cases, you can use
+the ``${prev}`` variable to indicate that you want to reuse the latest command output:
+
+```yml
+tests:
+  - title: Initial Test
+    [...]
+
+  - title: Example Test
+    description: |-
+      'This example test uses the output of the previous test.'
+    command:
+      - '${prev}'
+```
+
+
+### Conditionals
+
+----
+
+Sometimes you may want to run a test or tester only if some other test succeed or failed. This is possible by using conditionals.
+Conditionals can be defined within *testers* and consist out of a name and an initial boolean value. The following *tester*
+shows an example:
+
+```yaml
+tester:
+  name: cond_launcher
+  title: Conditonal Launcher
+  description: |-
+    'Launcher for conditional tests'
+
+  conditionals:
+    Test1: false
+    Test2: false
+    Test3: true
+
+testers:
+  - ./test1.yml
+```
+
+Within subsequent *tests* and *testers*, you can use conditionals like this:
+
+```yaml
+tester:
+  name: cond_test
+  title: Conditionals Test
+  description: |-
+    'Launches some conditional tests and updates some conditions'
+  conditions:
+    one_of:
+      - Test1
+      - Test2
+      - Test3
+
+tests:
+  - title: Example Test
+    description: |-
+      'Only runs if Test1 and Test2 are False and Test3 is True.
+      Updates the conditions after a successful run.'
+    conditions:
+      none_of:
+        - Test1
+        - Test2
+      all:
+        - Test3
+      on_success:
+        Test1: true
+        Test3: false
+      on_error:
+        Test2: true
+        Test3: false
+    command:
+      - echo
+      - "Not relevant"
+    validators:
+      - status: 0
+```
+
+Updating conditions is only allowed within of *tests* and not within *testers*. The ``on_success`` action triggers,
+when all validators have run successfully. The ``on_error`` action triggers, if one or more validators failed.
+
+
 ### Additional Command Line Switches
 
 ----
@@ -372,4 +458,5 @@ Running this tester in verbose mode leads to the following output:
 Here is some more detailed explanation on some of *tricots* command line switches:
 
 * ``--logfile`` - Mirrors all tricot output into a logfile
-* ``--debug`` - Show details on each tester that runs, even when successful
+* ``--debug`` - Show details on each tester that runs, even when successful. Furthermore, disable
+  exception handling and show each exception with full details.
