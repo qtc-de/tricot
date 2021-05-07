@@ -1,0 +1,109 @@
+tester:
+  name: cond_test_3
+  title: Conditionals Test 3
+  description: |-
+    'Launches some conditional tests and updates some conditions'
+
+  conditions:
+    one_of:
+      - Test1
+      - Test2
+      - Test3
+
+tests:
+  - title: Test1 - Success
+    description: |-
+      'Should run as Test3 is True'
+    conditions:
+      all:
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test2 - Success
+    description: |-
+      'Should run as Test1 and Test2 are False'
+    conditions:
+      none_of:
+        - Test1
+        - Test2
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test3 - Success
+    description: |-
+      'Should run as Test3 is True'
+    conditions:
+      one_of:
+        - Test1
+        - Test2
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test4 - Skipped
+    description: |-
+      'Should skip as Test3 is True'
+    conditions:
+      none_of:
+        - Test1
+        - Test2
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test5 - Skipped
+    description: |-
+      'Should skip as Test1 is False'
+    conditions:
+      all:
+        - Test1
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test6 - Skipped
+    description: |-
+      'Should Skip as Test1 and Test2 are False'
+    conditions:
+      one_of:
+        - Test1
+        - Test2
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test7 - Success
+    description: |-
+      'Update conditions - success'
+    conditions:
+      on_success:
+        Test1: true
+        Test3: false
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test8 - Failure
+    description: |-
+      'Update conditions - failure'
+    conditions:
+      on_error:
+        Test2: true
+    command:
+      - ls
+      - /nope
+    validators:
+      - status: 0

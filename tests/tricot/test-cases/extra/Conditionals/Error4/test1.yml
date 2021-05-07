@@ -1,0 +1,17 @@
+tester:
+  name: cond_error_1
+  title: Conditionals Error
+  description: |-
+    'This tester should cause an error, it uses a dict as condition list'
+
+tests:
+  - title: Not Relevant
+    description: |-
+      'Is not executed'
+    command:
+      - ls
+    conditions:
+      all:
+        Test5:
+    validators:
+      - status: 0

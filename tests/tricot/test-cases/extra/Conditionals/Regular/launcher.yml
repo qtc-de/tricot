@@ -1,0 +1,18 @@
+tester:
+  name: conditional_launcher
+  title: Conditonal Launcher
+  description: |-
+    'Launcher for conditional tests'
+
+  conditionals:
+    Test1: False
+    Test2: False
+    Test3: True
+
+testers:
+  - ./test1.yml
+  - ./test2.yml
+  - ./test3.yml
+  - ./test4.yml
+  - ./test5.yml
+  - ./test6.yml

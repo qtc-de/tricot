@@ -1,0 +1,20 @@
+tester:
+  name: cond_test_2
+  title: Conditionals Skipped
+  description: |-
+    'This tester should be skipped as it does not match the required conditionals'
+
+  conditions:
+    none_of:
+      - Test1
+      - Test2
+      - Test3
+
+tests:
+  - title: Not Relevant
+    description: |-
+      'Is not executed'
+    command:
+      - ls
+    validators:
+      - status: 0
