@@ -9,10 +9,10 @@ plugins:
       force: True
       dirs:
         - ./www
-  - os_command:
-      cmd:
-        - cp
+  - copy:
+      from:
         - /etc/passwd
+      to:
         - ./www
   - http_listener:
       port: 8000
