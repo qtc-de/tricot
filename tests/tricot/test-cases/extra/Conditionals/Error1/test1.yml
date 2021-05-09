@@ -1,0 +1,17 @@
+tester:
+  name: cond_error_1
+  title: Conditionals Skipped
+  description: |-
+    'This tester should cause an error as it uses a non defined condition'
+  conditions:
+    all:
+      - Test5
+
+tests:
+  - title: Not Relevant
+    description: |-
+      'Is not executed'
+    command:
+      - ls
+    validators:
+      - status: 0

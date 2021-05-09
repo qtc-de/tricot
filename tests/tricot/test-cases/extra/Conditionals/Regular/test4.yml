@@ -1,0 +1,83 @@
+tester:
+  name: cond_test_4
+  title: Conditionals Test 4
+  description: |-
+    'Launches some conditional tests'
+
+  conditions:
+    none_of:
+      - Test3
+
+tests:
+  - title: Test1 - Skipped
+    description: |-
+      'Should skip as Test3 is False'
+    conditions:
+      all:
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test2 - Skipped
+    description: |-
+      'Should skip as Test1 and Test2 are True'
+    conditions:
+      none_of:
+        - Test1
+        - Test2
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test3 - Success
+    description: |-
+      'Should run as Test1 is True'
+    conditions:
+      one_of:
+        - Test1
+        - Test2
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test4 - Skipped
+    description: |-
+      'Should skip as Test1 is True'
+    conditions:
+      none_of:
+        - Test1
+        - Test2
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test5 - Success
+    description: |-
+      'Should run as Test1 and Test2 are False'
+    conditions:
+      all:
+        - Test1
+        - Test2
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test6 - Success
+    description: |-
+      'Should run as Test1 is True'
+    conditions:
+      one_of:
+        - Test1
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0

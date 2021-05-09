@@ -1,0 +1,14 @@
+tester:
+  name: conditional_launcher
+  title: Conditonal Launcher
+  description: |-
+    'This launcher should cause an error, as it uses wrong
+    condition specifications.'
+
+  conditionals:
+    Test1: Nope
+    Test2: False
+    Test3: True
+
+testers:
+  - ./test1.yml

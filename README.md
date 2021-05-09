@@ -205,18 +205,18 @@ real word examples, you should check the [Projects that use tricot](#projects-th
           force: True
           dirs:
             - ./www
-      - os_command:
-          cmd:
-            - cp
+      - copy:
+          from:
             - /etc/passwd
+          to:
             - ./www
       - http_listener:
           port: 8000
           dir: ./www
 
     testers:
-      - ./curl.yml
-      - ./wget.yml
+      - ./example3/curl.yml
+      - ./example3/wget.yml
     ```
   * ``curl.yml``
     ```yaml
@@ -246,8 +246,12 @@ real word examples, you should check the [Projects that use tricot](#projects-th
     ```yaml
     tester:
       name: WgetTester
-      title: WGet Commands
+      title: Wget Commands
 
+    plugins:
+      - cleanup:
+          items:
+            - ./passwd
     tests:
 
       - title: Test passwd File
@@ -260,16 +264,15 @@ real word examples, you should check the [Projects that use tricot](#projects-th
           - http://127.0.0.1:8000/passwd
         validators:
           - status: 0
+          - file_exists:
+              files:
+                - './passwd'
           - file_contains:
               - file: ./passwd
                 contains:
                   - root
                   - bin
                   - nope
-          - file_exists:
-              cleanup: True
-              files:
-                - './passwd'
       ```
 
 * Output:

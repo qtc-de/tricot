@@ -10,14 +10,14 @@ import tricot
 import argparse
 
 
-parser = argparse.ArgumentParser(description='''tricot v1.0.0 - a trivial command tester that allows you to verify that certain
+parser = argparse.ArgumentParser(description='''tricot v1.1.0 - a trivial command tester that allows you to verify that certain
                                                 commands or executables behave as expected. It uses .yml files for test
                                                 definitions and can be used from the command line or as a python library.''')
 
 parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='enable debug output')
 parser.add_argument('-e', '--exclude', metavar='name', nargs='+', default=[], help='exclude the specified testers')
-parser.add_argument('file', metavar='file', nargs='+', help='file system path to a .yml file')
-parser.add_argument('-l', '--logfile', dest='log', type=argparse.FileType('w'), help='enable debug output')
+parser.add_argument('file', metavar='file', nargs='+', help='test definition (.yml file)')
+parser.add_argument('-l', '--logfile', dest='log', type=argparse.FileType('w'), help='mirror output into a logfile')
 parser.add_argument('--numbers', dest='numbers', metavar='int', type=int, nargs='+', default=[], help='only run the specified test numbers')
 parser.add_argument('--plugins', dest='plugins', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional plugin files')
 parser.add_argument('-p', '--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
@@ -198,6 +198,14 @@ def main():
             tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
             tricot.Logger.print_blue('Stopping test.', e=True)
             sys.exit(tricot.constants.PLUGIN_EXCEPTION)
+
+        except tricot.ConditionFormatException as e:
+            tricot.Logger.print_mixed_yellow('Caught', 'ConditionFormatException', 'while parsing test configuration.', e=True)
+            tricot.Logger.print('Condition instantiation caused the following error:', e=True)
+            tricot.Logger.increase_indent()
+            tricot.Logger.print_blue(str(e), e=True)
+            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+            sys.exit(tricot.constants.CONDITION_FORMAT_ERROR)
 
         except tricot.TricotException as e:
             tricot.Logger.print('Encountered an error during test execution.', e=True)

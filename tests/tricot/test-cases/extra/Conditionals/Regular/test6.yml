@@ -1,0 +1,30 @@
+tester:
+  name: cond_test_6
+  title: Conditionals Test 6
+  description: |-
+    "Test 5 overwrites conditional Test1 and sets it's value to False
+    at the end of the test run. The initial value was True and should
+    be restored for this tester. So we just check whether Test1 is True"
+
+tests:
+  - title: Test1 - Success
+    description: |-
+      'Should run'
+    conditions:
+      all:
+        - Test1
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test2 - Skipped
+    description: |-
+      'Should skip'
+    conditions:
+      none_of:
+        - Test1
+    command:
+      - ls
+    validators:
+      - status: 0

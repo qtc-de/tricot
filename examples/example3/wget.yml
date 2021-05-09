@@ -2,6 +2,10 @@ tester:
   name: WgetTester
   title: Wget Commands
 
+plugins:
+  - cleanup:
+      items:
+        - ./passwd
 tests:
 
   - title: Test passwd File
@@ -14,13 +18,12 @@ tests:
       - http://127.0.0.1:8000/passwd
     validators:
       - status: 0
+      - file_exists:
+          files:
+            - './passwd'
       - file_contains:
           - file: ./passwd
             contains:
               - root
               - bin
               - nope
-      - file_exists:
-          cleanup: True
-          files:
-            - './passwd'

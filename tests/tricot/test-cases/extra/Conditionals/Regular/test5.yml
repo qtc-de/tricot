@@ -1,0 +1,111 @@
+tester:
+  name: cond_test_5
+  title: Conditionals Test 5
+  description: |-
+    'Launches some conditional tests and adds own conditions'
+  conditionals:
+    Test1: False
+    Test4: True
+
+  conditions:
+    all_of:
+      - Test2
+      - Test4
+    none_of:
+      - Test1
+      - Test3
+    one_of:
+      - Test2
+      - Test3
+
+tests:
+  - title: Test1 - Success
+    description: |-
+      'Should run'
+    conditions:
+      all:
+        - Test2
+        - Test4
+      none_of:
+        - Test1
+        - Test3
+      on_success:
+        Test1: True
+        Test2: False
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test2 - Skipped
+    description: |-
+      'Should skip'
+    conditions:
+      all:
+        - Test2
+        - Test4
+      none_of:
+        - Test1
+        - Test3
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test3 - Success
+    description: |-
+      'Should run'
+    conditions:
+      one_of:
+        - Test1
+        - Test2
+      none_of:
+        - Test2
+        - Test3
+      on_success:
+        Test1: False
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test4 - Skipped
+    description: |-
+      'Should skip'
+    conditions:
+      one_of:
+        - Test1
+        - Test2
+      all:
+        - Test1
+        - Test2
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test5 - Skipped
+    description: |-
+      'Should skip'
+    conditions:
+      all:
+        - Test4
+      one_of:
+        - Test1
+        - Test3
+        - Test2
+    command:
+      - ls
+    validators:
+      - status: 0
+
+  - title: Test6 - Success
+    description: |-
+      'Should run'
+    conditions:
+      none_of:
+        - Test1
+    command:
+      - ls
+    validators:
+      - status: 0
