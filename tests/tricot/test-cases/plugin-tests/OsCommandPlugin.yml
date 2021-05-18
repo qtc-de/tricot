@@ -1,8 +1,8 @@
 tester:
-  name: copy
-  title: CopyPlugin Tests
+  name: os_command
+  title: OsCommandPlugin Tests
   description: |-
-    'Tests the correct functionality of the CopyPlugin'
+    'Tests the correct functionality of the OsCommandPlugin'
 
 variables:
   file: /etc/passwd
