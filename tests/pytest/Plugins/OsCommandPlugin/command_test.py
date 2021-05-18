@@ -96,8 +96,8 @@ def test_os_command_fail2():
     Parameters:
             None
 
-        Returns:
-                None
+    Returns:
+            None
     '''
     config = {'cmd': ['cat', 'nopenopenope']}
 
@@ -109,13 +109,13 @@ def test_os_command_fail2():
 def test_os_command_ignore():
     '''
     Test that a command that exits with a non zero status code is ignored then
+    'ignore_error' was specified.
 
     Parameters:
         None
 
     Returns:
         None
-    'ignore_error' was specified.
     '''
     config = {'cmd': ['cat', 'nopenopenopenope'], 'ignore_error': True}
 
@@ -163,10 +163,10 @@ def test_os_command_init():
     Test that init waits the specified amount of seconds before the test continues.
 
     Parameters:
-            None
+        None
 
     Returns:
-            None
+        None
     '''
     config = {'cmd': ['ls', '-l'], 'init': 2}
 
