@@ -108,7 +108,7 @@ class Command:
 
         except subprocess.TimeoutExpired:
             process.kill()
-            self.stdout, self.stderr = process.communicate(timeout=self.timeout)
+            self.stdout, self.stderr = process.communicate()
             self.status = 99
 
         except subprocess.CalledProcessError as e:
