@@ -229,3 +229,25 @@ tests:
           invert:
             - Fail... success
             - Success... failed
+
+  - title: LineCountValidator
+    description: |-
+      'Starts the test cases for the LineCountValidator and validates their output'
+
+    command:
+      - tricot
+      - ${VAL}/LineCountValidator.yml
+
+    validators:
+      - status: 12
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 3
+            - 1
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed

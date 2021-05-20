@@ -871,6 +871,38 @@ class CountValidator(Validator):
                 raise ValidationException(f"String '{value}' was found {n} times, but was expected {count} times.")
 
 
+class LineCountValidator(Validator):
+    '''
+    The LineCountValidator checks whether the command output contains the expected number of lines.
+
+    Example:
+
+        validators:
+            - line_count:
+                count: 5
+                ignore_empty: True
+    '''
+    param_type = dict
+    inner_types = {
+            'count': {'required': True, 'type': int},
+            'ignore_empty': {'required': False, 'type': bool},
+    }
+
+    def run(self) -> None:
+        '''
+        Check whether the exit code of the command matches the specified value.
+        '''
+        count = self.param['count']
+        output = self.get_output()
+        lines = output.split('\n')
+
+        if self.param.get('ignore_empty'):
+            lines = list(filter(lambda x: x, lines))
+
+        if len(lines) != count:
+            raise ValidationException(f"Command output has '{len(lines)}' line(s), but '{count}' lines were expected.")
+
+
 register_validator("contains", ContainsValidator)
 register_validator("match", MatchValidator)
 register_validator("regex", RegexValidator)
@@ -881,3 +913,4 @@ register_validator("dir_exists", DirectoryExistsValidator)
 register_validator("file_contains", FileContainsValidator)
 register_validator("runtime", RuntimeValidator)
 register_validator("count", CountValidator)
+register_validator("line_count", LineCountValidator)

@@ -1,0 +1,51 @@
+tester:
+  name: line_count
+  title: LineCountValidator Tests
+  description: |-
+    "Performs tests on the LineCountValidator"
+
+tests:
+  - title: Plain Count - Success
+    description: >
+      'Checks that number of lines is compared correctly'
+    command:
+      - echo
+      - -en
+      - 'These\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 4
+
+  - title: Empty Count - Success
+    description: >
+      'Checks that number of lines is compared correctly when empty lines are contained'
+    command:
+      - echo
+      - -en
+      - 'These\n\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 5
+
+  - title: Ignore Empty Count - Success
+    description: >
+      'Checks that number of lines is compared correctly when emprty lines are ignored'
+    command:
+      - echo
+      - -en
+      - 'These\n\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 4
+          ignore_empty: True
+
+  - title: Wrong Count - Fail
+    description: >
+      'Check that a wrong count leads to an error'
+    command:
+      - echo
+      - -en
+      - 'These\n\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 9
