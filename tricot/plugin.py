@@ -295,6 +295,7 @@ class Plugin:
             self.stopped = True
 
         except Exception as e:
+            atexit.unregister(self._stop)
             raise PluginException(e, self.name, self.path)
 
     def stop(self) -> None:
