@@ -194,7 +194,7 @@ class Validator:
             for key, value in self.inner_types.items():
 
                 param = self.param.get(key)
-                if value['required'] and not param and not self.check_alternative(key):
+                if value['required'] and param is None and not self.check_alternative(key):
 
                     message = f"Validator '{self.name}' requires key with name '{key}' and type {value['type']}."
                     raise ValidatorError(self.path, message)
