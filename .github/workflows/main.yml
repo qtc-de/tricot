@@ -52,4 +52,4 @@ jobs:
 
     - name: Test with tricot
       run: |
-        tricot tests/tricot/tricot.yml -e docker
+        tricot tests/tricot/tricot.yml
