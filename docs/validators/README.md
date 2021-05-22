@@ -215,7 +215,9 @@ validators:
 ----
 
 Takes a number of expected lines and checks whether the command output has a matching number of lines.
-Empty lines can be ignored by using the ``ignore_empty`` option.
+Empty lines can be ignored by using the ``ignore_empty`` option. Empty lines on the start and end of
+the command output are ignored by default. To prevent this behavior, you can use the ``keep_trailing``
+and ``keep_leading`` options.
 
 **Type Validation**:
 
@@ -224,6 +226,8 @@ param_type = dict
 inner_types = {
         'count': {'required': True, 'type': int},
         'ignore_empty': {'required': False, 'type': bool},
+        'keep_trailing': {'required': False, 'type': bool},
+        'keep_leading': {'required': False, 'type': bool},
 }
 ```
 

@@ -886,6 +886,8 @@ class LineCountValidator(Validator):
     inner_types = {
             'count': {'required': True, 'type': int},
             'ignore_empty': {'required': False, 'type': bool},
+            'keep_trailing': {'required': False, 'type': bool},
+            'keep_leading': {'required': False, 'type': bool},
     }
 
     def run(self) -> None:
@@ -895,6 +897,24 @@ class LineCountValidator(Validator):
         count = self.param['count']
         output = self.get_output()
         lines = output.split('\n')
+
+        if not self.param.get('keep_leading'):
+
+            for item in lines[:]:
+
+                if item != '':
+                    break
+
+                lines.pop(0)
+
+        if not self.param.get('keep_trailing'):
+
+            for item in lines[::-1]:
+
+                if item != '':
+                    break
+
+                lines.pop(-1)
 
         if self.param.get('ignore_empty'):
             lines = list(filter(lambda x: x, lines))
