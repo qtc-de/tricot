@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.2.0] - May 22, 2021
+
+### Added
+
+* Add *LineCountValidator*
+* Add *CleanupCommandPlugin*
+
+### Changed
+
+* Add PyPi istallation instructions
+* Some minor bug fixes
+
+
 ## [1.1.0] - May 09, 2021
 
 ### Added
