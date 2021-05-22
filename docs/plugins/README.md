@@ -5,6 +5,7 @@
 This document contains a list of plugins that are available per default when using *tricot*.
 
 - [CleanupPlugin](#cleanupplugin)
+- [CleanupCommandPlugin](#cleanupcommandplugin)
 - [CopyPlugin](#copyplugin)
 - [HttpListenerPlugin](#httplistenerplugin)
 - [MkdirPlugin](#mkdirplugin)
@@ -39,6 +40,38 @@ plugins:
         items:
             - /tmp/test
             - /tmp/test2
+```
+
+
+### CleanupCommandPlugin
+
+----
+
+The ``CleanupCommandPlugin`` can be used to launch os-commands at the end of a tester. It is intended
+to be used for more complicated cleanup actions, that cannot be performed by the *CleanupPlugin*.
+
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+                'ignore_error': {'required': False, 'type': bool},
+                'timeout': {'required': False, 'type': int},
+                'cmd': {'required': True, 'type': list}
+              }
+```
+
+**Example:**
+
+```yaml
+plugins:
+    - cleanup_command:
+        ignore_error: True
+        cmd:
+            - rm
+            - -rf
+            - /tmp/leftover
 ```
 
 

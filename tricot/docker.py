@@ -153,7 +153,7 @@ class TricotContainer:
                             p = path.parent.joinpath(p).absolute()
 
                     if len(split) < 3:
-                        split[2] = 'rw'
+                        split.append('rw')
 
                     volume_dict[str(p)] = {'bind': split[1], 'mode': split[2]}
 

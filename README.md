@@ -21,6 +21,12 @@ for end to end testing of command line applications.
 for your current user profile:
 
 ```console
+$ pip3 install tricot
+```
+
+You can also build *tricot* from source by running the following commands:
+
+```console
 $ git clone https://github.com/qtc-de/tricot
 $ cd tricot
 $ python3 setup.py sdist

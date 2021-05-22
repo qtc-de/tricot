@@ -295,6 +295,7 @@ class Plugin:
             self.stopped = True
 
         except Exception as e:
+            atexit.unregister(self._stop)
             raise PluginException(e, self.name, self.path)
 
     def stop(self) -> None:
@@ -591,6 +592,59 @@ class CleanupPlugin(Plugin):
                 continue
 
 
+class CleanupCommandPlugin(Plugin):
+    '''
+    Basically a copy of the OsCommandPlugin, but runs on the end of the corresponding tester.
+
+    Example:
+
+        plugins:
+            - cleanup_command:
+                ignore_error: True
+                cmd:
+                    - rm
+                    - -r
+                    - /tmp/testdir
+    '''
+    param_type = dict
+    inner_types = {
+                    'ignore_error': {'required': False, 'type': bool},
+                    'timeout': {'required': False, 'type': int},
+                    'cmd': {'required': True, 'type': list}
+                  }
+
+    def on_exit(self, command) -> None:
+        '''
+        Just a helper function that is called when a process exited.
+        '''
+        ignore_error = self.param.get('ignore_error', False)
+        poll = self.process.poll()
+
+        if poll and poll != 0 and not ignore_error:
+            command = ' '.join(command)
+            raise OSError(f"Command '{command}' exited with a non zero status code.")
+
+    def stop(self) -> None:
+        '''
+        Run the specified command on stop.
+        '''
+        command = self.param['cmd']
+        timeout = self.param.get('timeout', 0)
+
+        for ctr in range(len(command)):
+            command[ctr] = str(command[ctr])
+
+        self.process = subprocess.Popen(command, cwd=self.path.parent, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+        if timeout > 0:
+            self.process.communicate(timeout=timeout)
+
+        else:
+            self.process.wait()
+
+        self.on_exit(command)
+
+
 class CopyPlugin(Plugin):
     '''
     The CopyPlugin can be used to copy files before a test runs. It also offers a cleanup
@@ -671,4 +725,5 @@ register_plugin("os_command", OsCommandPlugin)
 register_plugin("mkdir", MkdirPlugin)
 register_plugin("http_listener", HttpListenerPlugin)
 register_plugin("cleanup", CleanupPlugin)
+register_plugin("cleanup_command", CleanupCommandPlugin)
 register_plugin("copy", CopyPlugin)

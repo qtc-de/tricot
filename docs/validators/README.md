@@ -10,6 +10,7 @@ This document contains a list of validators that are available per default when 
 - [ErrorValidator](#errorvalidator)
 - [FileContainsValidator](#filecontainsvalidator)
 - [FileExistsValidator](#fileexistsvalidator)
+- [LineCountValidator](#linecountvalidator)
 - [MatchValidator](#matchvalidator)
 - [RegexValidator](#regexvalidator)
 - [RuntimeValidator](#runtimevalidator)
@@ -209,6 +210,35 @@ validators:
 ```
 
 
+### LineCountValidator
+
+----
+
+Takes a number of expected lines and checks whether the command output has a matching number of lines.
+Empty lines can be ignored by using the ``ignore_empty`` option. Empty lines on the start and end of
+the command output are ignored by default. To prevent this behavior, you can use the ``keep_trailing``
+and ``keep_leading`` options.
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+        'count': {'required': True, 'type': int},
+        'ignore_empty': {'required': False, 'type': bool},
+        'keep_trailing': {'required': False, 'type': bool},
+        'keep_leading': {'required': False, 'type': bool},
+}
+```
+
+**Example:**
+
+```yaml
+validators:
+    - line_count:
+        ignore_empty: True
+        count: 5
+```
 
 ### MatchValidator
 

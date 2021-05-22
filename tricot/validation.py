@@ -194,7 +194,7 @@ class Validator:
             for key, value in self.inner_types.items():
 
                 param = self.param.get(key)
-                if value['required'] and not param and not self.check_alternative(key):
+                if value['required'] and param is None and not self.check_alternative(key):
 
                     message = f"Validator '{self.name}' requires key with name '{key}' and type {value['type']}."
                     raise ValidatorError(self.path, message)
@@ -871,6 +871,58 @@ class CountValidator(Validator):
                 raise ValidationException(f"String '{value}' was found {n} times, but was expected {count} times.")
 
 
+class LineCountValidator(Validator):
+    '''
+    The LineCountValidator checks whether the command output contains the expected number of lines.
+
+    Example:
+
+        validators:
+            - line_count:
+                count: 5
+                ignore_empty: True
+    '''
+    param_type = dict
+    inner_types = {
+            'count': {'required': True, 'type': int},
+            'ignore_empty': {'required': False, 'type': bool},
+            'keep_trailing': {'required': False, 'type': bool},
+            'keep_leading': {'required': False, 'type': bool},
+    }
+
+    def run(self) -> None:
+        '''
+        Check whether the exit code of the command matches the specified value.
+        '''
+        count = self.param['count']
+        output = self.get_output()
+        lines = output.split('\n')
+
+        if not self.param.get('keep_leading'):
+
+            for item in lines[:]:
+
+                if item != '':
+                    break
+
+                lines.pop(0)
+
+        if not self.param.get('keep_trailing'):
+
+            for item in lines[::-1]:
+
+                if item != '':
+                    break
+
+                lines.pop(-1)
+
+        if self.param.get('ignore_empty'):
+            lines = list(filter(lambda x: x, lines))
+
+        if len(lines) != count:
+            raise ValidationException(f"Command output has '{len(lines)}' line(s), but '{count}' lines were expected.")
+
+
 register_validator("contains", ContainsValidator)
 register_validator("match", MatchValidator)
 register_validator("regex", RegexValidator)
@@ -881,3 +933,4 @@ register_validator("dir_exists", DirectoryExistsValidator)
 register_validator("file_contains", FileContainsValidator)
 register_validator("runtime", RuntimeValidator)
 register_validator("count", CountValidator)
+register_validator("line_count", LineCountValidator)

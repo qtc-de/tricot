@@ -1,0 +1,87 @@
+tester:
+  name: line_count
+  title: LineCountValidator Tests
+  description: |-
+    'Performs tests on the LineCountValidator. Notice that the echo command
+     appends a trailing newline, which is ignored by default.'
+
+tests:
+  - title: Plain Count - Success
+    description: >
+      'Checks that number of lines is compared correctly'
+    command:
+      - echo
+      - -e
+      - 'These\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 4
+
+  - title: Empty Count - Success
+    description: >
+      'Checks that number of lines is compared correctly when empty lines are contained'
+    command:
+      - echo
+      - -e
+      - 'These\n\nare\nfive\nlines'
+    validators:
+      - line_count:
+          count: 5
+
+  - title: Ignore Empty Count - Success
+    description: >
+      'Checks that number of lines is compared correctly when empty lines are ignored'
+    command:
+      - echo
+      - -e
+      - 'These\n\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 4
+          ignore_empty: True
+
+  - title: Wrong Count - Fail
+    description: >
+      'Check that a wrong count leads to an error'
+    command:
+      - echo
+      - -e
+      - 'These\n\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 9
+
+  - title: Keep Trailing Count - Success
+    description: >
+      'Checks that number of lines is compared correctly when trailing empty lines are kept'
+    command:
+      - echo
+      - -e
+      - 'These\nare\nfive\nlines'
+    validators:
+      - line_count:
+          count: 5
+          keep_trailing: True
+
+  - title: Keep Leading Count - Success
+    description: >
+      'Checks that number of lines is compared correctly when leading empty lines are kept'
+    command:
+      - echo
+      - -e
+      - '\n\nThese\nare\nsix\nlines'
+    validators:
+      - line_count:
+          count: 6
+          keep_leading: True
+
+  - title: Ignore Leading Count - Success
+    description: >
+      'Checks that number of lines is compared correctly when leading empty lines are ignored'
+    command:
+      - echo
+      - -e
+      - 'These\nare\nfour\nlines'
+    validators:
+      - line_count:
+          count: 4
