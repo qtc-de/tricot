@@ -390,7 +390,7 @@ class Tester:
             definitions = g.get('tests')
 
             variables = g.get('variables', dict())
-            variables = {**variables, **initial_vars}
+            variables = {**initial_vars, **variables}
             variables['cwd'] = path.parent
             variables = tricot.utils.apply_variables(variables, copy.deepcopy(variables))
 
