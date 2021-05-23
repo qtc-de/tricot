@@ -138,3 +138,33 @@ tests:
       - contains:
           values:
             - "The keys 'all', 'one_of' and 'none_of' need to be lists"
+
+
+  - title: Variables
+    description: |-
+      "Different test on tricot variables"
+
+    command:
+      - tricot
+      - --variables
+      - r_var1="named runtime variable"
+      - r_var2="another named runtime variable"
+      - --positionals
+      - "positional runtime variable"
+      - "another positional runtime variable"
+      - '--'
+      - ${EXTRA}/Variables.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 7
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
