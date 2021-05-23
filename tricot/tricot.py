@@ -354,7 +354,7 @@ class Tester:
         self.conditionals = conditionals
         self.error_mode = error_mode
 
-    def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
+    def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(),
                   path: Path = None, e_mode: str = None, environment: dict = {},
                   conditionals: set[Condition] = set()) -> Tester:
         '''
@@ -366,7 +366,6 @@ class Tester:
         Parameters:
             input_dict      Python dictionary as read in from a .yml file
             initial_vars    Additional variables. This is used internally when nesting Testers
-            runtime_vars    Runtime variables (only specifiable when using tricot as library)
             path            Path object to the testers configuration file
             e_mode          Error mode that was mayve inherited by the parent tester
             environment     Dictionary of environment variables to use within the test
@@ -396,9 +395,6 @@ class Tester:
             plugins = Plugin.from_list(path, g.get('plugins'), variables)
             containers = TricotContainer.from_list(g.get('containers', list()), path, variables)
 
-            if runtime_vars is not None:
-                variables['$runtime'] = runtime_vars
-
             tester_list = list()
             if testers and type(testers) is list:
 
@@ -408,7 +404,7 @@ class Tester:
                         f = path.parent.joinpath(f)
 
                     for ff in glob.glob(str(f)):
-                        tester = Tester.from_file(ff, variables, runtime_vars, error_mode, env, conds)
+                        tester = Tester.from_file(ff, variables, None, error_mode, env, conds)
                         tester_list.append(tester)
 
             tests = None
@@ -447,7 +443,10 @@ class Tester:
         if '$env' not in initial_vars:
             tricot.utils.add_environment(initial_vars)
 
-        return Tester.from_dict(config_dict, initial_vars, runtime_vars, Path(filename), error_mode, env, conditionals)
+        if runtime_vars is not None and '$runtime' not in initial_vars:
+            initial_vars['$runtime'] = runtime_vars
+
+        return Tester.from_dict(config_dict, initial_vars, Path(filename), error_mode, env, conditionals)
 
     def contains_testers(self, testers: list[str]) -> bool:
         '''
