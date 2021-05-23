@@ -13,6 +13,9 @@ on it's own.
 - [Writing Custom Validators](#writing-custom-validators)
 - [Environment Variables](#environment-variables)
 - [Runtime Variables](#runtime-variables)
+- [Nesting Variables](#nesting-variables)
+- [Conditionals](#conditionals)
+- [Reusing Output](#reusing-output)
 - [Additional Command Line Switches](#additional-command-line-switches)
 
 
@@ -390,6 +393,39 @@ Running this tester in verbose mode leads to the following output:
 [-]                         "Not there"
 [-]                     ]
 [-]                 }
+```
+
+
+### Nesting Variables
+
+----
+
+Nesting variables is possible (without recursion). The following tester shows an example:
+
+```yml
+tester:
+  name: nested_variables
+  title: Nested Variables Example
+  description: |-
+    'Demonstrate how to use nested variables'
+
+variables:
+  nested: This is going to be nested
+  nest: <NEST>${nested}<NEST>
+
+tests:
+  - title: nested_test
+    description: |-
+      'Check whether nested variable is set.'
+
+    command:
+      - echo
+      - ${nest}
+
+    validators:
+      - contains:
+          values:
+            - '<NEST>This is going to be nested<NEST>'
 ```
 
 

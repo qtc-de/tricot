@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import yaml
 import glob
 from pathlib import Path
@@ -391,6 +392,7 @@ class Tester:
             variables = g.get('variables', dict())
             variables = {**variables, **initial_vars}
             variables['cwd'] = path.parent
+            variables = tricot.utils.apply_variables(variables, copy.deepcopy(variables))
 
             plugins = Plugin.from_list(path, g.get('plugins'), variables)
             containers = TricotContainer.from_list(g.get('containers', list()), path, variables)
