@@ -151,6 +151,7 @@ class Test:
         for key, value in variables.items():
 
             value = tricot.utils.resolve_runtime_variables(variables, key, value)
+            value = tricot.utils.resolve_env_variables(variables, key, value)
             key = '${'+str(key)+'}'
 
             if type(val) is str:
@@ -442,6 +443,9 @@ class Tester:
         '''
         with open(filename, 'r') as f:
             config_dict = yaml.safe_load(f.read())
+
+        if '$env' not in initial_vars:
+            tricot.utils.add_environment(initial_vars)
 
         return Tester.from_dict(config_dict, initial_vars, runtime_vars, Path(filename), error_mode, env, conditionals)
 

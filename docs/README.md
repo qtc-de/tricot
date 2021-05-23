@@ -268,8 +268,8 @@ want a parameter validation that is easier to use and has an arbitrary recursion
 
 ----
 
-Environment variables can be specified on the tester level and are added to the current users environment.
-E.g. when using the following tester definition:
+Environment variables can be specified on the tester level and are added to the current users environment
+when executing commands. E.g. when using the following tester definition:
 
 ```yml
 tester:
@@ -299,6 +299,34 @@ containers:
       DOCKER-nginx-IP: DOCKER-IP
     env:
       NGINX_PORT: '8000'
+```
+
+To use evaluated environment variables within your test definitions, you have to declare them as variables first.
+The following example shows, how the ``$HOME`` environment variable can be used within a test specification.
+
+```yml
+tester:
+  name: environment_example
+  title: Environment Example
+  description: |-
+    'Demonstrate how to use environment variables'
+
+variables:
+  HOME: $env
+
+tests:
+  - title: env_test
+    description: |-
+      'Check whether environment variable is set.'
+
+    command:
+      - echo
+      - ${HOME}
+
+    validators:
+      - contains:
+          values:
+            - '/home/user'
 ```
 
 

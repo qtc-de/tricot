@@ -14,6 +14,14 @@ class TricotRuntimeVariableError(Exception):
     pass
 
 
+class TricotEnvVariableError(Exception):
+    '''
+    A TricotEnvVariableError is raised, when an environment variable was specified within
+    the .yml test configuration, but was not found at runtime.
+    '''
+    pass
+
+
 def resolve_runtime_variables(variables: dict[str, Any], key: str, value: Any) -> Any:
     '''
     This function is responsible for resolving runtime variables.
@@ -22,7 +30,7 @@ def resolve_runtime_variables(variables: dict[str, Any], key: str, value: Any) -
     dictionary key. If it is found, the corresponding value is
     returned. If not, a TricotRuntimeVariableError is raised.
 
-    When the value of a variables is not '$runtime', it is simply
+    When the value of a variables is not '$runtime', it is directly
     returned.
 
     Parameters:
@@ -41,6 +49,35 @@ def resolve_runtime_variables(variables: dict[str, Any], key: str, value: Any) -
 
     except KeyError:
         raise TricotRuntimeVariableError(f"Unable to find runtime variable '{key}'.")
+
+
+def resolve_env_variables(variables: dict[str, Any], key: str, value: Any) -> Any:
+    '''
+    This function is responsible for resolving environment variables.
+    When a variable contains the value '$env' it checks the
+    '$env' key within the variables dict for the corresponding
+    dictionary key. If it is found, the corresponding value is
+    returned. If not, a TricotEnvVariableError is raised.
+
+    When the value of a variables is not '$env', it is directly
+    returned.
+
+    Parameters:
+        variables       Variables dictionary created during the Tester initialization
+        key             Key of the current variable in question
+        value           Value of the current variable in question
+
+    Returns:
+        value       Value with possible runtime variables applied
+    '''
+    if value != '$env':
+        return value
+
+    try:
+        return (variables['$env'])[key]
+
+    except KeyError:
+        raise TricotEnvVariableError(f"Unable to find environment variable '{key}'.")
 
 
 def apply_variables(candidate: Any, var_dict: dict[str, Any] = None) -> Any:
@@ -74,6 +111,7 @@ def apply_variables(candidate: Any, var_dict: dict[str, Any] = None) -> Any:
         for var, var_value in var_dict.items():
 
             var_value = resolve_runtime_variables(var_dict, var, var_value)
+            var_value = resolve_env_variables(var_dict, var, var_value)
             variable_key = '${'+str(var)+'}'
 
             if candidate == variable_key:
@@ -161,3 +199,17 @@ def merge_default_environment(env: dict) -> dict:
         environment     Merged environment variables
     '''
     return {**os.environ, **env}
+
+
+def add_environment(variables: dict[str, Any]) -> None:
+    '''
+    Adds the current user environment to the available variables within the
+    $env key.
+
+    Parameters:
+        variables       Variable dictionary
+
+    Returns:
+        None
+    '''
+    variables['$env'] = os.environ
