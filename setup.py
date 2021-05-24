@@ -11,7 +11,7 @@ setuptools.setup(
     url='https://github.com/qtc-de/tricot',
     name='tricot',
     author='Tobias Neitzel (@qtc_de)',
-    version='1.3.1',
+    version='1.3.2',
     author_email='',
 
     description='Trivial Command Testser',
@@ -22,7 +22,8 @@ setuptools.setup(
     install_requires=[
                         'PyYAML',
                         'termcolor',
-                        'docker'
+                        'docker',
+                        'six==1.16.0'
                      ],
     scripts=[
                 'bin/tricot',
