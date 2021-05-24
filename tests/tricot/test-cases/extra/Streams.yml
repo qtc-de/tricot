@@ -1,0 +1,88 @@
+tester:
+  name: streams
+  title: Stream Tester
+  description: |-
+    'Check whether tricot handels streams correctly'
+
+tests:
+  - title: Stdout Stream - Success
+    description: >
+      'Obtain output from the stdout stream only'
+    command:
+      - cat
+      - /etc/passwd
+      - /nope
+    validators:
+      - regex:
+          stream: stdout
+          match:
+            - ^root.+sh
+            - nobody.+nologin
+      - contains:
+          stream: stdout
+          invert:
+            - 'No such file or directory'
+
+  - title: Stderr Stream - Success
+    description: >
+      'Obtain output from the stderr stream only'
+    command:
+      - cat
+      - /etc/passwd
+      - /nope
+    validators:
+      - regex:
+          stream: stderr
+          invert:
+            - ^root.+sh
+            - nobody.+nologin
+      - contains:
+          stream: stderr
+          values:
+            - 'No such file or directory'
+      - line_count:
+          stream: stderr
+          count: 1
+
+  - title: Both Streams - Success
+    description: >
+      'Obtain output from the both streams'
+    command:
+      - cat
+      - /etc/passwd
+      - /nope
+    validators:
+      - regex:
+          stream: both
+          match:
+            - ^root.+sh
+            - nobody.+nologin
+      - contains:
+          stream: both
+          values:
+            - 'No such file or directory'
+
+  - title: Mix Streams - Success
+    description: >
+      'Obtain output from the stderr stream and stdout stream'
+    command:
+      - cat
+      - /etc/passwd
+      - /nope
+    validators:
+      - regex:
+          stream: stdout
+          match:
+            - ^root.+sh
+            - nobody.+nologin
+      - contains:
+          stream: stdout
+          invert:
+            - 'No such file or directory'
+      - contains:
+          stream: stderr
+          values:
+            - 'No such file or directory'
+      - line_count:
+          stream: stderr
+          count: 1

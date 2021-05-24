@@ -168,3 +168,26 @@ tests:
           invert:
             - Fail... success
             - Success... failed
+
+
+  - title: Streams
+    description: |-
+      "Different test on tricot streams"
+
+    command:
+      - tricot
+      - ${EXTRA}/Streams.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 4
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
