@@ -247,7 +247,8 @@ class Validator:
         '''
         if type(self.param) is dict and type(self.inner_types) is dict:
 
-            expected_keys = self.inner_types.keys()
+            expected_keys = set(self.inner_types.keys())
+            expected_keys.add('stream')
 
             for key in self.param.keys():
 
