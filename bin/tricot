@@ -178,10 +178,10 @@ def main():
             tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
             sys.exit(tricot.constants.TEST_KEY_ERROR)
 
-        except tricot.utils.TricotRuntimeVariableError as e:
+        except (tricot.utils.TricotRuntimeVariableError, tricot.utils.TricotEnvVariableError) as e:
             tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
-            sys.exit(tricot.constants.RUNTIME_VARIABLE_ERROR)
+            sys.exit(tricot.constants.VARIABLE_ERROR)
 
         except tricot.PluginError as e:
             tricot.Logger.print_mixed_yellow('Caught', 'PluginError', 'while parsing test configuration.', e=True)

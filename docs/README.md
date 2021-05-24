@@ -13,6 +13,9 @@ on it's own.
 - [Writing Custom Validators](#writing-custom-validators)
 - [Environment Variables](#environment-variables)
 - [Runtime Variables](#runtime-variables)
+- [Nesting Variables](#nesting-variables)
+- [Conditionals](#conditionals)
+- [Reusing Output](#reusing-output)
 - [Additional Command Line Switches](#additional-command-line-switches)
 
 
@@ -268,8 +271,8 @@ want a parameter validation that is easier to use and has an arbitrary recursion
 
 ----
 
-Environment variables can be specified on the tester level and are added to the current users environment.
-E.g. when using the following tester definition:
+Environment variables can be specified on the tester level and are added to the current users environment
+when executing commands. E.g. when using the following tester definition:
 
 ```yml
 tester:
@@ -299,6 +302,34 @@ containers:
       DOCKER-nginx-IP: DOCKER-IP
     env:
       NGINX_PORT: '8000'
+```
+
+To use evaluated environment variables within your test definitions, you have to declare them as variables first.
+The following example shows, how the ``$HOME`` environment variable can be used within a test specification.
+
+```yml
+tester:
+  name: environment_example
+  title: Environment Example
+  description: |-
+    'Demonstrate how to use environment variables'
+
+variables:
+  HOME: $env
+
+tests:
+  - title: env_test
+    description: |-
+      'Check whether environment variable is set.'
+
+    command:
+      - echo
+      - ${HOME}
+
+    validators:
+      - contains:
+          values:
+            - '/home/user'
 ```
 
 
@@ -362,6 +393,39 @@ Running this tester in verbose mode leads to the following output:
 [-]                         "Not there"
 [-]                     ]
 [-]                 }
+```
+
+
+### Nesting Variables
+
+----
+
+Nesting variables is possible (without recursion). The following tester shows an example:
+
+```yml
+tester:
+  name: nested_variables
+  title: Nested Variables Example
+  description: |-
+    'Demonstrate how to use nested variables'
+
+variables:
+  nested: This is going to be nested
+  nest: <NEST>${nested}<NEST>
+
+tests:
+  - title: nested_test
+    description: |-
+      'Check whether nested variable is set.'
+
+    command:
+      - echo
+      - ${nest}
+
+    validators:
+      - contains:
+          values:
+            - '<NEST>This is going to be nested<NEST>'
 ```
 
 

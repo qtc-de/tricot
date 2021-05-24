@@ -1,0 +1,45 @@
+tester:
+  name: variables_nested
+  title: Nested Variable Test
+  description: |-
+    'Performs different checks on tricot variables'
+
+variables:
+  nested: AnotherNestedVariable
+  2: $runtime
+  r_var2: $runtime
+  path2: ${path}/${nested}
+
+tests:
+  - title: Variable Test 1 - Success
+    description: >
+      'Checks whether positional runtime variable was set'
+    command:
+      - echo
+      - ${2}
+    validators:
+      - contains:
+          values:
+            - 'another positional runtime variable'
+
+  - title: Variable Test 2 - Success
+    description: >
+      'Checks whether named runtime variable was set'
+    command:
+      - echo
+      - ${r_var2}
+    validators:
+      - contains:
+          values:
+            - 'another named runtime variable'
+
+  - title: Variable Test 3 - Success
+    description: >
+      'Checks nesting of variables'
+    command:
+      - echo
+      - ${path2}
+    validators:
+      - regex:
+          match:
+            - '/home/\w+/test/ToBeNested/AnotherNestedVariable'
