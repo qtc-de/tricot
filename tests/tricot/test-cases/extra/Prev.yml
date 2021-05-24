@@ -1,0 +1,25 @@
+tester:
+  name: prev
+  title: Prev Variable Test
+  description: |-
+    'Check whether $prev variable works as expected'
+
+tests:
+  - title: Stage 1 - Success
+    description: >
+      'Read passwd file with no validators (just to populate $prev)'
+    command:
+      - cat
+      - /etc/passwd
+    validators: []
+
+  - title: Stage 2 - Success
+    description: >
+      'Validate output in $prev variable'
+    command:
+      - '${prev}'
+    validators:
+      - regex:
+          match:
+            - ^root.+sh
+            - nobody.+nologin
