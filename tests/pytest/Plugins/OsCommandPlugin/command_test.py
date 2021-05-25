@@ -176,7 +176,7 @@ def test_os_command_init():
     assert timer.timeit(number=1) > 2
 
 
-def test_os_command_plain():
+def test_os_command_shell():
     '''
     Test if plain command execution is working by creating a directory in shell mode.
 

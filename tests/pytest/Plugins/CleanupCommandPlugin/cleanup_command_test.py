@@ -2,7 +2,6 @@
 
 import tricot
 import pytest
-import timeit
 
 from pathlib import Path
 from functools import partial
