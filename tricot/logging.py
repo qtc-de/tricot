@@ -394,34 +394,90 @@ class Tee(object):
     Helper class to log stdout to a file. Copied from:
     https://stackoverflow.com/questions/616645/how-to-duplicate-sys-stdout-to-a-log-file
     '''
-    def __init__(self, file):
+
+    def __init__(self, file: typing.TextIO) -> None:
+        '''
+        Create a new Tee object that is used to duplicate output to log files.
+
+        Parameters:
+            file        Logfile to mirror output to
+
+        Returns:
+            None
+        '''
         self.file_names = [file.name]
         self.files = [file]
         self.stdout = sys.stdout
         self.use_stdout = True
         sys.stdout = self
 
-    def __del__(self):
+    def __del__(self) -> None:
+        '''
+        Set sys.stdout back to it's default value and close all logfiles.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
         sys.stdout = self.stdout
         for file in self.files:
             file.close()
 
-    def write(self, data):
+    def write(self, data) -> None:
+        '''
+        Write output to stdout if 'use_stdout' is True. Furthermore, write
+        output to all open logfiles.
+
+        Parameters:
+            data        Data to write
+
+        Returns:
+            None
+        '''
         if self.use_stdout:
             self.stdout.write(data)
         for file in self.files:
             file.write(data)
 
-    def flush(self):
+    def flush(self) -> None:
+        '''
+        Flusth pending output on all files.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
         for file in self.files:
             file.flush()
 
-    def add(self, file):
+    def add(self, file: typing.TextIO) -> None:
+        '''
+        Add a new logfile where output is mirrored to.
+
+        Parameters:
+            file        File to mirror output to
+
+        Returns:
+            None
+        '''
         if file.name not in self.file_names:
             self.file_names.append(file.name)
             self.files.append(file)
 
-    def close(self, file):
+    def close(self, file: typing.TextIO) -> None:
+        '''
+        Close a logfile and stop mirroring data to it.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
         if file.name not in self.file_names:
             return
 
@@ -430,8 +486,30 @@ class Tee(object):
         c_file.close()
         self.files.remove(c_file)
 
-    def enable_stdout(self):
+    def enable_stdout(self) -> None:
+        '''
+        Enable writing to stdout. In certain verbosity levels, you only
+        want ouput to go into the logfiles. For these cases, you can disable
+        stdout, print the desired output and enable it afterwards again.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
         self.use_stdout = True
 
-    def disable_stdout(self):
+    def disable_stdout(self) -> None:
+        '''
+        Disable writing to stdout. In certain verbosity levels, you only
+        want ouput to go into the logfiles. For these cases, you can disable
+        stdout, print the desired output and enable it afterwards again.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
         self.use_stdout = False

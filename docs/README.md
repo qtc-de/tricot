@@ -16,6 +16,7 @@ on it's own.
 - [Nesting Variables](#nesting-variables)
 - [Conditionals](#conditionals)
 - [Reusing Output](#reusing-output)
+- [Logging](#logging)
 - [Additional Command Line Switches](#additional-command-line-switches)
 
 
@@ -515,12 +516,56 @@ Updating conditions is only allowed within of *tests* and not within *testers*. 
 when all validators have run successfully. The ``on_error`` action triggers, if one or more validators failed.
 
 
+### Logging
+
+----
+
+*tricot* supports logging on *global*, *tester* and *test* level. For global logging, you can use the ``--log <FILE>`` command
+line option and all output is mirrored to the specified logfile. Logging single *tests* or *testers* is possible by using the
+``logfile`` attribute:
+
+```yaml
+tester:
+  name: ExampleTester
+  title: Just an example test
+  logfile: /log/example-tester.log
+
+tests:
+  - title: Test curl
+    description: |-
+      Test that our curl installation is working
+
+    command:
+      - curl
+      - http://example.org
+    logfile: /log/curl-tester.log
+
+    validators:
+      - status: 0
+
+  - title: Test wget
+    description: |-
+      Test that our wget installation is working
+
+    command:
+      - wget
+      - http://example.org
+    logfile: /log/wget-tester.log
+
+    validators:
+      - status: 0
+```
+
+Log files are always written in verbose mode and contain the full details for each *test* or *tester*.
+This is also true, even if the corresponding *test* or *tester* run was successful.
+
+
 ### Additional Command Line Switches
 
 ----
 
 Here is some more detailed explanation on some of *tricots* command line switches:
 
-* ``--logfile`` - Mirrors all tricot output into a logfile
+* ``--logfile`` - Mirrors all tricot output into a logfile. Logfiles are always written with verbose output.
 * ``--debug`` - Show details on each tester that runs, even when successful. Furthermore, disable
   exception handling and show each exception with full details.
