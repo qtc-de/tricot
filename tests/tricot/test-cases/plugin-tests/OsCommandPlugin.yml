@@ -21,9 +21,8 @@ plugins:
   - os_command:
       init: 2
       background: true
+      shell: True
       cmd:
-        - /bin/bash
-        - -c
         - 'cd ${dir} && python3 -m http.server 8000'
   - cleanup:
       force: true

@@ -144,6 +144,26 @@ def test_cleanup_command_timeout():
         plug._stop()
 
 
+def test_cleanup_command_shell():
+    '''
+    Test if plain command execution is working by creating a directory in shell mode.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    config = {'cmd': ['echo', 'hi', '&&', 'mkdir', test_dir], 'shell': True}
+
+    plug = tricot.get_plugin(Path(__file__), 'cleanup_command', config, {})
+    plug.stop()
+
+    r = resolve(test_dir)
+    assert r.is_dir()
+    r.rmdir()
+
+
 @pytest.fixture(autouse=True)
 def resource():
     '''

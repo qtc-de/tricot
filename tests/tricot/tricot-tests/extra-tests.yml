@@ -214,3 +214,26 @@ tests:
           invert:
             - Fail... success
             - Success... failed
+
+
+  - title: Shell
+    description: |-
+      "Test tricot command execution in shell mode"
+
+    command:
+      - tricot
+      - ${EXTRA}/Shell.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 3
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed

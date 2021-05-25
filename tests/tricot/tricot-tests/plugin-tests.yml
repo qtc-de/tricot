@@ -131,7 +131,7 @@ tests:
             - Success... success
             - Fail... failed
           counts:
-            - 2
+            - 4
             - 0
       - contains:
           invert:

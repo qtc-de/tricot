@@ -56,6 +56,7 @@ to be used for more complicated cleanup actions, that cannot be performed by the
 ```python
 param_type = dict
 inner_types = {
+                'shell': {'required': False, 'type': bool},
                 'ignore_error': {'required': False, 'type': bool},
                 'timeout': {'required': False, 'type': int},
                 'cmd': {'required': True, 'type': list}
@@ -191,6 +192,7 @@ The plugin allows some additional configuration by using different plugin keys:
   This gives the command some initialization time.
 * ``timeout``: Timeout the command after the specified amount of seconds. A timed
   out plugin will cause an error. Use ``init`` if you need a timeout without error.
+* ``shell``: Execute the command in shell mode.
 
 
 **Type Validation**:
@@ -198,6 +200,7 @@ The plugin allows some additional configuration by using different plugin keys:
 ```python
 param_type = dict
 inner_types = {
+                'shell': {'required': False, 'type': bool},
                 'ignore_error': {'required': False, 'type': bool},
                 'init': {'required': False, 'type': int},
                 'background': {'required': False, 'type': bool},

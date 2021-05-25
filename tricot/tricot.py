@@ -98,9 +98,9 @@ class Test:
     specified variables and the required validators. During a test, Test objects are
     evaluated by executing their 'run' method.
     '''
-    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env', 'conditions']
+    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env', 'conditions', 'shell']
 
-    def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: list,
+    def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: Command,
                  timeout: int, validators: list[Validator], env: dict, conditions: dict, conditionals: set[Condition]) -> None:
         '''
         Initializer for a Test object.
@@ -124,7 +124,7 @@ class Test:
         self.title = title
         self.error_mode = error_mode
         self.variables = variables
-        self.command = Command(command)
+        self.command = command
         self.timeout = timeout
         self.validators = validators
         self.env = env
@@ -216,6 +216,9 @@ class Test:
                     raise TestKeyError(None, path, "The 'arguments' key needs to be a list within the ")
 
                 command += arguments
+
+            shell = j.get('shell', False)
+            command = Command(command, shell)
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
             return Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, env, conditions, conditionals)
@@ -563,6 +566,7 @@ class Tester:
                     tricot.Logger.print_yellow_plain(e.path.absolute())
                     tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
                     tricot.Logger.print_blue('Tester is skipped.', e=True)
+                    tricot.Logger.decrease_indent()
 
                     tricot.constants.LAST_ERROR = tricot.constants.PLUGIN_EXCEPTION
 
