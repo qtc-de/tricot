@@ -98,7 +98,8 @@ class Test:
     specified variables and the required validators. During a test, Test objects are
     evaluated by executing their 'run' method.
     '''
-    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env', 'conditions', 'shell']
+    expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env', 'conditions',
+                     'logfile', 'shell']
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: Command,
                  timeout: int, validators: list[Validator], env: dict, conditions: dict, conditionals: set[Condition]) -> None:
@@ -130,6 +131,23 @@ class Test:
         self.env = env
         self.conditions = conditions
         self.conditionals = conditionals
+
+        self.logfile = None
+
+    def set_logfile(self, logfile: str) -> None:
+        '''
+        Sets the logfile attribute on the Test object.
+
+        Parameters:
+            logfile         File system path to the logfile
+
+        Returns:
+            None
+        '''
+        if logfile is None:
+            return
+
+        self.logfile = open(logfile, 'w')
 
     def apply_variables(val: Union(str, list), variables: dict[str, Any], k: str = 'command') -> list:
         '''
@@ -221,7 +239,11 @@ class Test:
             command = Command(command, shell)
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
-            return Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, env, conditions, conditionals)
+            test = Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, env, conditions, conditionals)
+
+            test.set_logfile(j.get('logfile'))
+
+            return test
 
         except KeyError as e:
             raise TestKeyError(str(e), path)
@@ -278,7 +300,7 @@ class Test:
         Returns:
             None
         '''
-        Logger.increase_indent()
+        Logger.add_logfile(self.logfile)
         Logger.print_blue(f'{prefix} {self.title}...', end=' ', flush=True)
         success = True
 
@@ -304,6 +326,7 @@ class Test:
                 Condition.update_conditions(self.conditions, self.conditionals, True)
 
                 if self.error_mode == "break":
+                    Logger.remove_logfile(self.logfile)
                     Logger.decrease_indent()
                     raise ValidationException('')
 
@@ -316,7 +339,7 @@ class Test:
             Logger.handle_success(self.command, self.validators)
 
         hotplug_variables['$prev'] = self.command
-        Logger.decrease_indent()
+        Logger.remove_logfile(self.logfile)
 
 
 class Tester:
@@ -357,6 +380,8 @@ class Tester:
         self.conditions = conditions
         self.conditionals = conditionals
         self.error_mode = error_mode
+
+        self.logfile = None
 
     def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(),
                   path: Path = None, e_mode: str = None, environment: dict = {},
@@ -419,11 +444,29 @@ class Tester:
             elif not tester_list:
                 raise TesterKeyError('tests', path, optional='testers')
 
-            return Tester(path, t['name'], t.get('title'), variables, tests, tester_list, containers, plugins,
-                          run_conds, conds, error_mode)
+            new_tester = Tester(path, t['name'], t.get('title'), variables, tests, tester_list, containers, plugins,
+                                run_conds, conds, error_mode)
+            new_tester.set_logfile(t.get('logfile'))
+
+            return new_tester
 
         except KeyError as e:
             raise TesterKeyError(str(e), path)
+
+    def set_logfile(self, logfile: str) -> None:
+        '''
+        Sets the logfile attribute on the Tester object.
+
+        Parameters:
+            logfile         File system path to the logfile
+
+        Returns:
+            None
+        '''
+        if logfile is None:
+            return
+
+        self.logfile = open(logfile, 'w')
 
     def from_file(filename: str, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
                   error_mode: str = None, env: dict = {}, conditionals: set[Condition] = set()) -> Tester:
@@ -502,6 +545,7 @@ class Tester:
             Logger.print_mixed_yellow('Skipping test:', self.title)
             return
 
+        Logger.add_logfile(self.logfile)
         Logger.print_mixed_yellow('Starting test:', self.title)
         hotplug = hotplug_variables.copy()
 
@@ -528,6 +572,7 @@ class Tester:
         for plugin in self.plugins:
             plugin._stop()
 
+        Logger.remove_logfile(self.logfile)
         Logger.decrease_indent()
 
     def run_childs(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] = (),

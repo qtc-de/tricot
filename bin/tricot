@@ -94,8 +94,7 @@ def initialize_logger(args: argparse.Namespace) -> None:
         tricot.Logger.set_verbosity(3)
 
     if args.log:
-        args.log.close()
-        tricot.Logger.set_logfile(args.log.name)
+        tricot.Logger.add_logfile(args.log)
 
 
 def load(files: list[io.TextIOWrapper]) -> None:

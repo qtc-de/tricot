@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 import json
+import typing
 from termcolor import cprint
 
 from tricot.command import Command
@@ -197,17 +198,70 @@ class Logger:
         for line in lines:
             Logger.print_blue(line, e=e)
 
-    def set_logfile(path: str) -> None:
+    def add_logfile(file: typing.TextIO) -> None:
         '''
         Mirrors all output of tricot to the specified logfile.
 
         Parameters:
-            path        File system path of the logfile
+            file        Logfile to mirror to
 
         Returns:
             None
         '''
-        Logger.tee = Tee(path)
+        if file is None:
+            return
+
+        if Logger.tee is None:
+            Logger.tee = Tee(file)
+
+        else:
+            Logger.tee.add(file)
+
+    def remove_logfile(file: typing.TextIO) -> None:
+        '''
+        Stop mirroring to the specified logfile.
+
+        Parameters:
+            file        Logfilt to stop mirroring to
+
+        Returns:
+            None
+        '''
+        if file is None or Logger.tee is None:
+            return
+
+        else:
+            Logger.tee.close(file)
+
+    def enable_stdout() -> None:
+        '''
+        Enables stdout on the loggers tee object.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        if Logger.tee is None:
+            return
+
+        Logger.tee.enable_stdout()
+
+    def disable_stdout() -> None:
+        '''
+        Disables stdout on the loggers tee object.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        if Logger.tee is None:
+            return
+
+        Logger.tee.disable_stdout()
 
     def handle_error(e: Exception, val: Validator) -> None:
         '''
@@ -229,12 +283,13 @@ class Logger:
         is printed.
         '''
         if Logger.verbosity == 0:
-            return
+            Logger.disable_stdout()
 
         if type(e) is ValidatorError:
             Logger.print_mixed_red('- Caught', 'ValidatorError', 'during validator instantiation.', e=True)
             Logger.print('  Validator instantiation failed because of the following reason:', e=True)
             Logger.print_blue('  ' + str(e), e=True)
+            Logger.enable_stdout()
             return
 
         elif type(e) is ValidationException:
@@ -253,29 +308,33 @@ class Logger:
             Logger.print_mixed_red('  The', val.name, 'validator raises probably an uncaught exception.', e=True)
             Logger.print_mixed_blue('  Message:', str(e), e=True)
 
-        if Logger.verbosity > 1:
-            Logger.print('', e=True)
-            Logger.print_yellow('  Command:', e=True, end=' ')
-            Logger.print_plain(val.command.command)
-            Logger.print_yellow('  Command exit code:', end=' ', e=True)
-            cprint(val.command.status, color='blue')
+        if Logger.verbosity <= 1:
+            Logger.disable_stdout()
 
-            Logger.print_yellow('  Command stdout:', e=True)
-            if val.command.stdout:
-                Logger.increase_indent()
-                Logger.print_with_indent(val.command.stdout, e=True)
-                Logger.decrease_indent()
+        Logger.print('', e=True)
+        Logger.print_yellow('  Command:', e=True, end=' ')
+        Logger.print_plain(val.command.command)
+        Logger.print_yellow('  Command exit code:', end=' ', e=True)
+        cprint(val.command.status, color='blue')
 
-            Logger.print_yellow('  Command stderr:', e=True)
-            if val.command.stderr:
-                Logger.increase_indent()
-                Logger.print_with_indent(val.command.stderr, e=True)
-                Logger.decrease_indent()
-
-            Logger.print_yellow('  Validator parameters:', e=True)
+        Logger.print_yellow('  Command stdout:', e=True)
+        if val.command.stdout:
             Logger.increase_indent()
-            Logger.print_with_indent(json.dumps(val.param, indent=4).replace(r'\n', '\n').replace(r'\t', '\t'), e=True)
+            Logger.print_with_indent(val.command.stdout, e=True)
             Logger.decrease_indent()
+
+        Logger.print_yellow('  Command stderr:', e=True)
+        if val.command.stderr:
+            Logger.increase_indent()
+            Logger.print_with_indent(val.command.stderr, e=True)
+            Logger.decrease_indent()
+
+        Logger.print_yellow('  Validator parameters:', e=True)
+        Logger.increase_indent()
+        Logger.print_with_indent(json.dumps(val.param, indent=4).replace(r'\n', '\n').replace(r'\t', '\t'), e=True)
+        Logger.decrease_indent()
+
+        Logger.enable_stdout()
 
     def handle_success(cmd: Command, val: list[Validator]) -> None:
         '''
@@ -283,12 +342,13 @@ class Logger:
         It is basically a wrapper around '_handle_success'.
         '''
         if Logger.verbosity != 3:
-            return
+            Logger.disable_stdout()
 
         Logger.increase_indent()
         Logger._handle_success(cmd, val)
         Logger.decrease_indent()
         Logger.print('')
+        Logger.enable_stdout()
 
     def _handle_success(cmd: Command, val: list[Validator]) -> None:
         '''
@@ -334,18 +394,44 @@ class Tee(object):
     Helper class to log stdout to a file. Copied from:
     https://stackoverflow.com/questions/616645/how-to-duplicate-sys-stdout-to-a-log-file
     '''
-    def __init__(self, name):
-        self.file = open(name, 'w')
+    def __init__(self, file):
+        self.file_names = [file.name]
+        self.files = [file]
         self.stdout = sys.stdout
+        self.use_stdout = True
         sys.stdout = self
 
     def __del__(self):
         sys.stdout = self.stdout
-        self.file.close()
+        for file in self.files:
+            file.close()
 
     def write(self, data):
-        self.file.write(data)
-        self.stdout.write(data)
+        if self.use_stdout:
+            self.stdout.write(data)
+        for file in self.files:
+            file.write(data)
 
     def flush(self):
-        self.file.flush()
+        for file in self.files:
+            file.flush()
+
+    def add(self, file):
+        if file.name not in self.file_names:
+            self.file_names.append(file.name)
+            self.files.append(file)
+
+    def close(self, file):
+        if file.name not in self.file_names:
+            return
+
+        self.file_names.remove(file.name)
+        c_file = next(filter(lambda x: x.name == file.name, self.files))
+        c_file.close()
+        self.files.remove(c_file)
+
+    def enable_stdout(self):
+        self.use_stdout = True
+
+    def disable_stdout(self):
+        self.use_stdout = False
