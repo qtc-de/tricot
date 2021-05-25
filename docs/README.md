@@ -17,7 +17,7 @@ on it's own.
 - [Conditionals](#conditionals)
 - [Reusing Output](#reusing-output)
 - [Logging](#logging)
-- [Additional Command Line Switches](#additional-command-line-switches)
+- [Worth Knowing](#worth-knowing)
 
 
 ### Validator and Plugin List
@@ -560,12 +560,13 @@ Log files are always written in verbose mode and contain the full details for ea
 This is also true, even if the corresponding *test* or *tester* run was successful.
 
 
-### Additional Command Line Switches
+### Worth Knowing
 
 ----
 
-Here is some more detailed explanation on some of *tricots* command line switches:
+The following list contains information on some smaller *tricot* features that did not receive their own section:
 
-* ``--logfile`` - Mirrors all tricot output into a logfile. Logfiles are always written with verbose output.
-* ``--debug`` - Show details on each tester that runs, even when successful. Furthermore, disable
-  exception handling and show each exception with full details.
+* You can always use the ``--debug`` command line option to show details on each tester that runs, even when successful.
+  Furthermore, the switch disables exception handling and shows each exception with full details.
+* Each *test* can contain the special attribute ``shell`` with a boolean value. If ``True`` commands are executed in shell
+  mode.
