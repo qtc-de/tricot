@@ -1,0 +1,52 @@
+tester:
+  name: log
+  title: Log Test
+  description: |-
+    "Performs different checks on tricot's logfile feature."
+  logfile: ${tester-log}
+
+
+variables:
+  tester-log: /tmp/tricot-tester-logile.log
+  test-log: /tmp/tricot-test-logile.log
+  probe: 'This string should be contained within the logfile :)'
+
+
+tests:
+  - title: Log Test - Success
+    description: >
+      'Echo a string that should be contained within the logfiles'
+    command:
+      - echo
+      - ${probe}
+    logfile: ${test-log}
+    validators:
+      - contains:
+          values:
+            - ${probe}
+
+  - title: Log Verify - Success
+    description: >
+      'Checks whether the logfiles are present and contain the required content'
+    command:
+      - echo
+      - dummy
+    validators:
+      - file_contains:
+        - file: ${tester-log}
+          contains:
+            - ${probe}
+            - 'Log Test - Success... success'
+            - 'Command exit code: 0'
+            - 'Validator name: contains'
+        - file: ${test-log}
+          contains:
+            - ${probe}
+            - 'Log Test - Success... success'
+            - 'Command exit code: 0'
+            - 'Validator name: contains'
+      - file_exists:
+          cleanup: True
+          files:
+            - ${tester-log}
+            - ${test-log}

@@ -237,3 +237,26 @@ tests:
           invert:
             - Fail... success
             - Success... failed
+
+
+  - title: Log
+    description: |-
+      "Test tricot's logfile feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Log.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
