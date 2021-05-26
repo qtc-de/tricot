@@ -147,6 +147,7 @@ class Test:
         if logfile is None:
             return
 
+        logfile = tricot.utils.apply_variables(logfile, self.variables)
         self.logfile = open(logfile, 'w')
 
     def apply_variables(val: Union(str, list), variables: dict[str, Any], k: str = 'command') -> list:
@@ -466,6 +467,7 @@ class Tester:
         if logfile is None:
             return
 
+        logfile = tricot.utils.apply_variables(logfile, self.variables)
         self.logfile = open(logfile, 'w')
 
     def from_file(filename: str, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
