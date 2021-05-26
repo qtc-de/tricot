@@ -341,6 +341,9 @@ class Logger:
         This function is called when all Validators have been passed.
         It is basically a wrapper around '_handle_success'.
         '''
+        if Logger.tee is None:
+            return
+
         if Logger.verbosity != 3:
             Logger.disable_stdout()
 
