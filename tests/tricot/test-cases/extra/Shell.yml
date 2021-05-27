@@ -1,0 +1,62 @@
+tester:
+  name: shell
+  title: shell Tester
+  description: |-
+    'Check whether tricot handels shell mode correctly'
+
+tests:
+  - title: Echo Stderr - Success
+    description: >
+      'Echo to stderr'
+    command:
+      - echo
+      - 'Should appear in stderr'
+      - '1>&2'
+    shell: True
+    validators:
+      - contains:
+          stream: stderr
+          values:
+            - 'Should appear in stderr'
+      - line_count:
+          stream: stderr
+          count: 1
+
+  - title: Output Redirection - Success
+    description: >
+      'Redirect echo to file'
+    command:
+      - echo
+      - 'This is a test'
+      - '>'
+      - ./output_redirection_test.txt
+    shell: True
+    validators:
+      - file_contains:
+        - file: ./output_redirection_test.txt
+          contains:
+            - 'This is a test'
+      - file_exists:
+          cleanup: True
+          files:
+              - ./output_redirection_test.txt
+
+  - title: Pipe - Success
+    description: >
+      'Pipe echo to tee'
+    command:
+      - echo
+      - 'This is another test'
+      - '|'
+      - tee
+      - ./output_redirection_test.txt
+    shell: True
+    validators:
+      - file_contains:
+        - file: ./output_redirection_test.txt
+          contains:
+            - 'This is another test'
+      - file_exists:
+          cleanup: True
+          files:
+              - ./output_redirection_test.txt

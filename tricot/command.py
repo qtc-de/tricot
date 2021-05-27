@@ -26,7 +26,7 @@ class Command:
     the command and storing the corresponding outputs along with some meta
     information.
     '''
-    def __init__(self, command: list) -> None:
+    def __init__(self, command: list, shell: bool = False) -> None:
         '''
         Crates a new Command object.
 
@@ -42,6 +42,7 @@ class Command:
         self.status = None
         self.runtime = None
 
+        self.shell = shell
         self.command = command
 
     def run(self, path: Path, timeout: int, hotplug_variables: dict[str, Any] = None, env: dict = {}):
@@ -101,8 +102,13 @@ class Command:
         '''
         envi = tricot.utils.merge_default_environment(env)
 
+        if self.shell:
+            self.command = ' '.join(self.command)
+
         try:
-            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=path, env=envi)
+            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       cwd=path, env=envi, shell=self.shell)
+
             self.stdout, self.stderr = process.communicate(timeout=timeout)
             self.status = process.returncode
 

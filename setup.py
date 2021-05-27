@@ -11,7 +11,7 @@ setuptools.setup(
     url='https://github.com/qtc-de/tricot',
     name='tricot',
     author='Tobias Neitzel (@qtc_de)',
-    version='1.3.2',
+    version='1.4.0',
     author_email='',
 
     description='Trivial Command Testser',

@@ -89,7 +89,7 @@ tests:
       - ${EXTRA}/Conditionals/Error1/launcher.yml
 
     validators:
-      - status: 16
+      - status: 9
       - contains:
           values:
             - "Condition 'Test5' was used but never declared within a tester"
@@ -104,7 +104,7 @@ tests:
       - ${EXTRA}/Conditionals/Error2/launcher.yml
 
     validators:
-      - status: 16
+      - status: 9
       - contains:
           values:
             - "Condition 'Test5' was used but never declared within a tester"
@@ -119,7 +119,7 @@ tests:
       - ${EXTRA}/Conditionals/Error3/launcher.yml
 
     validators:
-      - status: 16
+      - status: 9
       - contains:
           values:
             - "Conditions need to be specified as string -> bool pairs"
@@ -134,7 +134,7 @@ tests:
       - ${EXTRA}/Conditionals/Error4/launcher.yml
 
     validators:
-      - status: 16
+      - status: 9
       - contains:
           values:
             - "The keys 'all', 'one_of' and 'none_of' need to be lists"
@@ -200,6 +200,52 @@ tests:
     command:
       - tricot
       - ${EXTRA}/Prev.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 2
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+
+  - title: Shell
+    description: |-
+      "Test tricot command execution in shell mode"
+
+    command:
+      - tricot
+      - ${EXTRA}/Shell.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+          counts:
+            - 3
+            - 0
+      - contains:
+          invert:
+            - Fail... success
+            - Success... failed
+
+
+  - title: Log
+    description: |-
+      "Test tricot's logfile feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Log.yml
 
     validators:
       - error: False

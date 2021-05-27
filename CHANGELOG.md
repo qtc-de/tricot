@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.4.0] - May 27, 2021
+
+### Added
+
+* Add support for running commands in [shell mode](/docs/README.md#worth-knowing)
+* Add logfile attribute for [tests and testers](/docs/README.md#logging)
+* Add support for custom [success and error strings](/docs/README.md##custom-strings)
+
+
 ## [1.3.2] - May 24, 2021
 
 ### Changed

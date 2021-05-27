@@ -16,7 +16,9 @@ on it's own.
 - [Nesting Variables](#nesting-variables)
 - [Conditionals](#conditionals)
 - [Reusing Output](#reusing-output)
-- [Additional Command Line Switches](#additional-command-line-switches)
+- [Logging](#logging)
+- [Custom Strings](#custom-strings)
+- [Worth Knowing](#worth-knowing)
 
 
 ### Validator and Plugin List
@@ -515,12 +517,78 @@ Updating conditions is only allowed within of *tests* and not within *testers*. 
 when all validators have run successfully. The ``on_error`` action triggers, if one or more validators failed.
 
 
-### Additional Command Line Switches
+### Logging
 
 ----
 
-Here is some more detailed explanation on some of *tricots* command line switches:
+*tricot* supports logging on *global*, *tester* and *test* level. For global logging, you can use the ``--log <FILE>`` command
+line option and all output is mirrored to the specified logfile. Logging single *tests* or *testers* is possible by using the
+``logfile`` attribute:
 
-* ``--logfile`` - Mirrors all tricot output into a logfile
-* ``--debug`` - Show details on each tester that runs, even when successful. Furthermore, disable
-  exception handling and show each exception with full details.
+```yaml
+tester:
+  name: ExampleTester
+  title: Just an example test
+  logfile: /log/example-tester.log
+
+tests:
+  - title: Test curl
+    description: |-
+      Test that our curl installation is working
+
+    command:
+      - curl
+      - http://example.org
+    logfile: /log/curl-tester.log
+
+    validators:
+      - status: 0
+
+  - title: Test wget
+    description: |-
+      Test that our wget installation is working
+
+    command:
+      - wget
+      - http://example.org
+    logfile: /log/wget-tester.log
+
+    validators:
+      - status: 0
+```
+
+Log files are always written in verbose mode and contain the full details for each *test* or *tester*.
+This is also true, even if the corresponding *test* or *tester* run was successful.
+
+
+### Custom Strings
+
+----
+
+*Testers*, *tests* and *validators* accept an additional *yml attribute* ``output``. This attribute
+is expected to be structured like this:
+
+```yml
+output:
+  success_string: worked :)
+  success_color: cyan
+  failure_string: nope :(
+  failure_color: magenta
+```
+
+Output specifications in *tests* overwrite settings in *testers* and output specifications in *validators*
+overwrite settings in *tests*. *Validators* are only allowed to set the ``failure_string`` and ``failure_color``
+settings. Furthermore, support for *validators* is currently limited by their parameter type. The ``output`` attribute
+can only be specified for *validators* that have an dictionary parameter type.
+
+
+### Worth Knowing
+
+----
+
+The following list contains information on some smaller *tricot* features that did not receive their own section:
+
+* You can always use the ``--debug`` command line option to show details on each tester that runs, even when successful.
+  Furthermore, the switch disables exception handling and shows each exception with full details.
+* Each *test* can contain the special attribute ``shell`` with a boolean value. If ``True`` commands are executed in shell
+  mode.

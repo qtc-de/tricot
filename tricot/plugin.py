@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import shutil
+import signal
 import atexit
 import socket
 import functools
@@ -338,6 +339,7 @@ class OsCommandPlugin(Plugin):
     '''
     param_type = dict
     inner_types = {
+                    'shell': {'required': False, 'type': bool},
                     'ignore_error': {'required': False, 'type': bool},
                     'init': {'required': False, 'type': int},
                     'background': {'required': False, 'type': bool},
@@ -363,13 +365,18 @@ class OsCommandPlugin(Plugin):
         init = self.param.get('init', 0)
 
         command = self.param['cmd']
+        shell = self.param.get('shell', False)
         timeout = self.param.get('timeout', 0)
         background = self.param.get('background', False)
 
         for ctr in range(len(command)):
             command[ctr] = str(command[ctr])
 
-        self.process = subprocess.Popen(command, cwd=self.path.parent, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if shell:
+            command = ' '.join(command)
+
+        self.process = subprocess.Popen(command, cwd=self.path.parent, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, shell=shell, preexec_fn=os.setsid)
 
         if timeout > 0:
             self.process.communicate(timeout=timeout)
@@ -386,8 +393,11 @@ class OsCommandPlugin(Plugin):
         '''
         Stop the process if still existing.
         '''
-        if hasattr(self, 'process') and self.process and self.process.poll() is None:
-            self.process.kill()
+        try:
+            os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+
+        except ProcessLookupError:
+            pass
 
 
 class MkdirPlugin(Plugin):
@@ -608,6 +618,7 @@ class CleanupCommandPlugin(Plugin):
     '''
     param_type = dict
     inner_types = {
+                    'shell': {'required': False, 'type': bool},
                     'ignore_error': {'required': False, 'type': bool},
                     'timeout': {'required': False, 'type': int},
                     'cmd': {'required': True, 'type': list}
@@ -629,12 +640,17 @@ class CleanupCommandPlugin(Plugin):
         Run the specified command on stop.
         '''
         command = self.param['cmd']
+        shell = self.param.get('shell', False)
         timeout = self.param.get('timeout', 0)
 
         for ctr in range(len(command)):
             command[ctr] = str(command[ctr])
 
-        self.process = subprocess.Popen(command, cwd=self.path.parent, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if shell:
+            command = ' '.join(command)
+
+        self.process = subprocess.Popen(command, cwd=self.path.parent, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, shell=shell)
 
         if timeout > 0:
             self.process.communicate(timeout=timeout)

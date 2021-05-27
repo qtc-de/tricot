@@ -27,6 +27,7 @@ configs.append({'count': 13, 'keep_leading': True, 'keep_trailing': True})
 
 results = [True, True, True, True, False, True, True, True, True, True, True]
 
+
 @pytest.mark.parametrize('output, config, result', zip(outputs, configs, results))
 def test_line_count_validator(output: int, config: dict, result: bool):
     '''

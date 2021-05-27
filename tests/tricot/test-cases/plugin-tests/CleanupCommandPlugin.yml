@@ -15,3 +15,5 @@ variables:
 testers:
   - ./CleanupCommandPlugin/CleanupCommandPluginCleanup.yml
   - ./CleanupCommandPlugin/CleanupCommandPluginVerify.yml
+  - ./CleanupCommandPlugin/CleanupCommandPluginCleanupShell.yml
+  - ./CleanupCommandPlugin/CleanupCommandPluginVerifyShell.yml

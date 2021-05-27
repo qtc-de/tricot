@@ -176,6 +176,26 @@ def test_os_command_init():
     assert timer.timeit(number=1) > 2
 
 
+def test_os_command_shell():
+    '''
+    Test if plain command execution is working by creating a directory in shell mode.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    config = {'cmd': ['echo', 'hi', '&&', 'mkdir', test_dir], 'shell': True}
+
+    plug = tricot.get_plugin(Path(__file__), 'os_command', config, {})
+    plug._run()
+
+    r = resolve(test_dir)
+    assert r.is_dir()
+    r.rmdir()
+
+
 @pytest.fixture(autouse=True)
 def resource():
     '''

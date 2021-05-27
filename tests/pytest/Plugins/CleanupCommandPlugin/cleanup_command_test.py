@@ -2,7 +2,6 @@
 
 import tricot
 import pytest
-import timeit
 
 from pathlib import Path
 from functools import partial
@@ -142,6 +141,26 @@ def test_cleanup_command_timeout():
     with pytest.raises(tricot.plugin.PluginException, match=r"PluginException"):
         plug._run()
         plug._stop()
+
+
+def test_cleanup_command_shell():
+    '''
+    Test if plain command execution is working by creating a directory in shell mode.
+
+    Parameters:
+        None
+
+    Returns:
+        None
+    '''
+    config = {'cmd': ['echo', 'hi', '&&', 'mkdir', test_dir], 'shell': True}
+
+    plug = tricot.get_plugin(Path(__file__), 'cleanup_command', config, {})
+    plug.stop()
+
+    r = resolve(test_dir)
+    assert r.is_dir()
+    r.rmdir()
 
 
 @pytest.fixture(autouse=True)
