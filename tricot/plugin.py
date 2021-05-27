@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import shutil
+import signal
 import atexit
 import socket
 import functools
@@ -375,7 +376,7 @@ class OsCommandPlugin(Plugin):
             command = ' '.join(command)
 
         self.process = subprocess.Popen(command, cwd=self.path.parent, stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT, shell=shell)
+                                        stderr=subprocess.STDOUT, shell=shell, preexec_fn=os.setsid)
 
         if timeout > 0:
             self.process.communicate(timeout=timeout)
@@ -392,8 +393,11 @@ class OsCommandPlugin(Plugin):
         '''
         Stop the process if still existing.
         '''
-        if hasattr(self, 'process') and self.process and self.process.poll() is None:
-            self.process.kill()
+        try:
+            os.killpg(os.getpgid(self.process.pid), signal.SIGTERM)
+
+        except ProcessLookupError:
+            pass
 
 
 class MkdirPlugin(Plugin):
