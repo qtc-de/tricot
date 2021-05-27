@@ -17,6 +17,7 @@ on it's own.
 - [Conditionals](#conditionals)
 - [Reusing Output](#reusing-output)
 - [Logging](#logging)
+- [Custom Strings](#custom-strings)
 - [Worth Knowing](#worth-knowing)
 
 
@@ -558,6 +559,27 @@ tests:
 
 Log files are always written in verbose mode and contain the full details for each *test* or *tester*.
 This is also true, even if the corresponding *test* or *tester* run was successful.
+
+
+### Custom Strings
+
+----
+
+*Testers*, *tests* and *validators* accept an additional *yml attribute* ``output``. This attribute
+is expected to be structured like this:
+
+```yml
+output:
+  success_string: worked :)
+  success_color: cyan
+  failure_string: nope :(
+  failure_color: magenta
+```
+
+Output specifications in *tests* overwrite settings in *testers* and output specifications in *validators*
+overwrite settings in *tests*. *Validators* are only allowed to set the ``failure_string`` and ``failure_color``
+settings. Furthermore, support for *validators* is currently limited by their parameter type. The ``output`` attribute
+can only be specified for *validators* that have an dictionary parameter type.
 
 
 ### Worth Knowing

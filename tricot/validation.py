@@ -146,9 +146,12 @@ class Validator:
         self.name = name
         self.param = param
         self.variables = variables
-        self.check_param_type()
 
         self.command = None
+        self.failure_string = None
+        self.failure_color = None
+
+        self.check_param_type()
 
     def check_param_type(self) -> None:
         '''
@@ -172,6 +175,7 @@ class Validator:
 
         self.check_inner_types()
         self.check_streams()
+        self.set_output()
 
     def check_inner_types(self) -> None:
         '''
@@ -249,6 +253,7 @@ class Validator:
 
             expected_keys = set(self.inner_types.keys())
             expected_keys.add('stream')
+            expected_keys.add('output')
 
             for key in self.param.keys():
 
@@ -322,6 +327,30 @@ class Validator:
 
             if type(stream) != str or stream not in ['stdout', 'stderr', 'both']:
                 raise ValidatorError(self.path, "When specified, stream needs to be one of 'stdout', 'stderr' or 'both'.")
+
+    def set_output(self) -> None:
+        '''
+        When the parameter type is a dictionary, validators can specify the output attribute to controll their
+        failure string and failure color. This function sets the corresponding values.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        if type(self.param) is not dict:
+            return
+
+        output = self.param.get('output', {})
+
+        if type(output) is not dict:
+            raise ValidatorError(self.path, "When specified, output needs to be a dictionary.")
+
+        self.failure_string = output.get('failure_string') or self.failure_string
+        self.failure_color = output.get('failure_color') or self.failure_color
+
+        tricot.utils.validate_color(self.failure_color, True)
 
     def get_output(self) -> str:
         '''

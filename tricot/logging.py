@@ -28,6 +28,12 @@ class Logger:
     indent = 0
     verbosity = 1
 
+    def cprint(string: str, **kwargs) -> None:
+        '''
+        Just a wrapper around termcolors cprint.
+        '''
+        cprint(string, **kwargs)
+
     def print(string: str, *args, e: bool = False, end: str = None) -> None:
         '''
         Print with prefix and indentation.

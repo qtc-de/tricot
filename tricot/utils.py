@@ -213,3 +213,65 @@ def add_environment(variables: dict[str, Any]) -> None:
         None
     '''
     variables['$env'] = os.environ
+
+
+def validate_color(string: str, allow_none: bool = False) -> None:
+    '''
+    Validates that the input string is a valid color name. If not, an exception is raised.
+
+    Parameters:
+        variables       Variable dictionary
+        allow_none      Whether None values are allowed
+
+    Returns:
+        None
+    '''
+    if string is None and allow_none:
+        return
+
+    colors = ['grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white']
+    if string not in colors:
+        raise Exception(f'Invalid color was specified: {string}')
+
+
+def validate_type(name: str, value: Any, expected_type: Any, path: Path = None) -> None:
+    '''
+    Validates that the input parameter 'value' has a type of 'expected_type'.
+    If not, a corresponding exception is raised that contains the 'name' of the
+    parameter and it's expected type
+
+    Parameters:
+        name            Name of the parameter
+        value           Value of the parameter
+        expected_type   Expected type of the parameter
+        path            Optional path to a configuration file
+
+    Returns:
+        None
+    '''
+    if type(value) is not expected_type:
+        raise tricot.TricotException(f"The '{name}' attribute requires type '{expected_type}'.", path)
+
+
+def merge(dict1: dict, dict2: dict, name: str = None, path: Path = None) -> dict:
+    '''
+    Merge two dictionaries.
+
+    Parameters:
+        dict1       Dictionary one to merge
+        dict2       Dictionary two to merge
+        name        Optional string to print in exceptions
+        path        Optional path to a configuration file
+
+    Returns:
+        dict        Merged dictionary
+    '''
+    if type(dict1) is not dict or type(dict2) is not dict:
+
+        if name:
+            raise tricot.TricotException(f"The '{name}' attribute requires type 'dict'.", path)
+
+        else:
+            raise tricot.TricotException('Invalid type specified during merge operation.', path)
+
+    return {**dict1, **dict2}

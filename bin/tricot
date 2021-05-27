@@ -207,8 +207,12 @@ def main():
             sys.exit(tricot.constants.CONDITION_FORMAT_ERROR)
 
         except tricot.TricotException as e:
-            tricot.Logger.print('Encountered an error during test execution.', e=True)
+            tricot.Logger.print('Encountered an unexpected error.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
+
+            if e.path:
+                tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+
             sys.exit(tricot.constants.TRICOT_EXCEPTION)
 
         except yaml.parser.ParserError as e:
