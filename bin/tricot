@@ -10,7 +10,7 @@ import tricot
 import argparse
 
 
-parser = argparse.ArgumentParser(description='''tricot v1.4.0 - a trivial command tester that allows you to verify that certain
+parser = argparse.ArgumentParser(description='''tricot v1.4.1 - a trivial command tester that allows you to verify that certain
                                                 commands or executables behave as expected. It uses .yml files for test
                                                 definitions and can be used from the command line or as a python library.''')
 
