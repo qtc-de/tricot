@@ -355,8 +355,14 @@ class OsCommandPlugin(Plugin):
         poll = self.process.poll()
 
         if poll and poll != 0 and not ignore_error:
-            command = ' '.join(command)
-            raise OSError(f"Command '{command}' exited with a non zero status code.")
+
+            if type(command) is list:
+                command = ' '.join(command)
+
+            stdout, stderr = self.process.communicate()
+
+            raise OSError(f"Command '{command}' exited with a non zero status code." +
+                          f"\n\nstdout: {stdout}\n\nstderr: {stderr}")
 
     def run(self) -> None:
         '''
@@ -632,8 +638,14 @@ class CleanupCommandPlugin(Plugin):
         poll = self.process.poll()
 
         if poll and poll != 0 and not ignore_error:
-            command = ' '.join(command)
-            raise OSError(f"Command '{command}' exited with a non zero status code.")
+
+            if type(command) is list:
+                command = ' '.join(command)
+
+            stdout, stderr = self.process.communicate()
+
+            raise OSError(f"Command '{command}' exited with a non zero status code." +
+                          f"\n\nstdout: {stdout}\n\nstderr: {stderr}")
 
     def stop(self) -> None:
         '''
