@@ -643,7 +643,7 @@ class Tester:
             try:
 
                 if self.name in testers:
-                    tester.run(numbers=numbers, exluce=exclude, hotplug_variables=hotplug_variables)
+                    tester.run(numbers=numbers, exclude=exclude, hotplug_variables=hotplug_variables)
 
                 else:
                     tester.run(testers, numbers, exclude, hotplug_variables)
