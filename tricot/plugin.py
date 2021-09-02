@@ -405,6 +405,9 @@ class OsCommandPlugin(Plugin):
         except ProcessLookupError:
             pass
 
+        except AttributeError:
+            pass
+
 
 class MkdirPlugin(Plugin):
     '''
