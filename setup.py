@@ -23,7 +23,6 @@ setuptools.setup(
                         'PyYAML',
                         'termcolor',
                         'docker',
-                        'six==1.16.0'
                      ],
     scripts=[
                 'bin/tricot',
