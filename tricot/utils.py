@@ -80,7 +80,7 @@ def resolve_env_variables(variables: dict[str, Any], key: str, value: Any) -> An
         raise TricotEnvVariableError(f"Unable to find environment variable '{key}'.")
 
 
-def apply_variables(candidate: Any, var_dict: dict[str, Any] = None) -> Any:
+def apply_variables(candidate: Any, var_dict: dict[str, Any]) -> Any:
     '''
     Applies the variables contained in the Plugin on each str value within the
     parameters. For dictionaires and list, the function uses recursion to iterate
@@ -93,7 +93,7 @@ def apply_variables(candidate: Any, var_dict: dict[str, Any] = None) -> Any:
     Returns:
         None
     '''
-    if var_dict is None:
+    if candidate is None or var_dict is None:
         return candidate
 
     cur_type = type(candidate)
