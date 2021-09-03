@@ -120,6 +120,20 @@ class Logger:
         else:
             cprint(str2, color='blue', end=end)
 
+    def print_mixed_blue_yellow(str1: str, str2: str, *args, e: bool = False, end: str = None) -> None:
+        '''
+        Print with prefix and indent, first arg in blue text color, second arg
+        in yellow and the rest of the args in normal text color again.
+        '''
+        Logger.print_blue(str1, end=' ')
+
+        if(args):
+            cprint(str2, color='yellow', end=' ')
+            print(*args, end=end)
+
+        else:
+            cprint(str2, color='yellow', end=end)
+
     def print_mixed_blue_plain(str1: str, str2: str, *args, e: bool = False, end: str = None) -> None:
         '''
         Print first arg in normal text color, second arg
