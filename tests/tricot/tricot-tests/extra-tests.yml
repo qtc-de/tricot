@@ -21,9 +21,21 @@ tests:
           values:
             - Success... success
             - Fail... failed
+            - 'Starting container: nginx-host'
+            - 'Stopping container: nginx-host'
+            - 'Starting container: nginx'
+            - 'Stopping container: nginx'
+            - 'Network Mode: host'
+            - 'Network Mode: default'
           counts:
-            - 2
+            - 3
             - 0
+            - 1
+            - 1
+            - 2
+            - 2
+            - 1
+            - 1
       - contains:
           invert:
             - Fail... success
