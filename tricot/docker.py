@@ -165,7 +165,7 @@ class TricotContainer:
                 image = tricot.utils.apply_variables(item['image'], variables)
                 aliases = tricot.utils.apply_variables(item.get('aliases', {}), variables)
                 environment = tricot.utils.apply_variables(item.get('env', {}), variables)
-                network_mode = tricot.utils.apply_variables(item.get('networking_mode'), variables)
+                network_mode = tricot.utils.apply_variables(item.get('network_mode'), variables)
 
                 container = TricotContainer(name, image, environment, volume_dict, aliases, network_mode)
                 containers.append(container)
