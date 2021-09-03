@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.5.0] - Sep 04, 2021
+
+### Added
+
+* Add ``network_mode`` support for docker containers
+* Add additional tests
+
+### Changed
+
+* Changed the log output format for docker containers
+* Changed exception handling of AttributeException in OsCommandPlugin
+
+### Removed
+
+* Removed six dependency (closes #4)
+
+
 ## [1.4.2] - June 11, 2021
 
 ### Changed
