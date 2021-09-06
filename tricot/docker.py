@@ -115,7 +115,7 @@ class TricotContainer:
         max_length = 0
         for key in self.env.keys():
             if len(key) > max_length:
-                    max_length = len(key)
+                max_length = len(key)
 
         for key, value in self.env.items():
             tricot.Logger.print_yellow(f'{key.ljust(max_length)} = {value}'),
@@ -141,7 +141,7 @@ class TricotContainer:
         max_length = 0
         for key in self.volumes.keys():
             if len(key) > max_length:
-                    max_length = len(key)
+                max_length = len(key)
 
         for key, value in self.volumes.items():
             tricot.Logger.print_yellow(f'{key.ljust(max_length)} = {value}'),
