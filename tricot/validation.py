@@ -208,14 +208,14 @@ class Validator:
                     message = f"Validator '{self.name}' expects type {value['type']} for the '{key}' key."
                     raise ValidatorError(self.path, message)
 
-                self.check_expected()
-
         elif type(self.param) is list and type(self.inner_types) is list:
 
             for param in self.param:
                 if type(param) not in self.inner_types:
                     message = f"Validator '{self.name}' requires a parameter type of list[{str(self.inner_types)}."
                     raise ValidatorError(self.path, message)
+
+        self.check_expected()
 
     def check_alternative(self, key: str) -> bool:
         '''
