@@ -7,6 +7,7 @@ from termcolor import cprint
 
 from tricot.command import Command
 from tricot.validation import Validator, ValidationException, ValidatorError
+from tricot.extractor import Extractor, ExtractException
 
 
 class Logger:
@@ -283,6 +284,32 @@ class Logger:
 
         Logger.tee.disable_stdout()
 
+    def extract_warning(e: Exception, ext: Extractor) -> None:
+        '''
+        Print a warning message that the specified extractor did not
+        worked as expected.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        Logger.increase_indent()
+        Logger.print_plain('')
+
+        if type(e) is ExtractException:
+            Logger.print_yellow('Warning:', end=' ')
+            Logger.print_mixed_blue_plain('Extractor', ext.name, 'did not extract any values.')
+
+        else:
+            Logger.print_yellow('Warning:', end=' ')
+            Logger.print_mixed_blue_plain('Extractor', ext.name, 'caused an unexpected exception:')
+            Logger.print_yellow(str(e))
+
+        Logger.print('', end='  --> ')
+        Logger.decrease_indent()
+
     def handle_error(e: Exception, val: Validator) -> None:
         '''
         This function is called when a Validator failed to handle the error
@@ -305,7 +332,18 @@ class Logger:
         if Logger.verbosity == 0:
             Logger.disable_stdout()
 
-        if type(e) is ValidatorError:
+        if type(e) is ExtractException:
+            Logger.print_mixed_yellow('- Caught', 'ExtractException', 'raised by the', end='', e=True)
+            Logger.print_mixed_red_plain('', e.extractor.name, 'extractor.')
+            Logger.print_mixed_blue('  Configuration file:', e.extractor.path.absolute(), e=True)
+
+            if Logger.verbosity > 1:
+                Logger.print('', e=True)
+
+            Logger.print('  Extractor failed because of the following reason:', e=True)
+            Logger.print_with_indent_blue('  ' + str(e), e=True)
+
+        elif type(e) is ValidatorError:
             Logger.print_mixed_red('- Caught', 'ValidatorError', 'during validator instantiation.', e=True)
             Logger.print('  Validator instantiation failed because of the following reason:', e=True)
             Logger.print_blue('  ' + str(e), e=True)
@@ -349,11 +387,17 @@ class Logger:
             Logger.print_with_indent(val.command.stderr, e=True)
             Logger.decrease_indent()
 
-        Logger.print_yellow('  Validator parameters:', e=True)
-        Logger.increase_indent()
-        Logger.print_with_indent(json.dumps(val.param, indent=4).replace(r'\n', '\n').replace(r'\t', '\t'), e=True)
-        Logger.decrease_indent()
+        if type(e) is ExtractException:
+            Logger.print_yellow('  Extractor parameters:', e=True)
+            Logger.increase_indent()
+            Logger.print_with_indent(json.dumps(e.extractor.param, indent=4).replace(r'\n', '\n').replace(r'\t', '\t'), e=True)
 
+        else:
+            Logger.print_yellow('  Validator parameters:', e=True)
+            Logger.increase_indent()
+            Logger.print_with_indent(json.dumps(val.param, indent=4).replace(r'\n', '\n').replace(r'\t', '\t'), e=True)
+
+        Logger.decrease_indent()
         Logger.enable_stdout()
 
     def handle_success(cmd: Command, val: list[Validator]) -> None:

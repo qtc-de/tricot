@@ -171,6 +171,19 @@ def main():
             tricot.Logger.print_blue('Stopping test.', e=True)
             sys.exit(tricot.constants.VALIDATION_EXCEPTION)
 
+        except tricot.ExtractException:
+            tricot.Logger.print_mixed_yellow('Caught', 'ExtractException', 'while error mode is set to break.', e=True)
+            tricot.Logger.print_blue('Stopping test.', e=True)
+            sys.exit(tricot.constants.EXTRACT_EXCEPTION)
+
+        except tricot.ExtractorError as e:
+            tricot.Logger.print_mixed_red('Caught', 'ExtractorError', 'while parsing test configuration.', e=True)
+            tricot.Logger.print('Extractor instantiation caused the following error:', e=True)
+            tricot.Logger.increase_indent()
+            tricot.Logger.print_blue(str(e), e=True)
+            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+            sys.exit(tricot.constants.EXTRACTOR_ERROR)
+
         except (tricot.TestKeyError, tricot.TesterKeyError) as e:
             tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
             tricot.Logger.print_blue(str(e), e=True)
