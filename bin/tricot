@@ -12,15 +12,16 @@ import argparse
 
 parser = argparse.ArgumentParser(description='''tricot v1.5.0 - a trivial command tester that allows you to verify that certain
                                                 commands or executables behave as expected. It uses .yml files for test
-                                                definitions and can be used from the command line or as a python library.''')
+                                                definitions and can be used from the command line or as a python library.''',
+                                                formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=40))
 
-parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='enable debug output')
-parser.add_argument('-e', '--exclude', metavar='name', nargs='+', default=[], help='exclude the specified testers')
+parser.add_argument('--debug', dest='debug', action='store_true', help='enable debug output')
+parser.add_argument('--exclude', metavar='name', nargs='+', default=[], help='exclude the specified testers')
 parser.add_argument('file', metavar='file', nargs='+', help='test definition (.yml file)')
-parser.add_argument('-l', '--logfile', dest='log', type=argparse.FileType('w'), help='mirror output into a logfile')
+parser.add_argument('--logfile', dest='log', type=argparse.FileType('w'), help='mirror output into a logfile')
 parser.add_argument('--numbers', dest='numbers', metavar='int', type=int, nargs='+', default=[], help='only run the specified test numbers')
 parser.add_argument('--plugins', dest='plugins', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional plugin files')
-parser.add_argument('-p', '--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
+parser.add_argument('--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
 parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
 parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator'], help='write a template file')
 parser.add_argument('--testers', dest='testers', metavar='name', nargs='+', default=[], help='only run the specified testers')
