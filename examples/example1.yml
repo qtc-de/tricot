@@ -1,6 +1,7 @@
 tester:
-  name: ExampleTester
-  title: Just an example test
+  name: Basic Usage
+  description: |-
+    Demonstrate the basic usage of tricot
 
 variables:
   passwd: /etc/passwd

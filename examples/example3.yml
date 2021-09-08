@@ -1,6 +1,7 @@
 tester:
-  name: ExampleTester
-  title: Just an example test
+  name: Nested Testers
+  description: |-
+    An example for nested testers and plugins
   error_mode: break
 
 plugins:

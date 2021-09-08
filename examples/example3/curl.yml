@@ -1,6 +1,7 @@
 tester:
-  name: CurlTester
-  title: Curl Commands
+  name: curl Tester
+  description: |-
+    Test some curl commands
 
 tests:
 

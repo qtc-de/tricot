@@ -1,6 +1,7 @@
 tester:
-  name: ExampleTester
-  title: Just an example test
+  name: Docker Integration
+  description: |-
+    An example for tricots docker integration
 
 containers:
   - name: 'nginx'
