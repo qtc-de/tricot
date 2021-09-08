@@ -101,7 +101,7 @@ tests:
       - ${EXTRA}/Conditionals/Error1/launcher.yml
 
     validators:
-      - status: 9
+      - status: 16
       - contains:
           values:
             - "Condition 'Test5' was used but never declared within a tester"
@@ -116,7 +116,7 @@ tests:
       - ${EXTRA}/Conditionals/Error2/launcher.yml
 
     validators:
-      - status: 9
+      - status: 16
       - contains:
           values:
             - "Condition 'Test5' was used but never declared within a tester"
@@ -131,7 +131,7 @@ tests:
       - ${EXTRA}/Conditionals/Error3/launcher.yml
 
     validators:
-      - status: 9
+      - status: 16
       - contains:
           values:
             - "Conditions need to be specified as string -> bool pairs"
@@ -146,7 +146,7 @@ tests:
       - ${EXTRA}/Conditionals/Error4/launcher.yml
 
     validators:
-      - status: 9
+      - status: 16
       - contains:
           values:
             - "The keys 'all', 'one_of' and 'none_of' need to be lists"
