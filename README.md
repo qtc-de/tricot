@@ -79,6 +79,12 @@ $ cp resources/bash_completion.d/tricot ~/bash_completion.d/
   allows the definition of global variables within the toplevel *Tester*, that can be used by all
   sub *Testers*.
 
+* **Extractors**: Extractors allow you to extract parts of the command output of previous tests and
+  bind it to variables that can be used later on. This is useful if a test depends on the command
+  output of another test. If a test depends on the outcome of another test, you should use
+  [Conditionals](/docs/README.md#conditionals) instead.
+
+
 Sounds too complicated? Let's look at some examples!
 
 
@@ -95,13 +101,15 @@ real word examples, you should check the [Projects that use tricot](#projects-th
 * Test definition:
   ```yaml
   tester:
-    name: ExampleTester
-    title: Just an example test
+    name: Basic Usage
+    description: |-
+      Demonstrate the basic usage of tricot
 
   variables:
     passwd: /etc/passwd
 
   tests:
+
     - title: Test passwd File
       description: |-
         Test that our passwd file contains some expected user names.
@@ -123,8 +131,8 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   ```
 * Output:
   ```console
-  [qtc@kali Example]$ tricot -v example1.yml
-  [+] Starting test: Just an example test
+  [qtc@kali example]$ tricot -v example1.yml
+  [+] Starting test: Basic Usage
   [+]
   [+]         1. Test passwd File... success.
   ```
@@ -134,8 +142,9 @@ real word examples, you should check the [Projects that use tricot](#projects-th
 * Test definition:
   ```yaml
   tester:
-    name: ExampleTester
-    title: Just an example test
+    name: Docker Integration
+    description: |-
+      An example for tricots docker integration
 
   containers:
     - name: 'nginx'
@@ -180,16 +189,15 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   ```
 * Output:
   ```console
-  [qtc@kali Example]$ tricot -v example2.yml
-  [+] Starting test: Just an example test
+  [qtc@kali example]$ tricot -v example2.yml
+  [+] Starting test: Docker Integration
   [+]
   [+]     Starting container: nginx
   [+]         Image: nginx:latest
-  [+]         Volumes: {}
-  [+]         Environment: {}
+  [+]         Network Mode: default
   [+]
-  [+]         1. Test curl... success.
-  [+]         2. Test wget... success.
+  [+]     1. Test curl... success
+  [+]     2. Test wget... success
   [+]
   [+]     Stopping container: nginx
   ```
@@ -201,8 +209,9 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   * ``example3.yml``:
     ```yaml
     tester:
-      name: ExampleTester
-      title: Just an example test
+      name: Nested Testers
+      description: |-
+        An example for nested testers and plugins
       error_mode: break
 
     plugins:
@@ -227,8 +236,9 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   * ``curl.yml``
     ```yaml
     tester:
-      name: CurlTester
-      title: Curl Commands
+      name: curl Tester
+      description: |-
+        Test some curl commands
 
     tests:
 
@@ -251,8 +261,9 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   * ``wget.yml``:
     ```yaml
     tester:
-      name: WgetTester
-      title: Wget Commands
+      name: wget Tester
+      description: |-
+        Test some wget commands
 
     plugins:
       - cleanup:
@@ -279,53 +290,109 @@ real word examples, you should check the [Projects that use tricot](#projects-th
                   - root
                   - bin
                   - nope
-      ```
+    ```
 
 * Output:
   ```console
-  [qtc@kali Example]$ tricot -v example3.yml
-  [+] Starting test: Just an example test
+  [qtc@kali example]$ tricot -v example3.yml
+  [+] Starting test: Nested Testers
   [+]
-  [+]     Starting test: Curl Commands
+  [+]     Starting test: curl Tester
   [+]
-  [+]             1. Test passwd File... success.
+  [+]         1. Test passwd File... success
   [+]
-  [+]     Starting test: Wget Commands
+  [+]     Starting test: wget Tester
   [+]
-  [+]             1. Test passwd File... failed.
-  [-]                 - Caught ValidationException raised by the file_contains validator.
-  [-]                   Validator run failed because of the following reason:
-  [-]                   String 'nope' not found in passwd.
+  [+]         1. Test passwd File... failed
+  [-]             - Caught ValidationException raised by the file_contains validator.
+  [-]               Configuration file: /opt/tricot/examples/example3/wget.yml
   [-]
-  [-]                   Command: ['wget', 'http://127.0.0.1:8000/passwd']
-  [-]                   Status code: 0
-  [-]                   Command output:
-  [-]                     --2021-04-03 11:32:56--  http://127.0.0.1:8000/passwd
-  [-]                     Connecting to 127.0.0.1:8000... connected.
-  [-]                     HTTP request sent, awaiting response... 200 OK
-  [-]                     Length: 3635 (3.5K) [application/octet-stream]
-  [-]                     Saving to: ‘passwd.2’
+  [-]               Validator run failed because of the following reason:
+  [-]               String 'nope' was not found in '/opt/tricot/examples/example3/passwd'.
   [-]
-  [-]                          0K ...                                                   100%  652M=0s
+  [-]               Command: ['wget', 'http://127.0.0.1:8000/passwd']
+  [-]               Command exit code: 0
+  [-]               Command stdout:
+  [-]               Command stderr:
+  [-]                 --2021-09-08 07:35:33--  http://127.0.0.1:8000/passwd
+  [-]                 Connecting to 127.0.0.1:8000... connected.
+  [-]                 HTTP request sent, awaiting response... 200 OK
+  [-]                 Length: 3635 (3.5K) [application/octet-stream]
+  [-]                 Saving to: ‘passwd’
   [-]
-  [-]                     2021-04-03 11:32:56 (652 MB/s) - ‘passwd.2’ saved [3635/3635]
+  [-]                      0K ...                                                   100%  636M=0s
+  [-]
+  [-]                 2021-09-08 07:35:33 (636 MB/s) - ‘passwd’ saved [3635/3635]
   [-]
   [-]
-  [-]                   Validator parameters:
-  [-]                     [
-  [-]                         {
-  [-]                             "file": "./passwd",
-  [-]                             "contains": [
-  [-]                                 "root",
-  [-]                                 "bin",
-  [-]                                 "nope"
-  [-]                             ]
-  [-]                         }
-  [-]                     ]
+  [-]               Validator parameters:
+  [-]                 [
+  [-]                     {
+  [-]                         "file": "./passwd",
+  [-]                         "contains": [
+  [-]                             "root",
+  [-]                             "bin",
+  [-]                             "nope"
+  [-]                         ]
+  [-]                     }
+  [-]                 ]
   [-]
-  [-]         Caught ValidationException while error mode is set to break.
-  [-]         Stopping test.
+  [-]     Caught ValidationException while error mode is set to break.
+  [-]     Stopping test.
   ```
+
+**Example 4**:
+
+* Test definition:
+  ```yaml
+  tester:
+    name: Extractors
+    Description: |-
+      An example for tricots extractor feature
+
+  tests:
+
+    - title: Check User
+      description: |-
+        Checks that user 1000:1000 exists and extracts the home
+        directory and the assigned shell to a variable.
+
+      command:
+        - cat
+        - /etc/passwd
+      extractors:
+        - regex:
+            pattern: '1000:1000:[^:]+:([^:]+):(.+)$'
+            variable: 'home-shell'
+            on_miss: 'break'
+            multiline: true
+      validators:
+        - contains:
+            values:
+              - 1000:1000
+
+
+    - title: Check Home and Shell
+      description: |-
+        Check that the home directory and assigned shell of user
+        1000:1000 exist.
+
+      command:
+        - ls
+        - ${home-shell-0-1}
+        - ${home-shell-0-2}
+      validators:
+        - status: 0
+  ```
+* Output:
+  ```console
+  [qtc@kali example]$ tricot -v example4.yml
+  [+] Starting test: Extractors
+  [+]
+  [+]     1. Check User... success
+  [+]     2. Check Home and Shell... success
+  ```
+
 
 ### Projects that use tricot
 
