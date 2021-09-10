@@ -9,10 +9,12 @@ tester:
 
 variables:
   VAL: ../test-cases/validator-tests/
+  EXT: ../test-cases/extractor-tests/
   PLUG: ../test-cases/plugin-tests/
   EXTRA: ../test-cases/extra/
 
 testers:
   - ./tricot-tests/plugin-tests.yml
   - ./tricot-tests/validator-tests.yml
+  - ./tricot-tests/extractor-tests.yml
   - ./tricot-tests/extra-tests.yml
