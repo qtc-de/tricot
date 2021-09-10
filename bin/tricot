@@ -19,13 +19,12 @@ parser.add_argument('--debug', dest='debug', action='store_true', help='enable d
 parser.add_argument('--exclude', metavar='name', nargs='+', default=[], help='exclude the specified testers')
 parser.add_argument('file', metavar='file', nargs='+', help='test definition (.yml file)')
 parser.add_argument('--logfile', dest='log', type=argparse.FileType('w'), help='mirror output into a logfile')
+parser.add_argument('--load', dest='load', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='custom validators, extractors and plugins')
 parser.add_argument('--numbers', dest='numbers', metavar='int', type=int, nargs='+', default=[], help='only run the specified test numbers')
-parser.add_argument('--plugins', dest='plugins', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional plugin files')
 parser.add_argument('--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
 parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
-parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator'], help='write a template file')
+parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator', 'extractor'], help='write a template file')
 parser.add_argument('--testers', dest='testers', metavar='name', nargs='+', default=[], help='only run the specified testers')
-parser.add_argument('--validators', dest='vals', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='additional validator files')
 parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', default=[], help='runtime variables')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='enable verbose logging during tests')
 
@@ -110,7 +109,7 @@ def load(files: list[io.TextIOWrapper]) -> None:
     '''
     for file in files:
         exec(file.read())
-        plugin.close()
+        file.close()
 
 
 def prepare_variables(args: argparse.Namespace) -> dict:
@@ -150,7 +149,7 @@ def main():
     if args.template:
         write_template(args.file[0], args.template)
 
-    load(args.plugins + args.vals)
+    load(args.load)
     variables = prepare_variables(args)
 
     for yml_file in args.file:

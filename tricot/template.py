@@ -101,14 +101,55 @@ class MyValidator(tricot.Validator):
         '''
         Run during validation.
         '''
+        key = self.param.get('key')
+
         if self.command.status != 0:
             raise tricot.ValidationException(f'Failure Reason')
 
-        if 'key' not in self.get_output():
+        if key not in self.get_output():
             raise tricot.ValidationException(f'Failure Reason')
 
 
 tricot.register_validator('my_validator', MyValidator)
+"""
+
+
+extractor_template = """import tricot
+
+class MyExtractor(tricot.Extractor):
+    '''
+    Extractor description.
+
+    Example:
+
+        extractors:
+            - my_extractor:
+                pattern: example
+                variable: example
+    '''
+    param_type = dict
+    inner_types = {
+            'pattern': {'required': True, 'type': str},
+            'variable': {'required': True, 'type': str},
+    }
+
+    def extract(self, hotplug: dict) -> None:
+        '''
+        Extract parts of the command output into variables.
+        '''
+        cmd_output = self.get_output()
+
+        pattern = self.param.get('pattern')
+        variable = self.param.get('variable')
+
+        if pattern in cmd_output:
+            hotplug[variable] = pattern
+
+        else:
+            raise tricot.ExtractException('Failure Reason', self)
+
+
+tricot.register_extractor('my_extractor', MyExtractor)
 """
 
 
@@ -154,6 +195,9 @@ def write_template(filename: str, mode: str) -> None:
 
     elif mode.lower() == 'validator':
         prepared_template = validator_template
+
+    elif mode.lower() == 'extractor':
+        prepared_template = extractor_template
 
     with open(filename, 'w') as f:
         f.write(prepared_template)
