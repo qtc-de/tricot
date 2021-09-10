@@ -468,6 +468,8 @@ class ContainsValidator(Validator):
 
         for value in values:
 
+            value = str(value)
+
             if ignore_case:
                 value = value.lower()
 
@@ -475,6 +477,8 @@ class ContainsValidator(Validator):
                 raise ValidationException(f"String '{value}' was not found in command output.")
 
         for value in invert:
+
+            value = str(value)
 
             if ignore_case:
                 value = value.lower()
