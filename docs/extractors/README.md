@@ -19,11 +19,12 @@ Consider you specified the variable name to be ``example`` and a pattern that co
 and is expected to match multiple times. The following variables could be used to obtain the extracted
 values:
 
-* ``${extract}`` - Contains the first whole match (like ``match.group(0)`` in python on the first match)
+* ``${extract}`` - Contains the first whole match (like ``match.group(0)`` in python on the *first* match)
 * ``${extract-0}`` - Same as ``${extract}``
-* ``${extract-1}`` - Contains the second whole match (like ``match.group(0)`` in python on the second match)
-* ``${extract-0-1}`` - Contains the first matchgroup on the first match (like ``match.group(1)``)
+* ``${extract-1}`` - Contains the second whole match (like ``match.group(0)`` in python on the *second* match)
+* ``${extract-0-1}`` - Contains the *first* matchgroup of the *first* match (like ``match.group(1)`` on the *first* match)
 * ``${extract-1-0}`` - Same as ``${extract-1}``
+* ``...``
 
 **Type Validation**:
 
