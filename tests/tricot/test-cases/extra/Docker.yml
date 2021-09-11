@@ -53,4 +53,4 @@ tests:
 
 
 testers:
-  - Docker/Docker.yml
+  - Docker/*.yml

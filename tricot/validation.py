@@ -10,6 +10,7 @@ from pathlib import Path
 import tricot
 import tricot.utils
 from tricot.command import Command
+from typing import Union
 
 
 this = sys.modules[__name__]
@@ -208,14 +209,14 @@ class Validator:
                     message = f"Validator '{self.name}' expects type {value['type']} for the '{key}' key."
                     raise ValidatorError(self.path, message)
 
-                self.check_expected()
-
         elif type(self.param) is list and type(self.inner_types) is list:
 
             for param in self.param:
                 if type(param) not in self.inner_types:
                     message = f"Validator '{self.name}' requires a parameter type of list[{str(self.inner_types)}."
                     raise ValidatorError(self.path, message)
+
+        self.check_expected()
 
     def check_alternative(self, key: str) -> bool:
         '''
@@ -318,6 +319,7 @@ class Validator:
         Returns:
             None
         '''
+        allowed_streams = ['stdout', 'stderr', 'both', 'stdout_raw', 'stderr_raw', 'both_raw']
         if type(self.param) != dict:
             return
 
@@ -325,8 +327,9 @@ class Validator:
 
         if stream is not None:
 
-            if type(stream) != str or stream not in ['stdout', 'stderr', 'both']:
-                raise ValidatorError(self.path, "When specified, stream needs to be one of 'stdout', 'stderr' or 'both'.")
+            if type(stream) != str or stream not in allowed_streams:
+                stream_list = ', '.join(allowed_streams)
+                raise ValidatorError(self.path, f'When specified, stream needs to be one of {stream_list}.')
 
     def set_output(self) -> None:
         '''
@@ -352,7 +355,7 @@ class Validator:
 
         tricot.utils.validate_color(self.failure_color, True)
 
-    def get_output(self) -> str:
+    def get_output(self) -> Union[str, bytes]:
         '''
         Helper function to obtain the actual output of a command execution. Each validator accepts
         the special key 'stream' within of it's parameters. 'stream' is expected to be either 'both',
@@ -376,12 +379,21 @@ class Validator:
         elif stream == 'stderr':
             return self.command.stderr
 
+        elif stream == 'both_raw':
+            return self.command.get_raw_output()
+
+        elif stream == 'stdout_raw':
+            return self.command.stdout_raw
+
+        elif stream == 'stderr_raw':
+            return self.command.stderr_raw
+
         elif stream == 'both' or stream is None:
             return self.command.get_output()
 
         raise ValidatorError(self.path, f"Encountered unexpected value for the 'stream' key: {stream}")
 
-    def _run(self, command: Command, hotplug_variables: dict[str, Any] = None) -> None:
+    def _run(self, command: Command, hotplug_variables: dict[str, Any] = None, e: Exception = None) -> None:
         '''
         This method is called internally to perform the validation process. It is basically
         a wrapper to the user defined 'run' method that stores the command result in an
@@ -396,6 +408,10 @@ class Validator:
         '''
         self.command = command
         self.param = tricot.utils.apply_variables(self.param, hotplug_variables)
+
+        if e is not None:
+            raise e
+
         self.run()
 
     def run(self) -> None:
@@ -452,6 +468,8 @@ class ContainsValidator(Validator):
 
         for value in values:
 
+            value = str(value)
+
             if ignore_case:
                 value = value.lower()
 
@@ -459,6 +477,8 @@ class ContainsValidator(Validator):
                 raise ValidationException(f"String '{value}' was not found in command output.")
 
         for value in invert:
+
+            value = str(value)
 
             if ignore_case:
                 value = value.lower()

@@ -1,0 +1,38 @@
+tester:
+  name: Extractors
+  Description: |-
+    An example for tricots extractor feature
+
+tests:
+
+  - title: Check User
+    description: |-
+      Checks that user 1000:1000 exists and extracts the home
+      directory and the assigned shell to a variable.
+
+    command:
+      - cat
+      - /etc/passwd
+    extractors:
+      - regex:
+          pattern: '1000:1000:[^:]+:([^:]+):(.+)$'
+          variable: 'home-shell'
+          on_miss: 'break'
+          multiline: true
+    validators:
+      - contains:
+          values:
+            - 1000:1000
+
+
+  - title: Check Home and Shell
+    description: |-
+      Check that the home directory and assigned shell of user
+      1000:1000 exist.
+
+    command:
+      - ls
+      - ${home-shell-0-1}
+      - ${home-shell-0-2}
+    validators:
+      - status: 0

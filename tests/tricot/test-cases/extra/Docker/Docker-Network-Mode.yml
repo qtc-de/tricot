@@ -1,0 +1,22 @@
+tester:
+  name: docker network mode
+  title: Docker Network Mode Tests
+  description: |-
+    'Checks whether the docker network_mode key works as expected'
+
+containers:
+  - name: 'nginx-host'
+    image: 'nginx:alpine'
+    network_mode: 'host'
+
+tests:
+  - title: Verify HTTP - Success
+    description: >
+      'Verify that the HTTP server is running on localhost'
+    command:
+      - curl
+      - http://127.0.0.1:80
+    validators:
+      - contains:
+          values:
+            - Thank you for using nginx.

@@ -1,0 +1,33 @@
+tester:
+  name: extractor
+  title: Extractor Tests
+  description: |-
+    "Perform tests on all tricot extractors"
+
+
+tests:
+  - title: RegexExtractor
+    description: |-
+      'Starts the test cases for the RegexExtractor and validate their output'
+
+    command:
+      - tricot
+      - ${EXT}/RegexExtractor.yml
+
+    validators:
+      - status: 17
+      - count:
+          values:
+            - Success... success
+            - Fail... failed
+            - --> success
+          counts:
+            - 6
+            - 1
+            - 1
+      - contains:
+          values:
+            - 'Warning: Extractor regex did not extract any values.'
+          invert:
+            - Fail... success
+            - Success... failed

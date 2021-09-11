@@ -42,6 +42,9 @@ class Command:
         self.status = None
         self.runtime = None
 
+        self.stdout_raw = None
+        self.stderr_raw = None
+
         self.shell = shell
         self.command = command
 
@@ -109,21 +112,21 @@ class Command:
             process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                        cwd=path, env=envi, shell=self.shell)
 
-            self.stdout, self.stderr = process.communicate(timeout=timeout)
+            self.stdout_raw, self.stderr_raw = process.communicate(timeout=timeout)
             self.status = process.returncode
 
         except subprocess.TimeoutExpired:
             process.kill()
-            self.stdout, self.stderr = process.communicate()
+            self.stdout_raw, self.stderr_raw = process.communicate()
             self.status = 99
 
         except subprocess.CalledProcessError as e:
-            self.stdout = e.output
-            self.stderr = e.stderr
+            self.stdout_raw = e.output
+            self.stderr_raw = e.stderr
             self.status = e.returncode
 
-        self.stdout = self.stdout.decode('utf-8')
-        self.stderr = self.stderr.decode('utf-8')
+        self.stdout = self.stdout_raw.decode('utf-8')
+        self.stderr = self.stderr_raw.decode('utf-8')
 
     def copy(self, other: Command) -> None:
         '''
@@ -177,6 +180,26 @@ class Command:
 
         if self.stderr:
             output += '\n'
+            output += self.stderr
+
+        return output
+
+    def get_raw_output(self) -> bytes:
+        '''
+        Returns the merged stdout_raw and stderr_raw outputs.
+
+        Parameters:
+            None
+
+        Returns:
+            output      Returns merged stdout_raw and stderr_raw output
+        '''
+        output = b''
+
+        if self.stdout:
+            output += self.stdout
+
+        if self.stderr:
             output += self.stderr
 
         return output

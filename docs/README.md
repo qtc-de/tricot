@@ -6,11 +6,11 @@ This folder contains some supplementary documentation that would be to long for 
 main [README.md](/README.md) of this project. Don't expect it to be complete or helpful
 on it's own.
 
-- [Validator and Plugin List](#validator-and-plugin-list)
+- [Extractor, Validator and Plugin List](#extractor-validator-and-plugin-list)
 - [Writing Custom Plugins](#writing-custom-plugins)
 - [Writing Custom Validators](#writing-custom-validators)
+- [Writing Custom Extactors](#writing-custom-extractors)
 - [Accessing Command Information from an Validator](#accessing-command-information-from-an-validator)
-- [Writing Custom Validators](#writing-custom-validators)
 - [Environment Variables](#environment-variables)
 - [Runtime Variables](#runtime-variables)
 - [Nesting Variables](#nesting-variables)
@@ -21,21 +21,22 @@ on it's own.
 - [Worth Knowing](#worth-knowing)
 
 
-### Validator and Plugin List
+### Extractor, Validator and Plugin List
 
 ----
 
-Currently, the best way to get reliable information on available plugins and validators
-is to read the corresponding parts of *tricot's* source code ([plugin](/tricot/plugin.py),
-[validation](/tricot/validation.py)). However, the following locations provide a rough
-overview that may be extended in future:
+Currently, the best way to get reliable information on available extractors, plugins and validators
+is to read the corresponding parts of *tricot's* source code ([extractor](/tricot/extractor.py),
+[plugin](/tricot/plugin.py), [validation](/tricot/validation.py)). However, the following locations
+provide a rough overview that may be extended in future:
 
+* [extractors](./extractors)
 * [plugins](./plugins)
 * [validators](./validators)
 
-The following sections demonstrate how custom *tricot* plugins and validators can be created.
+The following sections demonstrate how custom *tricot* plugins, validators and extractors can be created.
 In case you require more detailed information on how to achieve certain things, please refer
-to the source code of *tricot* and read the corresponding class definitions for the ``Validator``
+to the source code of *tricot* and read the corresponding class definitions for the ``Extractor``, ``Validator``
 and ``Plugin`` class.
 
 
@@ -113,7 +114,7 @@ tests:
 When running this test while including our custom plugin definition, we get the following output:
 
 ```console
-[qtc@kali ~]$ tricot example.yml --plugin my_plugin.py 
+[qtc@kali ~]$ tricot example.yml --load my_plugin.py
 [+] Starting test: Just an example test
 [+]     Hello World :)
 [+]     
@@ -169,9 +170,9 @@ tester:
 
 tests:
 
-  - title: Test passwd File
+  - title: Test Greeting
     description: |-
-      Test that the passwd file can be read.
+      Test that 'Hello World :)' is in the command output.
 
     command:
       - echo
@@ -183,7 +184,7 @@ tests:
 Running this test creates the following output:
 
 ```console
-[qtc@kali ~]$ tricot example.yml --validator my_validator.py 
+[qtc@kali ~]$ tricot example.yml --load my_validator.py
 [+] Starting test: Just an example test
 [+]     
 [+]         1. Test passwd File... success.
@@ -193,7 +194,7 @@ On the other hand, when changing the command in the above test definition to ret
 the validator will raise a ``ValidationException``:
 
 ```console
-[qtc@kali ~]$ tricot  -v example.yml --validator my_validator.py 
+[qtc@kali ~]$ tricot  -v example.yml --load my_validator.py
 [+] Starting test: Just an example test
 [+]     
 [+]         1. Test passwd File... failed.
@@ -210,6 +211,108 @@ the validator will raise a ``ValidationException``:
 [-]               Validator parameters:
 [-]                 null
 [-]  
+```
+
+
+### Writing Custom Extractors
+
+----
+
+Custom extractors can be created in the same way as custom validators. To create a new extractor,
+you should start of with the following command:
+
+```console
+$ tricot --template extractor my_extractor.py
+```
+
+The template file that is written by this command contains the basic python code required
+to create a new extractor. With a few modifications, you can easily arrive at the ``FirstLastCharExtractor``
+that is listed below:
+
+```python
+import tricot
+
+class FirstLastCharExtractor(tricot.Extractor):
+    '''
+    Extracts the first and last char of the command output.
+
+    Example:
+
+        extractors:
+            - first_last_char:
+                variable: example
+    '''
+    param_type = dict
+    inner_types = {
+            'variable': {'required': True, 'type': str},
+    }
+
+    def extract(self, hotplug: dict) -> None:
+        '''
+        Extract the first and last character of the command output.
+        '''
+        cmd_output = self.get_output().strip()
+        variable = self.param.get('variable')
+
+        if not cmd_output:
+            raise tricot.ExtractException('No command output!', self)
+
+        first_key = f'{variable}-first'
+        last_key = f'{variable}-last'
+
+        hotplug[first_key] = cmd_output[0]
+        hotplug[last_key] = cmd_output[-1]
+
+
+tricot.register_extractor('first_last_char', FirstLastCharExtractor)
+```
+
+An example for a test with extraction can be found in the following test definition:
+
+```yaml
+tester:
+  name: ExampleTester
+  title: Just an example test
+
+tests:
+
+  - title: Init
+    description: |-
+      Print a string where we can extract on.
+
+    command:
+      - echo
+      - 'Hello World :)'
+    extractors:
+      - first_last_char:
+          variable: variable
+    validators:
+      - contains:
+          values:
+            - 'Hello World :)'
+
+  - title: Extractor
+    description: |-
+      Test that the extractor worked like expected
+
+    command:
+      - echo
+      - ${variable-first}
+      - ${variable-last}
+    validators:
+      - contains:
+          values:
+            - 'H )'
+```
+
+Running this test creates the following output:
+
+```console
+[qtc@kali ~]$ tricot -v example.yml --load my_extractor.py
+[+] Starting test: Just an example test
+[+]
+[+]     1. Init... success
+[+]     2. Extract... success
 ```
 
 

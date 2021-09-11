@@ -10,6 +10,7 @@ import tricot.utils
 from tricot.docker import TricotContainer
 from tricot.logging import Logger
 from tricot.validation import Validator, ValidationException
+from tricot.extractor import Extractor
 from tricot.plugin import Plugin
 from tricot.command import Command
 from tricot.condition import Condition
@@ -106,10 +107,11 @@ class Test:
     evaluated by executing their 'run' method.
     '''
     expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env', 'conditions',
-                     'logfile', 'shell']
+                     'logfile', 'shell', 'extractors']
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: Command,
-                 timeout: int, validators: list[Validator], env: dict, conditions: dict, conditionals: set[Condition]) -> None:
+                 timeout: int, validators: list[Validator], extractors: list[Extractor], env: dict, conditions: dict,
+                 conditionals: set[Condition]) -> None:
         '''
         Initializer for a Test object.
 
@@ -121,6 +123,7 @@ class Test:
             command         The command that is run by this test
             timeout         Timeout in seconds to wait for the specified command
             validators      List of validators to apply on the command output
+            extractors      List of extractors to apply on the command output
             env             Environment variables
             conditions      Conditions for running the current test
             conditionals    Conditionals defined by upper testers
@@ -135,6 +138,7 @@ class Test:
         self.command = command
         self.timeout = timeout
         self.validators = validators
+        self.extractors = extractors
         self.env = env
         self.conditions = conditions
         self.conditionals = conditionals
@@ -254,6 +258,7 @@ class Test:
             j = input_dict
             var = tricot.utils.merge(variables, j.get('variables', {}), 'variables', path)
             validators = Validator.from_list(path, j['validators'], var)
+            extractors = Extractor.from_list(path, j.get('extractors', []), var)
 
             e_mode = j.get('error_mode') or error_mode
             env = tricot.utils.merge_environment(j.get('env'), environment, path)
@@ -278,7 +283,8 @@ class Test:
             command = Command(command, shell)
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
-            test = Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, env, conditions, conditionals)
+            test = Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, extractors, env,
+                        conditions, conditionals)
 
             test.set_logfile(j.get('logfile'))
             test.set_output(tricot.utils.merge(output_conf, j.get('output', {}), 'output', path))
@@ -351,11 +357,30 @@ class Test:
             return
 
         self.command.run(self.path.parent, self.timeout, hotplug_variables, self.env)
+        extractor_error = None
+
+        for extractor in self.extractors:
+
+            try:
+                extractor._extract(self.command, hotplug_variables)
+
+            except Exception as e:
+
+                if extractor.on_miss == 'continue':
+                    continue
+
+                elif extractor.on_miss == 'warn':
+                    Logger.extract_warning(e, extractor)
+                    continue
+
+                elif extractor.on_miss == 'break':
+                    extractor_error = e
+                    break
 
         for validator in self.validators:
 
             try:
-                validator._run(self.command, hotplug_variables)
+                validator._run(self.command, hotplug_variables, extractor_error)
 
             except Exception as e:
 
@@ -364,14 +389,26 @@ class Test:
                     f_string = validator.failure_string or self.failure_string
                     Logger.cprint(f_string, color=f_color)
 
-                tricot.constants.LAST_ERROR = tricot.constants.VALIDATION_EXCEPTION
+                if extractor_error is not None:
+                    tricot.constants.LAST_ERROR = tricot.constants.EXTRACT_EXCEPTION
+                else:
+                    tricot.constants.LAST_ERROR = tricot.constants.VALIDATION_EXCEPTION
+
                 Logger.handle_error(e, validator)
                 Condition.update_conditions(self.conditions, self.conditionals, True)
 
                 if self.error_mode == "break":
                     Logger.remove_logfile(self.logfile)
                     Logger.decrease_indent()
+
+                    if extractor_error:
+                        raise extractor_error
+
                     raise ValidationException('')
+
+                elif extractor_error is not None:
+                    success = False
+                    break
 
                 else:
                     success = False
@@ -496,9 +533,6 @@ class Tester:
 
         except KeyError as e:
             raise TesterKeyError(str(e), path)
-
-        except Exception as e:
-            raise TricotException(str(e), path)
 
     def set_logfile(self, logfile: str) -> None:
         '''

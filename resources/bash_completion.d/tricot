@@ -12,31 +12,30 @@ function _tricot() {
     COMPREPLY=()
 
     # No completion
-	if _comp_contains "--exclude --numbers --testers -p --positionals --variables" $prev; then
+	if _comp_contains "--exclude --numbers --testers --positionals --variables" $prev; then
 		return 0
 
     # Complete template modes
 	elif _comp_contains "--template" $prev; then
-        opts="plugin tester validator"
+        opts="plugin tester validator extractor"
 
     # Options with filename completions
-	elif _comp_contains "--plugins --validators --logfile" $prev; then
+	elif _comp_contains "--load --logfile" $prev; then
         _filedir
         return 0
 
-	# Current wort starts with -*
+	# Current word starts with -*
     elif [[ "$cur" == -* ]]; then
 		opts="--help"
 		opts="$opts --debug"
 		opts="$opts --exclude"
 		opts="$opts --logfile"
+		opts="$opts --load"
 		opts="$opts --numbers"
-		opts="$opts --plugins"
 		opts="$opts --positionals"
 		opts="$opts --quite"
 		opts="$opts --template"
 		opts="$opts --testers"
-		opts="$opts --validators"
 		opts="$opts --variables"
 		opts="$opts --verbose"
 

@@ -1,0 +1,183 @@
+tester:
+  name: regex
+  title: RegexExtractor Tests
+  description: |-
+    "Performs tests on the RegexExtractor"
+
+tests:
+  - title: Init Success
+    description: |-
+      'Create some output to extract on'
+    command:
+      - echo
+      - |-
+        1000:false 2000:true 3000:maybe
+        Hello
+        World
+    extractors:
+      - regex:
+          pattern: '(\d+):(\w+)'
+          variable: plain
+      - regex:
+          pattern: '(\d+):FALSE'
+          variable: ignore
+          ignore_case: true
+      - regex:
+          pattern: '^Hel(..)$'
+          variable: multi
+          multiline: true
+      - regex:
+          pattern: 'Hel(.+)World'
+          variable: dotall
+          dotall: true
+    validators:
+      - contains:
+          values:
+            - '1000'
+
+  - title: Plain Success
+    description: >
+      'Checks whether plain values where extracted correctly'
+    command:
+      - echo
+      - ${plain}
+      - ${plain-0}
+      - ${plain-1}
+      - ${plain-2}
+      - ${plain-0-0}
+      - ${plain-0-1}
+      - ${plain-0-2}
+      - ${plain-1-0}
+      - ${plain-1-1}
+      - ${plain-1-2}
+      - ${plain-2-0}
+      - ${plain-2-1}
+      - ${plain-2-2}
+    validators:
+      - count:
+          values:
+            - '1000:false'
+            - '2000:true'
+            - '3000:maybe'
+            - '1000 false'
+            - '2000 true'
+            - '3000 maybe'
+          counts:
+            - 3
+            - 2
+            - 2
+            - 1
+            - 1
+            - 1
+
+
+  - title: Ignore Case Success
+    description: >
+      'Checks whether ignore_case values where extracted correctly'
+    command:
+      - echo
+      - ${ignore}
+      - ${ignore-0}
+      - ${ignore-0-0}
+      - ${ignore-0-1}
+    validators:
+      - count:
+          values:
+            - '1000:false'
+            - '1000'
+          counts:
+            - 3
+            - 4
+
+
+  - title: Multiline Success
+    description: >
+      'Checks whether multiline values where extracted correctly'
+    command:
+      - echo
+      - ${multi}
+      - ${multi-0}
+      - ${multi-0-0}
+      - ${multi-0-1}
+    validators:
+      - count:
+          values:
+            - 'Hello'
+            - ' lo'
+          counts:
+            - 3
+            - 1
+
+
+  - title: Dotall Success
+    description: >
+      'Checks whether dotall values where extracted correctly'
+    command:
+      - echo
+      - ${dotall}
+      - ${dotall-0}
+      - ${dotall-0-0}
+      - ${dotall-0-1}
+    validators:
+      - count:
+          values:
+            - 'Hello'
+            - 'World'
+            - ' lo'
+          counts:
+            - 3
+            - 3
+            - 1
+      - line_count:
+          count: 4
+
+
+  - title: Miss with Continue Success
+    description: |-
+      'Try to extract something that does not exist while using on_miss: continue'
+    command:
+      - echo
+      - hi
+    extractors:
+      - regex:
+          pattern: 'huhu'
+          variable: plain
+          on_miss: 'continue'
+    validators:
+      - contains:
+          values:
+            - 'hi'
+
+
+  - title: Miss with Warning
+    description: |-
+      'Try to extract something that does not exist while using on_miss: warn'
+    command:
+      - echo
+      - hi
+    extractors:
+      - regex:
+          pattern: 'huhu'
+          variable: plain
+          on_miss: 'warn'
+    validators:
+      - contains:
+          values:
+            - 'hi'
+
+
+  - title: Miss with Break Fail
+    description: |-
+      'Try to extract something that does not exist while using on_miss: break'
+    command:
+      - echo
+      - hi
+    extractors:
+      - regex:
+          pattern: 'huhu'
+          variable: plain
+          on_miss: 'break'
+    validators:
+      - contains:
+          values:
+            - 'hi'

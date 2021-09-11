@@ -7,5 +7,6 @@ from .plugin import *
 from .template import *
 from .tricot import *
 from .validation import *
+from .extractor import *
 
 name = 'tricot'

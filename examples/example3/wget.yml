@@ -1,6 +1,7 @@
 tester:
-  name: WgetTester
-  title: Wget Commands
+  name: wget Tester
+  description: |-
+    Test some wget commands
 
 plugins:
   - cleanup:
