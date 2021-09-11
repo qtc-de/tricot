@@ -24,7 +24,7 @@ function _tricot() {
         _filedir
         return 0
 
-	# Current wort starts with -*
+	# Current word starts with -*
     elif [[ "$cur" == -* ]]; then
 		opts="--help"
 		opts="$opts --debug"
