@@ -16,6 +16,15 @@ from tricot.command import Command
 from tricot.condition import Condition
 
 
+assigned_ids = set()
+
+
+class DuplicateIDError(Exception):
+    '''
+    Custom exception that is raised if two testers/tests use the same ID.
+    '''
+
+
 class TricotException(Exception):
     '''
     Custom exception class for general purpose and tricot related exceptions.
@@ -107,11 +116,11 @@ class Test:
     evaluated by executing their 'run' method.
     '''
     expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env', 'conditions',
-                     'logfile', 'shell', 'extractors']
+                     'logfile', 'shell', 'extractors', 'id', 'groups']
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: Command,
                  timeout: int, validators: list[Validator], extractors: list[Extractor], env: dict, conditions: dict,
-                 conditionals: set[Condition]) -> None:
+                 conditionals: set[Condition], test_id: str, test_groups: set[str]) -> None:
         '''
         Initializer for a Test object.
 
@@ -127,6 +136,8 @@ class Test:
             env             Environment variables
             conditions      Conditions for running the current test
             conditionals    Conditionals defined by upper testers
+            test_id         Identifikation number of the test
+            test_groups     Test Groups that the test belongs to
 
         Returns:
             None
@@ -142,6 +153,19 @@ class Test:
         self.env = env
         self.conditions = conditions
         self.conditionals = conditionals
+
+        if test_id is None:
+            self.id = self.title
+
+        else:
+            self.id = str(test_id)
+
+            if self.id in assigned_ids:
+                raise DuplicateIDError(f"ID '{self.id}' was assigned twice.")
+
+            assigned_ids.add(self.id)
+
+        self.groups = test_groups
 
         self.logfile = None
         self.success_string = 'success'
@@ -236,7 +260,8 @@ class Test:
         return val
 
     def from_dict(path: Path, input_dict: dict, variables: dict[str, Any] = {}, error_mode: str = 'continue',
-                  environment: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {}) -> Test:
+                  environment: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
+                  parent_groups: set[str] = set()) -> Test:
         '''
         Creates a Test object from a dictionary. The dictionary is expected to be the content
         read in of a .yml file and needs all keys that are required for a test (validators,
@@ -250,6 +275,7 @@ class Test:
             environment     Environment variables
             conditionals    Conditionals for running the test
             output_conf     Output configuration inherited by the tester
+            parent_groups   Test groups inherited from the parent tester
 
         Returns:
             Test            Newly generated Test object
@@ -259,6 +285,7 @@ class Test:
             var = tricot.utils.merge(variables, j.get('variables', {}), 'variables', path)
             validators = Validator.from_list(path, j['validators'], var)
             extractors = Extractor.from_list(path, j.get('extractors', []), var)
+            groups = tricot.utils.list_to_str_set(j.get('groups', []), parent_groups)
 
             e_mode = j.get('error_mode') or error_mode
             env = tricot.utils.merge_environment(j.get('env'), environment, path)
@@ -284,7 +311,7 @@ class Test:
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
             test = Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, extractors, env,
-                        conditions, conditionals)
+                        conditions, conditionals, j.get('id'), groups)
 
             test.set_logfile(j.get('logfile'))
             test.set_output(tricot.utils.merge(output_conf, j.get('output', {}), 'output', path))
@@ -298,7 +325,8 @@ class Test:
             raise TestKeyError(None, path, str(e))
 
     def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue',
-                  env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {}) -> list[Test]:
+                  env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
+                  parent_groups: set[str] = set()) -> list[Test]:
         '''
         Within .yml files, Tests are specified in form of a list. This function takes such a list,
         that contains each single test definition as another dictionary (like it is created when
@@ -312,6 +340,7 @@ class Test:
             env             Environment variables
             conditionals    Conditionals specified by the upper tester
             output_conf     Output configuration inherited by the tester
+            parent_groups   Test groups inherited from the parent tester
 
         Returns
             list[Test]      List of Test objects created from the .yml input
@@ -324,7 +353,8 @@ class Test:
         for ctr in range(len(input_list)):
 
             try:
-                test = Test.from_dict(path, input_list[ctr], variables, error_mode, env, conditionals, output_conf)
+                test = Test.from_dict(path, input_list[ctr], variables, error_mode, env, conditionals,
+                                      output_conf, parent_groups)
                 tests.append(test)
 
             except TestKeyError as e:
@@ -348,7 +378,12 @@ class Test:
             None
         '''
         Logger.add_logfile(self.logfile)
-        Logger.print_blue(f'{prefix} {self.title}...', end=' ', flush=True)
+
+        if self.id and self.id != self.title:
+            Logger.print_blue(f'{prefix} [{self.id}] {self.title}...', end=' ', flush=True)
+        else:
+            Logger.print_blue(f'{prefix} {self.title}...', end=' ', flush=True)
+
         success = True
 
         if not Condition.check_conditions(self.conditions, self.conditionals):
@@ -421,6 +456,25 @@ class Test:
         hotplug_variables['$prev'] = self.command
         Logger.remove_logfile(self.logfile)
 
+    def skip_test(self, exclude: set[str], exclude_groups: list[set[str]]) -> bool:
+        '''
+        Checks whether the current test is contained within the exclude lists.
+
+        Parameters:
+            exclude             Set of Test / Tester IDs to exclude
+            exclude_groups      List of group sets to exclude
+
+        Returns:
+            bool
+        '''
+        if exclude and self.id in exclude:
+            return True
+
+        elif exclude_groups and self.groups in exclude_groups:
+            return True
+
+        return False
+
 
 class Tester:
     '''
@@ -433,7 +487,7 @@ class Tester:
 
     def __init__(self, path: Path, name: str, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
                  containers: list[TricotContainer], plugins: list[Plugin], conditions: dict, conditionals: set[Condition],
-                 error_mode: str) -> None:
+                 error_mode: str, tester_id: str, test_groups: set[str]) -> None:
         '''
         Initializes a new Tester object.
 
@@ -449,6 +503,11 @@ class Tester:
             conditions      Conditions for running the current tester
             conditionals    Conditionals defined by the tester or upper testers
             error_mode      Decides what to do if a plugin fails (break|continue)
+            tester_id       Unique identifikation number of the tester
+            test_groups     Test groups that the tester belongs to
+
+        Returns:
+            None
         '''
         self.name = name
         self.title = title or name
@@ -461,11 +520,26 @@ class Tester:
         self.conditionals = conditionals
         self.error_mode = error_mode
 
+        if tester_id is None:
+            self.id = self.name
+
+        else:
+            self.id = str(tester_id)
+
+            if self.id in assigned_ids:
+                raise DuplicateIDError(f"ID '{self.id}' was assigned twice.")
+
+            assigned_ids.add(self.id)
+
+        self.groups = test_groups
+
         self.logfile = None
+        self.runall = False
 
     def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(),
                   path: Path = None, e_mode: str = None, environment: dict = {},
-                  conditionals: set[Condition] = set(), output_conf: dict = {}) -> Tester:
+                  conditionals: set[Condition] = set(), output_conf: dict = {},
+                  test_groups: set[str] = {}) -> Tester:
         '''
         Creates a new Tester object from a python dictionary. The dictionary is expected to be
         created by reading a .yml file that contains test defintions. It requires all keys that
@@ -480,6 +554,7 @@ class Tester:
             environment     Dictionary of environment variables to use within the test
             conditionals    Conditions inherited from the upper tester
             output_conf     Output configuration inherited from the upper tester
+            test_groups     Set of test groups inherited from the upper tester
 
         Returns:
             Tester          Tester object created from the dictionary
@@ -498,6 +573,7 @@ class Tester:
 
             testers = g.get('testers')
             definitions = g.get('tests')
+            groups = tricot.utils.list_to_str_set(t.get('groups', []), test_groups)
 
             variables = tricot.utils.merge(initial_vars, g.get('variables', {}), 'variables', path)
             variables['cwd'] = path.parent
@@ -515,18 +591,18 @@ class Tester:
                         f = path.parent.joinpath(f)
 
                     for ff in glob.glob(str(f)):
-                        tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c)
+                        tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
                         tester_list.append(tester)
 
             tests = None
             if definitions and type(definitions) is list:
-                tests = Test.from_list(path, definitions, variables, error_mode, env, conds, output_c)
+                tests = Test.from_list(path, definitions, variables, error_mode, env, conds, output_c, groups)
 
             elif not tester_list:
                 raise TesterKeyError('tests', path, optional='testers')
 
             new_tester = Tester(path, t['name'], t.get('title'), variables, tests, tester_list, containers, plugins,
-                                run_conds, conds, error_mode)
+                                run_conds, conds, error_mode, t.get('id'), groups)
             new_tester.set_logfile(t.get('logfile'))
 
             return new_tester
@@ -552,7 +628,7 @@ class Tester:
 
     def from_file(filename: str, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
                   error_mode: str = None, env: dict = {}, conditionals: set[Condition] = set(),
-                  output_conf: dict = {}) -> Tester:
+                  output_conf: dict = {}, test_groups: set[str] = {}) -> Tester:
         '''
         Creates a new Tester object from a .yml file. The .yml file obviously needs to be in the
         expected format and requires all keys that are needed to construct a Tester object.
@@ -565,6 +641,7 @@ class Tester:
             env             Current environment variables
             conditionals    Conditions inherited from the previous tester
             output_conf     Output configuration inherited from upper tester
+            test_groups     Set of test groups inherited from the upper tester
 
         Returns:
             Tester          Tester object created from the file
@@ -578,61 +655,141 @@ class Tester:
         if runtime_vars is not None and '$runtime' not in initial_vars:
             initial_vars['$runtime'] = runtime_vars
 
-        return Tester.from_dict(config_dict, initial_vars, Path(filename), error_mode, env, conditionals, output_conf)
+        return Tester.from_dict(config_dict, initial_vars, Path(filename), error_mode, env, conditionals,
+                                output_conf, test_groups)
 
-    def contains_testers(self, testers: list[str]) -> bool:
+    def set_runall(self, value: bool) -> None:
         '''
-        Checks whether the specified tester name is contained within the current test tree.
+        Sets the runall property of a tester. This is required when users specify a tetser ID on the command
+        line. In this case, all tests and nested testers should be run, although their ID is not contained
+        within the IDs to run. Setting the runall property on a tester disabled ID checking and runs everything
+        inside of it anyway.
+
+        Setting the runall property is done recursively for all nested testers.
 
         Parameters:
-            testers         List of tester names to look for
+            value           Value to set for the runall property.
 
         Returns:
-            bool            True if tester is contained within test tree
+            None
         '''
-        if len(testers) == 0:
-            return True
-
-        for tester in testers:
-
-            if self.name == tester:
-                return True
+        self.runall = value
 
         for tester in self.testers:
+            tester.set_runall(value)
 
-            if tester.contains_testers(testers):
+    def contains_id(self, t_ids: set[str]) -> bool:
+        '''
+        Checks whether the specified Test / Tester IDs are contained within this tester.
+
+        Parameters:
+            t_ids           Test / Tester IDs to look for
+
+        Returns:
+            bool            True if one of the ids is contained within the tester
+        '''
+        if not t_ids or self.runall:
+            return True
+
+        if self.id and {self.id}.issubset(t_ids):
+            self.set_runall(True)
+            return True
+
+        if self.tests:
+
+            for test in self.tests:
+                if test.id and {test.id}.issubset(t_ids):
+                    return True
+
+        for tester in self.testers:
+            if tester.contains_id(t_ids):
                 return True
 
         return False
 
-    def run(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] = (),
-            hotplug_variables: dict[str, Any] = {}) -> None:
+    def contains_group(self, t_groups: list[set[str]]) -> bool:
+        '''
+        Checks whether the specified Group set exists within the tester.
+
+        Parameters:
+            t_groups        List of group sets to exclude
+
+        Returns:
+            bool            True if set of groups is contained within the tester
+        '''
+        if not t_groups or self.runall:
+            return True
+
+        if self.groups in t_groups:
+            self.set_runall(True)
+            return True
+
+        if self.tests:
+
+            for test in self.tests:
+                if test.groups in t_groups:
+                    return True
+
+        for tester in self.testers:
+            if tester.contains_group(t_groups):
+                return True
+
+        return False
+
+    def skip_test(self, exclude: set[str], exclude_groups: list[set[str]]) -> bool:
+        '''
+        Checks whether the current test is contained within the exclude lists.
+
+        Parameters:
+            exclude             Set of Test / Tester IDs to exclude
+            exclude_groups      List of group sets to exclude
+
+        Returns:
+            bool
+        '''
+        if exclude and self.id in exclude:
+            return True
+
+        elif exclude_groups and self.groups in exclude_groups:
+            return True
+
+        return False
+
+    def run(self, ids: set[str], groups: list[set[str]], exclude: set[str],
+            exclude_groups: list[set[str]], hotplug_variables: dict[str, Any] = dict()) -> None:
         '''
         Runs the test: Prints the title of the tester and iterates over all contained
         Test objects and calls their 'run' method.
 
         Parameters:
-            tester              Only run testers that match the specified names
-            numbers             Only run tests that match the specified numbers
-            exclude             Exclude the specified tester names
-            hotplug_variables   Dictionary of variables that are applied at runtime.
+            ids                 Set of Test / Tester IDs to run
+            groups              List of group sets to run
+            exclude             Set of Test / Tester IDs to exclude
+            exclude_groups      List of group sets to exclude
+            hotplug_variables   Hotplug variables to use during the test
 
         Returns:
             None
         '''
-        if not self.contains_testers(testers) or self.name in exclude:
+        if self.skip_test(exclude, exclude_groups):
             return
 
-        Tester.increase()
+        if not self.contains_id(ids) or not self.contains_group(groups):
+            return
 
         if not Condition.check_conditions(self.conditions, self.conditionals):
             Logger.print_mixed_yellow('Skipping test:', self.title)
             return
 
         Logger.add_logfile(self.logfile)
-        Logger.print_mixed_yellow('Starting test:', self.title)
-        hotplug = hotplug_variables.copy()
+        Logger.print_mixed_yellow('Starting test:', self.title, end=' ')
 
+        if self.id and self.id != self.name:
+            Logger.print_plain_blue(f'[{self.id}]')
+        else:
+            print()
+
+        hotplug = hotplug_variables.copy()
         Logger.increase_indent()
 
         for plugin in self.plugins:
@@ -642,13 +799,8 @@ class Tester:
             container.start_container()
             hotplug = {**hotplug, **container.get_container_variables()}
 
-        if self.tests:
-            Logger.print('')
-            for ctr in range(len(self.tests)):
-                if len(numbers) == 0 or (ctr+1) in numbers:
-                    self.tests[ctr].run(f'{ctr+1}.', hotplug)
-
-        self.run_childs(testers, numbers, exclude, hotplug)
+        self.run_tests(ids, groups, exclude, exclude_groups, hotplug)
+        self.run_childs(ids, groups, exclude, exclude_groups, hotplug)
 
         for container in self.containers:
             container.stop_container()
@@ -659,28 +811,71 @@ class Tester:
         Logger.remove_logfile(self.logfile)
         Logger.decrease_indent()
 
-    def run_childs(self, testers: list[str] = (), numbers: list[str] = (), exclude: list[str] = (),
-                   hotplug_variables: dict[str, Any] = {}) -> None:
+    def run_tests(self, ids: set[str], groups: list[set[str]], exclude: set[str],
+                  exclude_groups: list[set[str]], hotplug_variables: dict[str, Any]) -> None:
+        '''
+        Wrapper function that executes the tests specified in a tester.
+
+        Parameters:
+            ids                 Set of Test / Tester IDs to run
+            groups              List of group sets to run
+            exclude             Set of Test / Tester IDs to exclude
+            exclude_groups       List of group sets to exclude
+            hotplug_variables   Hotplug variables to use during the test
+
+        Returns:
+            None
+        '''
+        if not self.tests:
+            return
+
+        Logger.print('')
+        runall = (self.groups in groups) or (ids and {self.id}.issubset(ids))
+
+        for ctr in range(len(self.tests)):
+
+            test = self.tests[ctr]
+
+            if test.skip_test(exclude, exclude_groups):
+                return
+
+            elif self.runall or runall:
+                pass
+
+            elif not ids and not groups:
+                pass
+
+            elif ids and {test.id}.issubset(ids):
+                pass
+
+            elif groups and test.groups in groups:
+                pass
+
+            else:
+                return
+
+            test.run(f'{ctr+1}.', hotplug_variables)
+
+    def run_childs(self, ids: set[str], groups: list[set[str]], exclude: set[str],
+                   exclude_groups: list[set[str]], hotplug_variables: dict[str, Any]) -> None:
         '''
         Runs the child testers of the current tester.
 
         Parameters:
-            tester              Only run testers that match the specified names
-            numbers             Only run tests that match the specified numbers
-            exclude             Exclude the specified tester names
-            hotplug_variables   Dictionary of variables that are applied at runtime.
+            ids                 Set of Test / Tester IDs to run
+            groups              List of group sets to run
+            exclude             Set of Test / Tester IDs to exclude
+            exclude_groups      List of group sets to exclude
+            hotplug_variables   Hotplug variables to use during the test
 
         Returns:
             None
         '''
         for tester in self.testers:
+
             try:
-
-                if self.name in testers:
-                    tester.run(numbers=numbers, exclude=exclude, hotplug_variables=hotplug_variables)
-
-                else:
-                    tester.run(testers, numbers, exclude, hotplug_variables)
+                tester.run(ids, groups, exclude, exclude_groups, hotplug_variables)
+                tricot.Logger.print("")
 
             except tricot.PluginException as e:
 

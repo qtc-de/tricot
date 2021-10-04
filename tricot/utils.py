@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import tricot
 from typing import Any
 from pathlib import Path
@@ -275,3 +276,76 @@ def merge(dict1: dict, dict2: dict, name: str = None, path: Path = None) -> dict
             raise tricot.TricotException('Invalid type specified during merge operation.', path)
 
     return {**dict1, **dict2}
+
+
+def parse_groups(groups: list[str]) -> list[set[str]]:
+    '''
+    Parses group specifications. Groups should be specified as comma separated strings. Each
+    comma separated part is interpreted as a group. All groups within a string are mandatory
+    for a test / tester to match. Braces can be used for or-like statements.
+
+    E.g.:
+
+        java8,networking,filter      -> set(java8, networking, filter)
+        java8,{networking,io},filter -> list(set(java8, networking, filter),
+                                             set(java8, io, filter))
+
+    Parameters:
+        groups          List of group specifications
+
+    Returns:
+        list            List of group sets
+    '''
+    sets = list()
+    regex = re.compile(r'\{([^}]+)\}')
+
+    for group_spec in groups:
+
+        or_like = regex.findall(group_spec)
+        group_spec = regex.sub('', group_spec)
+
+        split = filter(None, group_spec.split(','))
+        group_sets = [set(split)]
+
+        for match in or_like:
+
+            new = []
+
+            for group_set in group_sets:
+
+                split = filter(None, match.split(','))
+
+                for item in split:
+                    copy = group_set.copy()
+                    copy.add(item)
+                    new.append(copy)
+
+            group_sets = new
+
+        sets += group_sets
+
+    return sets
+
+
+def list_to_str_set(input_list: list[Any], union: set[str] = {}) -> set[str]:
+    '''
+    Helper function that converts all items from a list into string and
+    puts them into a set. Optionally joins the newly created set with an
+    existing one.
+
+    Parameters:
+        input_list          List that should be converted into a set
+        union               Optional string set to join with
+
+    Returns:
+        set                 Newly created string set
+    '''
+    str_set = set()
+
+    for item in input_list:
+        str_set.add(str(item))
+
+    if union:
+        str_set = str_set.union(union)
+
+    return str_set
