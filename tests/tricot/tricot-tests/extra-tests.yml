@@ -5,6 +5,9 @@ tester:
     'Perfors some additional tests on tricot, not related to plugins
     or validators.'
 
+  id: 04
+  groups:
+    - extra
 
 tests:
   - title: Docker
@@ -272,3 +275,132 @@ tests:
           invert:
             - Fail... success
             - Success... failed
+
+
+  - title: Groups All
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+
+
+  - title: Groups One
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - group_one
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+
+
+  - title: Groups Two
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - group_two
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+
+
+  - title: Groups One - One
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - group_one,one
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+
+
+  - title: Groups One / Two - One
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - '{group_one,group_two},one'
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group Two - One... success
+
+
+  - title: Groups One / Two * - Two
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - '{group_one,group_two},*,two'
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Three - Two... success
+            - Test Group Four - Two... success
+
+
+  - title: Groups ** - One
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - '**,one'
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group Two - One... success
+            - Test Group Three - One... success
+            - Test Group Four - One... success

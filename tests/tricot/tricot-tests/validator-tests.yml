@@ -4,6 +4,9 @@ tester:
   description: |-
     "Performs tests on all tricot validators"
 
+  id: 01
+  groups:
+    - validator
 
 tests:
   - title: ContainsValidator
