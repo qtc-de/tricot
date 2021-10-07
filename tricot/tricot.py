@@ -781,6 +781,7 @@ class Tester:
             Logger.print_mixed_yellow('Skipping test:', self.title)
             return
 
+        tricot.Logger.print('')
         Logger.add_logfile(self.logfile)
         Logger.print_mixed_yellow('Starting test:', self.title, end=' ')
 
@@ -837,7 +838,7 @@ class Tester:
             test = self.tests[ctr]
 
             if test.skip_test(exclude, exclude_groups):
-                return
+                continue
 
             elif self.runall or runall:
                 pass
@@ -852,7 +853,7 @@ class Tester:
                 pass
 
             else:
-                return
+                continue
 
             test.run(f'{ctr+1}.', hotplug_variables)
 
@@ -875,7 +876,6 @@ class Tester:
 
             try:
                 tester.run(ids, groups, exclude, exclude_groups, hotplug_variables)
-                tricot.Logger.print("")
 
             except tricot.PluginException as e:
 
