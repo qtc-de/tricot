@@ -278,7 +278,7 @@ def merge(dict1: dict, dict2: dict, name: str = None, path: Path = None) -> dict
     return {**dict1, **dict2}
 
 
-def parse_groups(groups: list[str]) -> list[set[str]]:
+def parse_groups(groups: list[str]) -> list[list[str]]:
     '''
     Parses group specifications. Groups should be specified as comma separated strings. Each
     comma separated part is interpreted as a group. All groups within a string are mandatory
@@ -286,17 +286,17 @@ def parse_groups(groups: list[str]) -> list[set[str]]:
 
     E.g.:
 
-        java8,networking,filter      -> set(java8, networking, filter)
-        java8,{networking,io},filter -> list(set(java8, networking, filter),
-                                             set(java8, io, filter))
+        java8,networking,filter      -> list(java8, networking, filter)
+        java8,{networking,io},filter -> list(list(java8, networking, filter),
+                                             list(java8, io, filter))
 
     Parameters:
         groups          List of group specifications
 
     Returns:
-        list            List of group sets
+        list            List of group lists
     '''
-    sets = list()
+    lists = list()
     regex = re.compile(r'\{([^}]+)\}')
 
     for group_spec in groups:
@@ -304,48 +304,78 @@ def parse_groups(groups: list[str]) -> list[set[str]]:
         or_like = regex.findall(group_spec)
         group_spec = regex.sub('', group_spec)
 
-        split = filter(None, group_spec.split(','))
-        group_sets = [set(split)]
+        split = list(filter(None, group_spec.split(',')))
+        group_lists = [split]
 
         for match in or_like:
 
             new = []
 
-            for group_set in group_sets:
+            for group_list in group_lists:
 
-                split = filter(None, match.split(','))
+                split = list(filter(None, match.split(',')))
 
                 for item in split:
-                    copy = group_set.copy()
-                    copy.add(item)
+                    copy = group_list.copy()
+                    copy.append(item)
                     new.append(copy)
 
-            group_sets = new
+            group_lists = new
 
-        sets += group_sets
+        lists += group_lists
 
-    return sets
+    return lists
 
 
-def list_to_str_set(input_list: list[Any], union: set[str] = {}) -> set[str]:
+def groups_contain(groups: list[list[str]], group: list[str]) -> bool:
     '''
-    Helper function that converts all items from a list into string and
-    puts them into a set. Optionally joins the newly created set with an
-    existing one.
+    Checks whether a specified list of groups contains a particular specified group.
+    A separate function is required, as group comparison supports the wildcards
+    * and **.
 
     Parameters:
-        input_list          List that should be converted into a set
-        union               Optional string set to join with
+        groups          List of group lists to search in
+        group           Group list to look for
 
     Returns:
-        set                 Newly created string set
+        bool            True if group is contained in groups
     '''
-    str_set = set()
+    for items in groups:
 
-    for item in input_list:
-        str_set.add(str(item))
+        ctr = 0
+        match = True
+        items = items.copy()
 
-    if union:
-        str_set = str_set.union(union)
+        try:
 
-    return str_set
+            while len(items) != 0:
+
+                item = items.pop(0)
+
+                if item == '*' or group[ctr] == item:
+
+                    ctr += 1
+                    continue
+
+                if item == '**':
+
+                    item = items.pop(0)
+                    while group[ctr] != item and ctr != len(group):
+                        ctr += 1
+
+                    if ctr == len(group):
+                        match = False
+                        break
+
+                    continue
+
+                match = False
+                break
+
+            if match:
+                return True
+
+        except IndexError:
+            pass
+
+    return False

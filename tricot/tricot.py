@@ -120,7 +120,7 @@ class Test:
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: Command,
                  timeout: int, validators: list[Validator], extractors: list[Extractor], env: dict, conditions: dict,
-                 conditionals: set[Condition], test_id: str, test_groups: set[str]) -> None:
+                 conditionals: set[Condition], test_id: str, test_groups: list[str]) -> None:
         '''
         Initializer for a Test object.
 
@@ -137,7 +137,7 @@ class Test:
             conditions      Conditions for running the current test
             conditionals    Conditionals defined by upper testers
             test_id         Identifikation number of the test
-            test_groups     Test Groups that the test belongs to
+            test_groups     Test groups that the test belongs to
 
         Returns:
             None
@@ -261,7 +261,7 @@ class Test:
 
     def from_dict(path: Path, input_dict: dict, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   environment: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: set[str] = set()) -> Test:
+                  parent_groups: list[str] = list()) -> Test:
         '''
         Creates a Test object from a dictionary. The dictionary is expected to be the content
         read in of a .yml file and needs all keys that are required for a test (validators,
@@ -285,7 +285,7 @@ class Test:
             var = tricot.utils.merge(variables, j.get('variables', {}), 'variables', path)
             validators = Validator.from_list(path, j['validators'], var)
             extractors = Extractor.from_list(path, j.get('extractors', []), var)
-            groups = tricot.utils.list_to_str_set(j.get('groups', []), parent_groups)
+            groups = parent_groups + list(map(lambda x: str(x), j.get('groups', [])))
 
             e_mode = j.get('error_mode') or error_mode
             env = tricot.utils.merge_environment(j.get('env'), environment, path)
@@ -326,7 +326,7 @@ class Test:
 
     def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: set[str] = set()) -> list[Test]:
+                  parent_groups: list[str] = list()) -> list[Test]:
         '''
         Within .yml files, Tests are specified in form of a list. This function takes such a list,
         that contains each single test definition as another dictionary (like it is created when
@@ -456,7 +456,7 @@ class Test:
         hotplug_variables['$prev'] = self.command
         Logger.remove_logfile(self.logfile)
 
-    def skip_test(self, exclude: set[str], exclude_groups: list[set[str]]) -> bool:
+    def skip_test(self, exclude: set[str], exclude_groups: list[list[str]]) -> bool:
         '''
         Checks whether the current test is contained within the exclude lists.
 
@@ -470,7 +470,7 @@ class Test:
         if exclude and self.id in exclude:
             return True
 
-        elif exclude_groups and self.groups in exclude_groups:
+        elif exclude_groups and tricot.utils.groups_contain(exclude_groups, self.groups):
             return True
 
         return False
@@ -487,7 +487,7 @@ class Tester:
 
     def __init__(self, path: Path, name: str, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
                  containers: list[TricotContainer], plugins: list[Plugin], conditions: dict, conditionals: set[Condition],
-                 error_mode: str, tester_id: str, test_groups: set[str]) -> None:
+                 error_mode: str, tester_id: str, test_groups: list[str]) -> None:
         '''
         Initializes a new Tester object.
 
@@ -539,7 +539,7 @@ class Tester:
     def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(),
                   path: Path = None, e_mode: str = None, environment: dict = {},
                   conditionals: set[Condition] = set(), output_conf: dict = {},
-                  test_groups: set[str] = {}) -> Tester:
+                  test_groups: list[str] = []) -> Tester:
         '''
         Creates a new Tester object from a python dictionary. The dictionary is expected to be
         created by reading a .yml file that contains test defintions. It requires all keys that
@@ -554,7 +554,7 @@ class Tester:
             environment     Dictionary of environment variables to use within the test
             conditionals    Conditions inherited from the upper tester
             output_conf     Output configuration inherited from the upper tester
-            test_groups     Set of test groups inherited from the upper tester
+            test_groups     List of test groups inherited from the upper tester
 
         Returns:
             Tester          Tester object created from the dictionary
@@ -573,7 +573,7 @@ class Tester:
 
             testers = g.get('testers')
             definitions = g.get('tests')
-            groups = tricot.utils.list_to_str_set(t.get('groups', []), test_groups)
+            groups = test_groups + list(map(lambda x: str(x), t.get('groups', [])))
 
             variables = tricot.utils.merge(initial_vars, g.get('variables', {}), 'variables', path)
             variables['cwd'] = path.parent
@@ -628,7 +628,7 @@ class Tester:
 
     def from_file(filename: str, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
                   error_mode: str = None, env: dict = {}, conditionals: set[Condition] = set(),
-                  output_conf: dict = {}, test_groups: set[str] = {}) -> Tester:
+                  output_conf: dict = {}, test_groups: list[str] = []) -> Tester:
         '''
         Creates a new Tester object from a .yml file. The .yml file obviously needs to be in the
         expected format and requires all keys that are needed to construct a Tester object.
@@ -641,7 +641,7 @@ class Tester:
             env             Current environment variables
             conditionals    Conditions inherited from the previous tester
             output_conf     Output configuration inherited from upper tester
-            test_groups     Set of test groups inherited from the upper tester
+            test_groups     List of test groups inherited from the upper tester
 
         Returns:
             Tester          Tester object created from the file
@@ -707,12 +707,12 @@ class Tester:
 
         return False
 
-    def contains_group(self, t_groups: list[set[str]]) -> bool:
+    def contains_group(self, t_groups: list[list[str]]) -> bool:
         '''
         Checks whether the specified Group set exists within the tester.
 
         Parameters:
-            t_groups        List of group sets to exclude
+            t_groups        List of group lists to check in
 
         Returns:
             bool            True if set of groups is contained within the tester
@@ -720,14 +720,14 @@ class Tester:
         if not t_groups or self.runall:
             return True
 
-        if self.groups in t_groups:
+        if tricot.utils.groups_contain(t_groups, self.groups):
             self.set_runall(True)
             return True
 
         if self.tests:
 
             for test in self.tests:
-                if test.groups in t_groups:
+                if tricot.utils.groups_contain(t_groups, test.groups):
                     return True
 
         for tester in self.testers:
@@ -736,13 +736,13 @@ class Tester:
 
         return False
 
-    def skip_test(self, exclude: set[str], exclude_groups: list[set[str]]) -> bool:
+    def skip_test(self, exclude: set[str], exclude_groups: list[list[str]]) -> bool:
         '''
         Checks whether the current test is contained within the exclude lists.
 
         Parameters:
             exclude             Set of Test / Tester IDs to exclude
-            exclude_groups      List of group sets to exclude
+            exclude_groups      List of group lists to exclude
 
         Returns:
             bool
@@ -750,22 +750,22 @@ class Tester:
         if exclude and self.id in exclude:
             return True
 
-        elif exclude_groups and self.groups in exclude_groups:
+        elif exclude_groups and tricot.utils.groups_contain(exclude_groups, self.groups):
             return True
 
         return False
 
-    def run(self, ids: set[str], groups: list[set[str]], exclude: set[str],
-            exclude_groups: list[set[str]], hotplug_variables: dict[str, Any] = dict()) -> None:
+    def run(self, ids: set[str], groups: list[list[str]], exclude: set[str],
+            exclude_groups: list[list[str]], hotplug_variables: dict[str, Any] = dict()) -> None:
         '''
         Runs the test: Prints the title of the tester and iterates over all contained
         Test objects and calls their 'run' method.
 
         Parameters:
             ids                 Set of Test / Tester IDs to run
-            groups              List of group sets to run
+            groups              List of group lists to run
             exclude             Set of Test / Tester IDs to exclude
-            exclude_groups      List of group sets to exclude
+            exclude_groups      List of group lists to exclude
             hotplug_variables   Hotplug variables to use during the test
 
         Returns:
@@ -811,16 +811,16 @@ class Tester:
         Logger.remove_logfile(self.logfile)
         Logger.decrease_indent()
 
-    def run_tests(self, ids: set[str], groups: list[set[str]], exclude: set[str],
-                  exclude_groups: list[set[str]], hotplug_variables: dict[str, Any]) -> None:
+    def run_tests(self, ids: set[str], groups: list[list[str]], exclude: set[str],
+                  exclude_groups: list[list[str]], hotplug_variables: dict[str, Any]) -> None:
         '''
         Wrapper function that executes the tests specified in a tester.
 
         Parameters:
             ids                 Set of Test / Tester IDs to run
-            groups              List of group sets to run
+            groups              List of group lists to run
             exclude             Set of Test / Tester IDs to exclude
-            exclude_groups       List of group sets to exclude
+            exclude_groups      List of group lists to exclude
             hotplug_variables   Hotplug variables to use during the test
 
         Returns:
@@ -830,7 +830,7 @@ class Tester:
             return
 
         Logger.print('')
-        runall = (self.groups in groups) or (ids and {self.id}.issubset(ids))
+        runall = tricot.utils.groups_contain(groups, self.groups) or (ids and {self.id}.issubset(ids))
 
         for ctr in range(len(self.tests)):
 
@@ -848,7 +848,7 @@ class Tester:
             elif ids and {test.id}.issubset(ids):
                 pass
 
-            elif groups and test.groups in groups:
+            elif groups and tricot.utils.groups_contain(groups, test.groups):
                 pass
 
             else:
@@ -856,16 +856,16 @@ class Tester:
 
             test.run(f'{ctr+1}.', hotplug_variables)
 
-    def run_childs(self, ids: set[str], groups: list[set[str]], exclude: set[str],
-                   exclude_groups: list[set[str]], hotplug_variables: dict[str, Any]) -> None:
+    def run_childs(self, ids: set[str], groups: list[list[str]], exclude: set[str],
+                   exclude_groups: list[list[str]], hotplug_variables: dict[str, Any]) -> None:
         '''
         Runs the child testers of the current tester.
 
         Parameters:
             ids                 Set of Test / Tester IDs to run
-            groups              List of group sets to run
+            groups              List of group lists to run
             exclude             Set of Test / Tester IDs to exclude
-            exclude_groups      List of group sets to exclude
+            exclude_groups      List of group lists to exclude
             hotplug_variables   Hotplug variables to use during the test
 
         Returns:
