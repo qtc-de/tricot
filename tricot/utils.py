@@ -327,55 +327,87 @@ def parse_groups(groups: list[str]) -> list[list[str]]:
     return lists
 
 
-def groups_contain(groups: list[list[str]], group: list[str]) -> bool:
+def groups_contain(groups_list: list[list[str]], groups: list[list[str]]) -> bool:
     '''
-    Checks whether a specified list of groups contains a particular specified group.
-    A separate function is required, as group comparison supports the wildcards
-    * and **.
+    Checks whether a specified list of groups contains a particular group of a
+    list of specified groups. This separate function is required, as group
+    comparison supports wildcards as * or **.
 
     Parameters:
-        groups          List of group lists to search in
-        group           Group list to look for
+        groups_list           List of group lists to search in
+        groups                Group list to look for
 
     Returns:
-        bool            True if group is contained in groups
+        bool                  True if group is contained in groups
     '''
-    for items in groups:
+    for group in groups:
 
-        ctr = 0
-        match = True
-        items = items.copy()
+        for items in groups_list:
 
-        try:
+            ctr = 0
+            match = True
+            items = items.copy()
 
-            while len(items) != 0:
+            try:
 
-                item = items.pop(0)
-
-                if item == '*' or group[ctr] == item:
-
-                    ctr += 1
-                    continue
-
-                if item == '**':
+                while len(items) != 0:
 
                     item = items.pop(0)
-                    while group[ctr] != item and ctr != len(group):
+
+                    if item == '*' or group[ctr] == item:
+
                         ctr += 1
+                        continue
 
-                    if ctr == len(group):
-                        match = False
-                        break
+                    if item == '**':
 
-                    continue
+                        item = items.pop(0)
+                        while group[ctr] != item and ctr != len(group):
+                            ctr += 1
 
-                match = False
-                break
+                        if ctr == len(group):
+                            match = False
+                            break
 
-            if match:
-                return True
+                        continue
 
-        except IndexError:
-            pass
+                    match = False
+                    break
+
+                if match:
+                    return True
+
+            except IndexError:
+                pass
 
     return False
+
+
+def merge_groups(parent_groups: list[list[str]], new_groups: list[str]) -> list[list[str]]:
+    '''
+    This function is called by tests and testers to join groups that are defined within
+    the test / tester definition with group lists that have been specified for upper testers.
+    Each group in the test / tester specification is appened to the parent defined groups.
+
+    Paramaters:
+        parent_groups           Group lists inherited by the parent
+        new_groups              Groups specified for the test / tester
+
+    Returns:
+        merged                  Merge result
+    '''
+    merged = list()
+
+    for parent_group in (parent_groups or [[]]):
+
+        if new_groups:
+
+            for new_group in new_groups:
+                copy = parent_group.copy()
+                copy.append(new_group)
+                merged.append(copy)
+
+        else:
+            merged.append(parent_group.copy())
+
+    return merged

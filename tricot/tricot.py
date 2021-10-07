@@ -120,7 +120,7 @@ class Test:
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: Command,
                  timeout: int, validators: list[Validator], extractors: list[Extractor], env: dict, conditions: dict,
-                 conditionals: set[Condition], test_id: str, test_groups: list[str]) -> None:
+                 conditionals: set[Condition], test_id: str, test_groups: list[list[str]]) -> None:
         '''
         Initializer for a Test object.
 
@@ -261,7 +261,7 @@ class Test:
 
     def from_dict(path: Path, input_dict: dict, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   environment: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[str] = list()) -> Test:
+                  parent_groups: list[list[str]] = list()) -> Test:
         '''
         Creates a Test object from a dictionary. The dictionary is expected to be the content
         read in of a .yml file and needs all keys that are required for a test (validators,
@@ -285,7 +285,7 @@ class Test:
             var = tricot.utils.merge(variables, j.get('variables', {}), 'variables', path)
             validators = Validator.from_list(path, j['validators'], var)
             extractors = Extractor.from_list(path, j.get('extractors', []), var)
-            groups = parent_groups + list(map(lambda x: str(x), j.get('groups', [])))
+            groups = tricot.utils.merge_groups(parent_groups, list(map(lambda x: str(x), j.get('groups', []))))
 
             e_mode = j.get('error_mode') or error_mode
             env = tricot.utils.merge_environment(j.get('env'), environment, path)
@@ -326,7 +326,7 @@ class Test:
 
     def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[str] = list()) -> list[Test]:
+                  parent_groups: list[list[str]] = list()) -> list[Test]:
         '''
         Within .yml files, Tests are specified in form of a list. This function takes such a list,
         that contains each single test definition as another dictionary (like it is created when
@@ -487,7 +487,7 @@ class Tester:
 
     def __init__(self, path: Path, name: str, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
                  containers: list[TricotContainer], plugins: list[Plugin], conditions: dict, conditionals: set[Condition],
-                 error_mode: str, tester_id: str, test_groups: list[str]) -> None:
+                 error_mode: str, tester_id: str, test_groups: list[list[str]]) -> None:
         '''
         Initializes a new Tester object.
 
@@ -539,7 +539,7 @@ class Tester:
     def from_dict(input_dict: dict, initial_vars: dict[str, Any] = dict(),
                   path: Path = None, e_mode: str = None, environment: dict = {},
                   conditionals: set[Condition] = set(), output_conf: dict = {},
-                  test_groups: list[str] = []) -> Tester:
+                  test_groups: list[list[str]] = []) -> Tester:
         '''
         Creates a new Tester object from a python dictionary. The dictionary is expected to be
         created by reading a .yml file that contains test defintions. It requires all keys that
@@ -573,7 +573,7 @@ class Tester:
 
             testers = g.get('testers')
             definitions = g.get('tests')
-            groups = test_groups + list(map(lambda x: str(x), t.get('groups', [])))
+            groups = tricot.utils.merge_groups(test_groups, list(map(lambda x: str(x), t.get('groups', []))))
 
             variables = tricot.utils.merge(initial_vars, g.get('variables', {}), 'variables', path)
             variables['cwd'] = path.parent
@@ -628,7 +628,7 @@ class Tester:
 
     def from_file(filename: str, initial_vars: dict[str, Any] = dict(), runtime_vars: dict[str, Any] = None,
                   error_mode: str = None, env: dict = {}, conditionals: set[Condition] = set(),
-                  output_conf: dict = {}, test_groups: list[str] = []) -> Tester:
+                  output_conf: dict = {}, test_groups: list[list[str]] = []) -> Tester:
         '''
         Creates a new Tester object from a .yml file. The .yml file obviously needs to be in the
         expected format and requires all keys that are needed to construct a Tester object.
