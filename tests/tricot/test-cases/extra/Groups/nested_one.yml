@@ -6,6 +6,7 @@ tester:
 
   groups:
     - group_one
+    - merge
 
 tests:
   - title: Test Group One - One

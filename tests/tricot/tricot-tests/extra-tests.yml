@@ -596,3 +596,54 @@ tests:
             - Test Group Two - Two... success
             - Test Group Four - One... success
             - Test Group Four - Two... success
+
+
+  - title: Group Merge
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - 'merge'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+
+
+  - title: Group Merge Exclude
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --exclude-groups
+      - 'group_one'
+      - --groups
+      - 'merge'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
