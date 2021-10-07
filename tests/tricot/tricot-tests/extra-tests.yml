@@ -647,3 +647,183 @@ tests:
             - Test Group One - Two... success
             - Test Group Three - One... success
             - Test Group Three - Two... success
+
+
+  - title: ID Test - One Two
+    description: |-
+      "Test tricot's ID feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/IDs.yml
+      - --ids
+      - 'group_one'
+      - 'group_two'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+
+
+  - title: ID Test - One
+    description: |-
+      "Test tricot's ID feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/IDs.yml
+      - --ids
+      - 'group_one'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+          invert:
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+
+
+  - title: ID Test - FourOne
+    description: |-
+      "Test tricot's ID feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/IDs.yml
+      - --ids
+      - 'group_four_one'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Four - One... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - Two... success
+
+
+  - title: Exclude ID
+    description: |-
+      "Test tricot's ID feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/IDs.yml
+      - --exclude
+      - 'group_four_one'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - Two... success
+          invert:
+            - Test Group Four - One... success
+
+
+  - title: Exclude vs Include (ID)
+    description: |-
+      "Test tricot's ID feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/IDs.yml
+      - --exclude
+      - 'group_four_one'
+      - --ids
+      - 'group_four_one'
+
+    validators:
+      - error: False
+      - contains:
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - Two... success
+            - Test Group Four - One... success
+
+
+  - title: Exclude vs Include 2 (ID)
+    description: |-
+      "Test tricot's ID feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/IDs.yml
+      - --exclude
+      - 'group_four_one'
+      - --ids
+      - 'group_four'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Four - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+
+
+  - title: Exclude vs Include (Groups vs ID)
+    description: |-
+      "Test tricot's ID feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/IDs.yml
+      - --exclude
+      - 'group_four_one'
+      - --groups
+      - 'group_two,group_four'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Four - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success

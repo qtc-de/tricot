@@ -1,0 +1,9 @@
+tester:
+  name: ids
+  title: ID Tests
+  description: |-
+    "Performs different checks on tricot's ID feature"
+
+testers:
+  - IDs/nested_one.yml
+  - IDs/nested_two.yml
