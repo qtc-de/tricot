@@ -316,6 +316,11 @@ tests:
             - Test Group One - Two... success
             - Test Group Three - One... success
             - Test Group Three - Two... success
+          invert:
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
 
 
   - title: Groups Two
@@ -335,6 +340,11 @@ tests:
             - Test Group Two - Two... success
             - Test Group Four - One... success
             - Test Group Four - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
 
 
   - title: Groups One - One
@@ -351,6 +361,14 @@ tests:
       - contains:
           values:
             - Test Group One - One... success
+          invert:
+            - Test Group One - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
 
 
   - title: Groups One / Two - One
@@ -368,6 +386,38 @@ tests:
           values:
             - Test Group One - One... success
             - Test Group Two - One... success
+          invert:
+            - Test Group One - Two... success
+            - Test Group Two - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+
+
+  - title: Groups One / Two - One (explicit)
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --groups
+      - 'group_one,one'
+      - 'group_two,one'
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - One... success
+            - Test Group Two - One... success
+          invert:
+            - Test Group One - Two... success
+            - Test Group Two - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
 
 
   - title: Groups One / Two * - Two
@@ -385,6 +435,13 @@ tests:
           values:
             - Test Group Three - Two... success
             - Test Group Four - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Three - One... success
+            - Test Group Four - One... success
 
 
   - title: Groups ** - One
@@ -404,3 +461,138 @@ tests:
             - Test Group Two - One... success
             - Test Group Three - One... success
             - Test Group Four - One... success
+          invert:
+            - Test Group One - Two... success
+            - Test Group Two - Two... success
+            - Test Group Three - Two... success
+            - Test Group Four - Two... success
+
+
+  - title: Exclude group_one
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --exclude-groups
+      - group_one
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+
+
+  - title: Exclude ** - One
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --exclude-groups
+      - '**,one'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - Two... success
+            - Test Group Two - Two... success
+            - Test Group Three - Two... success
+            - Test Group Four - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group Two - One... success
+            - Test Group Three - One... success
+            - Test Group Four - One... success
+
+
+  - title: Exclude vs Include
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --exclude-groups
+      - 'group_one'
+      - --groups
+      - 'group_one'
+
+    validators:
+      - error: False
+      - contains:
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
+
+
+  - title: Exclude vs Include 2
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --exclude-groups
+      - 'group_one'
+      - --groups
+      - '**,one'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group Two - One... success
+            - Test Group Four - One... success
+          invert:
+            - Test Group One - One... success
+            - Test Group One - Two... success
+            - Test Group Two - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+            - Test Group Four - Two... success
+
+
+  - title: Exclude vs Include 3
+    description: |-
+      "Test tricot's test group feature"
+
+    command:
+      - tricot
+      - ${EXTRA}/Groups.yml
+      - --exclude-groups
+      - 'group_one,one'
+      - --groups
+      - 'group_one'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - Test Group One - Two... success
+            - Test Group Three - One... success
+            - Test Group Three - Two... success
+          invert:
+            - Test Group One - One... success
+            - Test Group Two - One... success
+            - Test Group Two - Two... success
+            - Test Group Four - One... success
+            - Test Group Four - Two... success
