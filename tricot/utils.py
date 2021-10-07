@@ -302,7 +302,7 @@ def parse_groups(groups: list[str]) -> list[list[str]]:
     for group_spec in groups:
 
         or_like = regex.findall(group_spec)
-        group_spec = regex.sub('', group_spec)
+        group_spec = regex.sub('$ORLIKE$', group_spec)
 
         split = list(filter(None, group_spec.split(',')))
         group_lists = [split]
@@ -316,9 +316,16 @@ def parse_groups(groups: list[str]) -> list[list[str]]:
                 split = list(filter(None, match.split(',')))
 
                 for item in split:
-                    copy = group_list.copy()
-                    copy.append(item)
-                    new.append(copy)
+
+                    new_list = group_list.copy()
+
+                    for ctr in range(len(new_list)):
+
+                        if new_list[ctr] == '$ORLIKE$':
+                            new_list[ctr] = item
+                            break
+
+                    new.append(new_list)
 
             group_lists = new
 
@@ -369,6 +376,7 @@ def groups_contain(groups_list: list[list[str]], groups: list[list[str]]) -> boo
                             match = False
                             break
 
+                        ctr += 1
                         continue
 
                     match = False
