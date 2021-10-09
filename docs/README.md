@@ -9,8 +9,9 @@ on it's own.
 - [Extractor, Validator and Plugin List](#extractor-validator-and-plugin-list)
 - [Writing Custom Plugins](#writing-custom-plugins)
 - [Writing Custom Validators](#writing-custom-validators)
-- [Writing Custom Extactors](#writing-custom-extractors)
+- [Writing Custom Extractors](#writing-custom-extractors)
 - [Accessing Command Information from an Validator](#accessing-command-information-from-an-validator)
+- [Selective Testing](#selective-testing)
 - [Environment Variables](#environment-variables)
 - [Runtime Variables](#runtime-variables)
 - [Nesting Variables](#nesting-variables)
@@ -354,7 +355,7 @@ plugins:
     key2: 22
 ```
 
-* ``param_type`` can be used to specify the python type that is expected for the toplevel argument of a
+* ``param_type`` can be used to specify the python type that is expected for the top level argument of a
   plugin or validator. In the example test configuration above, the ``param_type`` values should be set
   like this:
   * ``example_one``: ``param_type = str``
@@ -370,6 +371,108 @@ plugins:
 
 The parameter validation described above is very basic and has obviously limitations. In future, we probably
 want a parameter validation that is easier to use and has an arbitrary recursion depth.
+
+
+### Selective Testing
+
+----
+
+A common testing scenario is that you just changed a portion of a program and only want to run tests for the affected
+component. *tricot* supports this *selective testing* approach by using *IDs* and *test groups*.
+
+*IDs* are exactly what the name suggests, a unique identifier for each test / tester. You can assign them by using the
+`id` key within of test definitions. *IDs* are ordinary strings and can contain any characters. If a test / tester
+is defined without an *ID*, it's *title* (Test) or *name* (Tester) attribute is used as an *ID*. However, in this case
+*tricot* does not check for duplicate *IDs* and you may end up with multiple tests / testers having the same *ID*.
+
+```yaml
+tester:
+  id: '001'
+  name: Basic Usage
+  description: |-
+    Demonstrate the basic usage of tricot
+
+tests:
+
+  - id: '001-1'
+    title: Test passwd File
+    description: |-
+      ...
+```
+
+To launch tests based on an *ID* you can use the command line switches ``--ids`` and ``--exclude-ids``. When using
+``--ids``, *tricot* only runs the tests / testers that match the specified *IDs*. If the *ID* belongs to a tester,
+all nested testers and tests are run, independent of their *ID*. The ``--exclude-ids`` can be used to exclude certain
+test / tester *IDs* from a test. Notice that ``--exclude-ids`` triggers before ``--ids``, so if you specify the same
+*ID* for both command line options, it is not run. On the other hand, this allows you to exclude nested test / tester
+*IDs* that are contained within a tester specified with the ``--ids`` option.
+
+*Test groups* can be used to group tests / testers together. Each test / tester definition can contain a ``groups`` key,
+which is a list within the *YAML* configuration. The contained items are the groups for the corresponding test / tester.
+*Test groups* are inherited from parent testers, but stacked instead of being merged together. E.g. when a parent tester
+is in the group `io` and the child tester in the group `logging`, the resulting group for the child tester is `io,logging`.
+
+```yaml
+# [io.yml]
+tester:
+  group:
+    - io
+  name: Test IO Modules
+  description: |-
+    Test IO Modules for the Software
+
+testers:
+  - ./nested.yml
+
+
+# [nested.yml]
+tester:
+  group:
+    - logging
+  name: Test IO Modules - logging
+  description: |-
+    Test IO Modules for the Software - logging
+
+tests:
+
+  title: Test Error Log
+  description: |-
+    ...
+```
+
+As for *IDs*, you can use the ``--groups`` and ``--exclude-groups`` command line options to run selective tests on *test
+groups*. However, group specifications on the command line support some special syntax. The easiest case is that you just
+want to run a single test group. E.g. taking the example above, to run the `io,logging` test you could use:
+
+```console
+tricot -v example.yml --groups io,logging
+```
+
+This is straight forwards, but it can get annoying if you defined `logging` groups in other parent testers than `io`.
+To make runs of a single test group, that is contained within different parent test groups easier, it is possible
+to specify wildcards.
+
+* `*` can be used to match an arbitrary group
+* `**` can be used to match an arbitrary number of arbitrary groups
+
+Running all tests from the `logging` group, independent of the parent test groups can be done like this:
+
+```console
+tricot -v example.yml --groups **,logging
+```
+
+In addition to wildcards, *tricot* also support *brace expressions*. These can be used to constructed *or-like* test
+groups. E.g. to run the `logging` module from the `io` and `networking` parent test groups, you could use:
+
+```console
+tricot -v example.yml --groups {io,networking},logging
+```
+
+Wildcards and *brace expressions* can also be used together within a group specifications. Whereas *brace expressions* can
+be placed at any location of a group specification, wildcards are not allowed within the last comma separated value. Also
+for group matching, the `--exclude-groups` option triggers before the `--groups` option.
+
+Both, *IDs* and *test groups* are case sensitive.
 
 
 ### Environment Variables

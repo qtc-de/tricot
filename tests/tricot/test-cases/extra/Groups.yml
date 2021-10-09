@@ -1,0 +1,9 @@
+tester:
+  name: groups
+  title: Group Tests
+  description: |-
+    "Performs different checks on tricot's test group feature"
+
+testers:
+  - Groups/nested_one.yml
+  - Groups/nested_two.yml

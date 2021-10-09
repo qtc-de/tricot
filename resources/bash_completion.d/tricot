@@ -12,7 +12,7 @@ function _tricot() {
     COMPREPLY=()
 
     # No completion
-	if _comp_contains "--exclude --numbers --testers --positionals --variables" $prev; then
+	if _comp_contains "--exclude-ids --exclude-groups --groups --ids --positionals --variables" $prev; then
 		return 0
 
     # Complete template modes
@@ -28,14 +28,15 @@ function _tricot() {
     elif [[ "$cur" == -* ]]; then
 		opts="--help"
 		opts="$opts --debug"
-		opts="$opts --exclude"
+		opts="$opts --exclude-ids"
+		opts="$opts --exclude-groups"
+		opts="$opts --groups"
+		opts="$opts --ids"
 		opts="$opts --logfile"
 		opts="$opts --load"
-		opts="$opts --numbers"
 		opts="$opts --positionals"
 		opts="$opts --quite"
 		opts="$opts --template"
-		opts="$opts --testers"
 		opts="$opts --variables"
 		opts="$opts --verbose"
 

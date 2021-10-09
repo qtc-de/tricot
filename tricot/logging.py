@@ -59,6 +59,12 @@ class Logger:
         '''
         cprint(string, color='red', end=end)
 
+    def print_plain_blue(string: str, end: str = None) -> None:
+        '''
+        Print without indent or prefix, text in blue.
+        '''
+        cprint(string, color='blue', end=end)
+
     def print_yellow(string: str, e: bool = False, end: str = None) -> None:
         '''
         Print with prefix and indent, text in yellow.

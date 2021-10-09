@@ -4,6 +4,10 @@ tester:
   description: |-
     "Perform tests on all tricot extractors"
 
+  id: 03
+  groups:
+    - extractor
+
 
 tests:
   - title: RegexExtractor

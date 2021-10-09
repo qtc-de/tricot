@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import tricot
 from typing import Any
 from pathlib import Path
@@ -275,3 +276,146 @@ def merge(dict1: dict, dict2: dict, name: str = None, path: Path = None) -> dict
             raise tricot.TricotException('Invalid type specified during merge operation.', path)
 
     return {**dict1, **dict2}
+
+
+def parse_groups(groups: list[str]) -> list[list[str]]:
+    '''
+    Parses group specifications. Groups should be specified as comma separated strings. Each
+    comma separated part is interpreted as a group. All groups within a string are mandatory
+    for a test / tester to match. Braces can be used for or-like statements.
+
+    E.g.:
+
+        java8,networking,filter      -> list(java8, networking, filter)
+        java8,{networking,io},filter -> list(list(java8, networking, filter),
+                                             list(java8, io, filter))
+
+    Parameters:
+        groups          List of group specifications
+
+    Returns:
+        list            List of group lists
+    '''
+    lists = list()
+    regex = re.compile(r'\{([^}]+)\}')
+
+    for group_spec in groups:
+
+        or_like = regex.findall(group_spec)
+        group_spec = regex.sub('$ORLIKE$', group_spec)
+
+        split = list(filter(None, group_spec.split(',')))
+        group_lists = [split]
+
+        for match in or_like:
+
+            new = []
+
+            for group_list in group_lists:
+
+                split = list(filter(None, match.split(',')))
+
+                for item in split:
+
+                    new_list = group_list.copy()
+
+                    for ctr in range(len(new_list)):
+
+                        if new_list[ctr] == '$ORLIKE$':
+                            new_list[ctr] = item
+                            break
+
+                    new.append(new_list)
+
+            group_lists = new
+
+        lists += group_lists
+
+    return lists
+
+
+def groups_contain(groups_list: list[list[str]], groups: list[list[str]]) -> bool:
+    '''
+    Checks whether a specified list of groups contains a particular group of a
+    list of specified groups. This separate function is required, as group
+    comparison supports wildcards as * or **.
+
+    Parameters:
+        groups_list           List of group lists to search in
+        groups                Group list to look for
+
+    Returns:
+        bool                  True if group is contained in groups
+    '''
+    for group in groups:
+
+        for items in groups_list:
+
+            ctr = 0
+            match = True
+            items = items.copy()
+
+            try:
+
+                while len(items) != 0:
+
+                    item = items.pop(0)
+
+                    if item == '*' or group[ctr] == item:
+
+                        ctr += 1
+                        continue
+
+                    if item == '**':
+
+                        item = items.pop(0)
+                        while group[ctr] != item and ctr != len(group):
+                            ctr += 1
+
+                        if ctr == len(group):
+                            match = False
+                            break
+
+                        ctr += 1
+                        continue
+
+                    match = False
+                    break
+
+                if match:
+                    return True
+
+            except IndexError:
+                pass
+
+    return False
+
+
+def merge_groups(parent_groups: list[list[str]], new_groups: list[str]) -> list[list[str]]:
+    '''
+    This function is called by tests and testers to join groups that are defined within
+    the test / tester definition with group lists that have been specified for upper testers.
+    Each group in the test / tester specification is appened to the parent defined groups.
+
+    Paramaters:
+        parent_groups           Group lists inherited by the parent
+        new_groups              Groups specified for the test / tester
+
+    Returns:
+        merged                  Merge result
+    '''
+    merged = list()
+
+    for parent_group in (parent_groups or [[]]):
+
+        if new_groups:
+
+            for new_group in new_groups:
+                copy = parent_group.copy()
+                copy.append(new_group)
+                merged.append(copy)
+
+        else:
+            merged.append(parent_group.copy())
+
+    return merged

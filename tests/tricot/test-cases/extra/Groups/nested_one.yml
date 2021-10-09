@@ -1,0 +1,40 @@
+tester:
+  name: group_nested_one
+  title: Nested Group Test One
+  description: |-
+    "Performs different checks on tricot's test group feature"
+
+  groups:
+    - group_one
+    - merge
+
+tests:
+  - title: Test Group One - One
+    groups:
+      - one
+      - first
+    description: >
+      'First test in test group one'
+    command:
+      - echo
+      - 'Hi :D'
+    validators:
+      - contains:
+          values:
+            - 'Hi :D'
+
+  - title: Test Group One - Two
+    groups:
+      - two
+    description: >
+      'First test in test group one'
+    command:
+      - echo
+      - 'Hi :D'
+    validators:
+      - contains:
+          values:
+            - 'Hi :D'
+
+testers:
+  - ./nested_three.yml

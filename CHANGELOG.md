@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.6.0] - Oct 09, 2021
+
+### Added
+
+* Add test / tester *IDs* (see https://github.com/qtc-de/tricot/tree/main/docs#selective-testing)
+* Add *test groups* (see https://github.com/qtc-de/tricot/tree/main/docs#selective-testing)
+
+### Changed
+
+* Full help menu is now always displayed on argparse errors
+* Small bugfixes and formatting changes
+
+### Removed
+
+* The `--tester`, `--exclude` and `--number` options were removed.
+  They are replaced by the `--ids`, `--groups`, `--exclude-ids` and
+  `--exclude-groups` options.
+
+
 ## [1.5.0] - Sep 11, 2021
 
 ### Added

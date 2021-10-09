@@ -1,0 +1,39 @@
+tester:
+  name: id_nested_four
+  title: Nested ID Test Four
+  description: |-
+    "Performs different checks on tricot's ID feature"
+
+  id: group_four
+  groups:
+    - group_four
+
+tests:
+  - title: Test Group Four - One
+    id: group_four_one
+    groups:
+      - one
+      - first
+    description: >
+      'First test in test group four'
+    command:
+      - echo
+      - 'Hi :D'
+    validators:
+      - contains:
+          values:
+            - 'Hi :D'
+
+  - title: Test Group Four - Two
+    id: group_four_two
+    groups:
+      - two
+    description: >
+      'Second test in test group four'
+    command:
+      - echo
+      - 'Hi :D'
+    validators:
+      - contains:
+          values:
+            - 'Hi :D'
