@@ -27,7 +27,7 @@ class FullHelpParser(argparse.ArgumentParser):
 parser = FullHelpParser(description='''tricot v1.6.0 - a trivial command tester that allows you to verify that certain
                                        commands or executables behave as expected. It uses .yml files for test
                                        definitions and can be used from the command line or as a python library.''',
-                                       formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=40))
+                                       formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=60))
 
 parser.add_argument('--debug', dest='debug', action='store_true', help='enable debug output')
 parser.add_argument('--exclude-ids', dest='eids', metavar='id', nargs='+', default=[], help='exclude the specified test / tester IDs')
