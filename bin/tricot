@@ -16,14 +16,14 @@ parser = argparse.ArgumentParser(description='''tricot v1.6.0 - a trivial comman
                                                 formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=40))
 
 parser.add_argument('--debug', dest='debug', action='store_true', help='enable debug output')
-parser.add_argument('--exclude', metavar='name', nargs='+', default=[], help='exclude the specified test / tester IDs')
+parser.add_argument('--exclude-ids', dest='eids', metavar='id', nargs='+', default=[], help='exclude the specified test / tester IDs')
 parser.add_argument('--exclude-groups', dest='egroups', metavar='group', nargs='+', default=[], help='exclude the specified test groups')
 parser.add_argument('file', metavar='file', nargs='+', help='test definition (.yml file)')
 parser.add_argument('--groups', metavar='group', nargs='+', default=[], help='only run the specified test groups')
 parser.add_argument('--ids', metavar='id', nargs='+', default=[], help='only run the specified test / tester IDs')
-parser.add_argument('--logfile', dest='log', type=argparse.FileType('w'), help='mirror output into a logfile')
+parser.add_argument('--logfile', dest='log', metavar='file', type=argparse.FileType('w'), help='mirror output into a logfile')
 parser.add_argument('--load', dest='load', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='custom validators, extractors and plugins')
-parser.add_argument('--positionals', dest='pos', metavar='pos', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
+parser.add_argument('--positionals', dest='pos', metavar='var', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
 parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
 parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator', 'extractor'], help='write a template file')
 parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', default=[], help='runtime variables')
@@ -160,7 +160,7 @@ def main():
 
         try:
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
-            tester.run(set(args.ids), groups, set(args.exclude), egroups)
+            tester.run(set(args.ids), groups, set(args.eids), egroups)
 
         except tricot.ValidatorError as e:
             tricot.Logger.print_mixed_red('Caught', 'ValidatorError', 'while parsing test configuration.', e=True)
