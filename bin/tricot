@@ -10,10 +10,24 @@ import tricot
 import argparse
 
 
-parser = argparse.ArgumentParser(description='''tricot v1.6.0 - a trivial command tester that allows you to verify that certain
-                                                commands or executables behave as expected. It uses .yml files for test
-                                                definitions and can be used from the command line or as a python library.''',
-                                                formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=40))
+class FullHelpParser(argparse.ArgumentParser):
+    '''
+    Custom ArgumentParser class to show more helpful help messages per default.
+    Taken from: https://stackoverflow.com/a/4042861
+    '''
+    def error(self, message):
+        '''
+        Show the whole help menu per default.
+        '''
+        sys.stderr.write(f'error: {message}\n\n')
+        self.print_help()
+        sys.exit(2)
+
+
+parser = FullHelpParser(description='''tricot v1.6.0 - a trivial command tester that allows you to verify that certain
+                                       commands or executables behave as expected. It uses .yml files for test
+                                       definitions and can be used from the command line or as a python library.''',
+                                       formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=40))
 
 parser.add_argument('--debug', dest='debug', action='store_true', help='enable debug output')
 parser.add_argument('--exclude-ids', dest='eids', metavar='id', nargs='+', default=[], help='exclude the specified test / tester IDs')
