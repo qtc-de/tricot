@@ -731,7 +731,7 @@ tests:
     command:
       - tricot
       - ${EXTRA}/IDs.yml
-      - --exclude
+      - --exclude-ids
       - 'group_four_one'
 
     validators:
@@ -756,7 +756,7 @@ tests:
     command:
       - tricot
       - ${EXTRA}/IDs.yml
-      - --exclude
+      - --exclude-ids
       - 'group_four_one'
       - --ids
       - 'group_four_one'
@@ -782,7 +782,7 @@ tests:
     command:
       - tricot
       - ${EXTRA}/IDs.yml
-      - --exclude
+      - --exclude-ids
       - 'group_four_one'
       - --ids
       - 'group_four'
@@ -809,7 +809,7 @@ tests:
     command:
       - tricot
       - ${EXTRA}/IDs.yml
-      - --exclude
+      - --exclude-ids
       - 'group_four_one'
       - --groups
       - 'group_two,group_four'
