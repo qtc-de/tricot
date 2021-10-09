@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-* The `--tester`, `--exclude` and `--number`` options were removed.
+* The `--tester`, `--exclude` and `--number` options were removed.
   They are replaced by the `--ids`, `--groups`, `--exclude-ids` and
   `--exclude-groups` options.
 
