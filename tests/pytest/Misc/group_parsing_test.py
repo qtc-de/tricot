@@ -25,7 +25,7 @@ result_list.append([['this', 'works'], ['also', 'with', 'orlike'],
 
 
 @pytest.mark.parametrize('config, results', zip(config_list, result_list))
-def test_contains_validator(config: list[str], results: list[list[str]]):
+def test_group_parsing(config, results):
     '''
     Check whether group specifications are parsed correctly.
     '''

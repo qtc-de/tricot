@@ -41,7 +41,7 @@ match_list.append([([['lets', 'add', 'hi :)', 'hi :D', 'some', 'wildcards'], ['d
 
 
 @pytest.mark.parametrize('config, match', zip(config_list, match_list))
-def test_contains_validator(config: list[str], match):
+def test_group_matching(config, match):
     '''
     Check whether group matches are matching as expected
     '''
