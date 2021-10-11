@@ -419,3 +419,30 @@ def merge_groups(parent_groups: list[list[str]], new_groups: list[str]) -> list[
             merged.append(parent_group.copy())
 
     return merged
+
+
+def verify_id_pattern(pattern: str, path: Path) -> str:
+    '''
+    Checks whether the specified ID pattern is valid. If invalid, a TricotException
+    is raised.
+
+    Parameters:
+        pattern         ID pattern defined in a tester
+        path            Path of the currently parsed configuration file
+
+    Returns:
+        str             If valid, the id pattern
+    '''
+    if pattern is not None:
+
+        if type(pattern) is not str:
+            raise tricot.TricotException("Tester attribute 'id_pattern' needs to be string.", path)
+
+        regex = re.compile('\{(?::[0-9<>=^+bcdoxXneEfFgGn% -]+)?\}')
+        matches = regex.findall(pattern)
+
+        if len(matches) != 1:
+            msg = "Tester attribute 'id_pattern' needs to contain exactly one '{}' sequence."
+            raise tricot.TricotException(msg, path)
+
+    return pattern

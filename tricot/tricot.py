@@ -261,7 +261,7 @@ class Test:
 
     def from_dict(path: Path, input_dict: dict, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   environment: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[list[str]] = list()) -> Test:
+                  parent_groups: list[list[str]] = list(), suggested_id: str = None) -> Test:
         '''
         Creates a Test object from a dictionary. The dictionary is expected to be the content
         read in of a .yml file and needs all keys that are required for a test (validators,
@@ -276,6 +276,7 @@ class Test:
             conditionals    Conditionals for running the test
             output_conf     Output configuration inherited by the tester
             parent_groups   Test groups inherited from the parent tester
+            suggested_id    Tets ID suggested by the id_pattern
 
         Returns:
             Test            Newly generated Test object
@@ -311,7 +312,7 @@ class Test:
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
             test = Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, extractors, env,
-                        conditions, conditionals, j.get('id'), groups)
+                        conditions, conditionals, j.get('id', suggested_id), groups)
 
             test.set_logfile(j.get('logfile'))
             test.set_output(tricot.utils.merge(output_conf, j.get('output', {}), 'output', path))
@@ -326,7 +327,7 @@ class Test:
 
     def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[list[str]] = list()) -> list[Test]:
+                  parent_groups: list[list[str]] = list(), id_pattern: str = None) -> list[Test]:
         '''
         Within .yml files, Tests are specified in form of a list. This function takes such a list,
         that contains each single test definition as another dictionary (like it is created when
@@ -341,6 +342,7 @@ class Test:
             conditionals    Conditionals specified by the upper tester
             output_conf     Output configuration inherited by the tester
             parent_groups   Test groups inherited from the parent tester
+            id_pattern      Pattern to create test IDs from
 
         Returns
             list[Test]      List of Test objects created from the .yml input
@@ -352,9 +354,15 @@ class Test:
 
         for ctr in range(len(input_list)):
 
+            if id_pattern is not None:
+                suggested_id = id_pattern.format(ctr)
+
+            else:
+                suggested_id = None
+
             try:
                 test = Test.from_dict(path, input_list[ctr], variables, error_mode, env, conditionals,
-                                      output_conf, parent_groups)
+                                      output_conf, parent_groups, suggested_id)
                 tests.append(test)
 
             except TestKeyError as e:
@@ -566,6 +574,7 @@ class Tester:
             conds = Condition.from_dict(path, t.get('conditionals', {})).union(conditionals)
             run_conds = t.get('conditions', {})
             output_c = tricot.utils.merge(output_conf, t.get('output', {}), 'output', path)
+            id_pattern = tricot.utils.verify_id_pattern(t.get('id_pattern'), path)
 
             Condition.check_format(path, run_conds, conds)
 
@@ -588,13 +597,13 @@ class Tester:
                     if not Path(f).is_absolute():
                         f = path.parent.joinpath(f)
 
-                    for ff in glob.glob(str(f)):
+                    for ff in sorted(glob.glob(str(f))):
                         tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
                         tester_list.append(tester)
 
             tests = None
             if definitions and type(definitions) is list:
-                tests = Test.from_list(path, definitions, variables, error_mode, env, conds, output_c, groups)
+                tests = Test.from_list(path, definitions, variables, error_mode, env, conds, output_c, groups, id_pattern)
 
             elif not tester_list:
                 raise TesterKeyError('tests', path, optional='testers')
