@@ -485,7 +485,7 @@ class Tester:
     '''
     tester_count = 0
 
-    def __init__(self, path: Path, name: str, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
+    def __init__(self, path: Path, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
                  containers: list[TricotContainer], plugins: list[Plugin], conditions: dict, conditionals: set[Condition],
                  error_mode: str, tester_id: str, test_groups: list[list[str]]) -> None:
         '''
@@ -493,7 +493,6 @@ class Tester:
 
         Parameters:
             path            Path object to the Testers configuration file
-            name            Name of the tester (used for identification)
             title           Title of the test (used for displaying)
             variables       Dictionary of global variables that should be applied to all Tests and Validators
             tests           List of Test objects that should run during a test
@@ -509,8 +508,7 @@ class Tester:
         Returns:
             None
         '''
-        self.name = name
-        self.title = title or name
+        self.title = title
         self.variables = variables
         self.tests = tests
         self.testers = testers
@@ -521,7 +519,7 @@ class Tester:
         self.error_mode = error_mode
 
         if tester_id is None:
-            self.id = self.name
+            self.id = self.title
 
         else:
             self.id = str(tester_id)
@@ -601,7 +599,7 @@ class Tester:
             elif not tester_list:
                 raise TesterKeyError('tests', path, optional='testers')
 
-            new_tester = Tester(path, t['name'], t.get('title'), variables, tests, tester_list, containers, plugins,
+            new_tester = Tester(path, t['title'], variables, tests, tester_list, containers, plugins,
                                 run_conds, conds, error_mode, t.get('id'), groups)
             new_tester.set_logfile(t.get('logfile'))
 
@@ -785,7 +783,7 @@ class Tester:
         Logger.add_logfile(self.logfile)
         Logger.print_mixed_yellow('Starting test:', self.title, end=' ')
 
-        if self.id and self.id != self.name:
+        if self.id and self.id != self.title:
             Logger.print_plain_blue(f'[{self.id}]')
         else:
             print()
