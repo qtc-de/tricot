@@ -12,7 +12,7 @@ function _tricot() {
     COMPREPLY=()
 
     # No completion
-	if _comp_contains "--exclude-ids --exclude-groups --groups --ids --positionals --variables" $prev; then
+	if _comp_contains "--continue-from --exclude-ids --exclude-groups --groups --ids --positionals --skip-until --variables" $prev; then
 		return 0
 
     # Complete template modes
@@ -27,6 +27,7 @@ function _tricot() {
 	# Current word starts with -*
     elif [[ "$cur" == -* ]]; then
 		opts="--help"
+		opts="$opts --continue-from"
 		opts="$opts --debug"
 		opts="$opts --exclude-ids"
 		opts="$opts --exclude-groups"
@@ -36,6 +37,7 @@ function _tricot() {
 		opts="$opts --load"
 		opts="$opts --positionals"
 		opts="$opts --quite"
+		opts="$opts --skip-until"
 		opts="$opts --template"
 		opts="$opts --variables"
 		opts="$opts --verbose"

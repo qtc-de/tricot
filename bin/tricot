@@ -31,6 +31,7 @@ parser = FullHelpParser(description=f'''tricot v{VERSION} - a trivial command te
                                         definitions and can be used from the command line or as a python library.''',
                                         formatter_class=lambda prog: argparse.HelpFormatter(prog, max_help_position=60))
 
+parser.add_argument('--continue-from', dest='continue_from', metavar='id', help='continue from the specified test / tester id')
 parser.add_argument('--debug', dest='debug', action='store_true', help='enable debug output')
 parser.add_argument('--exclude-ids', dest='eids', metavar='id', nargs='+', default=[], help='exclude the specified test / tester IDs')
 parser.add_argument('--exclude-groups', dest='egroups', metavar='group', nargs='+', default=[], help='exclude the specified test groups')
@@ -41,6 +42,7 @@ parser.add_argument('--logfile', dest='log', metavar='file', type=argparse.FileT
 parser.add_argument('--load', dest='load', metavar='file', nargs='+', default=[], type=argparse.FileType('r'), help='custom validators, extractors and plugins')
 parser.add_argument('--positionals', dest='pos', metavar='var', nargs='+', default=[], help='positional variables (accessible by $1, $2, ...)')
 parser.add_argument('-q', '--quite', dest='quite', action='store_true', help='disable verbose output during tests')
+parser.add_argument('--skip-until', dest='skip_until', metavar='id', help='skip until the specified test / tester id')
 parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator', 'extractor'], help='write a template file')
 parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', default=[], help='runtime variables')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='enable verbose logging during tests')
@@ -171,6 +173,11 @@ def main():
 
     groups = tricot.utils.parse_groups(args.groups)
     egroups = tricot.utils.parse_groups(args.egroups)
+
+    if args.skip_until:
+        tricot.skip_until = args.skip_until
+    elif args.continue_from:
+        tricot.skip_until = args.continue_from
 
     tricot.Logger.print_mixed_yellow('tricot', f'v{VERSION}', '- Starting tests...')
 

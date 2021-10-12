@@ -16,6 +16,7 @@ from tricot.command import Command
 from tricot.condition import Condition
 
 
+skip_until = None
 assigned_ids = set()
 
 
@@ -394,9 +395,8 @@ class Test:
 
         success = True
 
-        if not Condition.check_conditions(self.conditions, self.conditionals):
-            Logger.print_yellow_plain("skipped.")
-            Logger.decrease_indent()
+        if not Condition.check_conditions(self.conditions, self.conditionals) or tricot.skip_until is not None:
+            Logger.cprint('skipped.', color='grey')
             return
 
         self.command.run(self.path.parent, self.timeout, hotplug_variables, self.env)
@@ -840,6 +840,9 @@ class Tester:
         Logger.print('')
         runall = tricot.utils.groups_contain(groups, self.groups) or (ids and {self.id}.issubset(ids))
 
+        if tricot.skip_until and tricot.skip_until == self.id:
+            tricot.skip_until = None
+
         for ctr in range(len(self.tests)):
 
             test = self.tests[ctr]
@@ -861,6 +864,9 @@ class Tester:
 
             else:
                 continue
+
+            if tricot.skip_until and tricot.skip_until == test.id:
+                tricot.skip_until = None
 
             test.run(f'{ctr+1}.', hotplug_variables)
 

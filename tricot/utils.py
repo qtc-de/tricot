@@ -438,7 +438,7 @@ def verify_id_pattern(pattern: str, path: Path) -> str:
         if type(pattern) is not str:
             raise tricot.TricotException("Tester attribute 'id_pattern' needs to be string.", path)
 
-        regex = re.compile('\{(?::[0-9<>=^+bcdoxXneEfFgGn% -]+)?\}')
+        regex = re.compile(r'\{(?::[0-9<>=^+bcdoxXneEfFgGn% -]+)?\}')
         matches = regex.findall(pattern)
 
         if len(matches) != 1:
