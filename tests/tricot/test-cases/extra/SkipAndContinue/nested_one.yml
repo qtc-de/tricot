@@ -1,0 +1,55 @@
+tester:
+  title: Skip and Continue
+  description: |-
+    'Test cases for the --skip-until and --continue-from options.'
+    'This tester only defines some dummy tests. The actual logic has'
+    'is implemented within the tricot testers that invoke the tests.'
+
+  id: '002'
+  id_pattern: '002-{:03}'
+
+
+tests:
+  - title: Dummy Test 1
+    description: |-
+      'Just a dummy test'
+    command:
+      - echo
+      - Test
+    validators:
+      - contains:
+          values:
+            - Test
+
+  - title: Dummy Test 2
+    description: |-
+      'Just a dummy test'
+    command:
+      - echo
+      - Test
+    validators:
+      - contains:
+          values:
+            - Test
+
+  - title: Dummy Test 3
+    description: |-
+      'Just a dummy test'
+    command:
+      - echo
+      - Test
+    validators:
+      - contains:
+          values:
+            - Test
+
+  - title: Dummy Test 4
+    description: |-
+      'Just a dummy test'
+    command:
+      - echo
+      - Test
+    validators:
+      - contains:
+          values:
+            - Test
