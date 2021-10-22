@@ -1116,3 +1116,39 @@ tests:
             - '[001-001] Dummy Test 2... skipped'
             - '[001-002] Dummy Test 3... skipped'
             - '[001-003] Dummy Test 4... skipped'
+
+
+  - title: ID Pattern
+    description: |-
+      'Test the id_pattern feature'
+
+    groups:
+      - id_pattern
+
+    command:
+      - tricot
+      - ${EXTRA}/IDPattern.yml
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - '[test-1-000] Test One... success'
+            - '[test-1-001] Test Two... success'
+            - '[test-1-002] Test Three... success'
+            - '[test-2-000] Test One... success'
+            - '[test-2-001] Test Two... success'
+            - '[test-2-002] Test Three... success'
+            - '[test-2-003] Test Four... success'
+            - '[test-2-004] Test Five... success'
+            - '[test-2-005] Test Six... success'
+            - '[test-2-006] Test Seven... success'
+            - '[test-2-007] Test Eight... success'
+            - '[test-2-008] Test Nine... success'
+            - '[test-2-009] Test Ten... success'
+            - '[test-2-00a] Test Eleven... success'
+            - '[test-2-00b] Test Twelve... success'
+            - '[test-2-00c] Test Thirteen... success'
+            - '[test-2-00d] Test Fourteen... success'
+            - '[test-2-00e] Test Fifteen... success'
+            - '[test-2-00f] Test Sixteen... success'
