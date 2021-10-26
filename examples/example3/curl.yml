@@ -1,5 +1,5 @@
 tester:
-  name: curl Tester
+  title: curl Tester
   description: |-
     Test some curl commands
 

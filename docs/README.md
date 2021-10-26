@@ -12,6 +12,8 @@ on it's own.
 - [Writing Custom Extractors](#writing-custom-extractors)
 - [Accessing Command Information from an Validator](#accessing-command-information-from-an-validator)
 - [Selective Testing](#selective-testing)
+  * [Test / Tester IDs](#test-tester-ids)
+  * [Test Groups](#test-groups)
 - [Environment Variables](#environment-variables)
 - [Runtime Variables](#runtime-variables)
 - [Nesting Variables](#nesting-variables)
@@ -380,25 +382,50 @@ want a parameter validation that is easier to use and has an arbitrary recursion
 A common testing scenario is that you just changed a portion of a program and only want to run tests for the affected
 component. *tricot* supports this *selective testing* approach by using *IDs* and *test groups*.
 
+
+#### Test / Tester IDs
+
 *IDs* are exactly what the name suggests, a unique identifier for each test / tester. You can assign them by using the
 `id` key within of test definitions. *IDs* are ordinary strings and can contain any characters. If a test / tester
-is defined without an *ID*, it's *title* (Test) or *name* (Tester) attribute is used as an *ID*. However, in this case
+is defined without an *ID*, it's *title* attribute is used as an *ID*. However, in this case
 *tricot* does not check for duplicate *IDs* and you may end up with multiple tests / testers having the same *ID*.
 
 ```yaml
 tester:
   id: '001'
-  name: Basic Usage
+  title: Basic Usage
   description: |-
-    Demonstrate the basic usage of tricot
+    Demonstrate the basic usage of IDs and groups
 
 tests:
 
-  - id: '001-1'
+  - id: '001-01'
     title: Test passwd File
     description: |-
       ...
 ```
+
+Assigning separate *IDs* for tests is a tedious work and *tricot* supports *ID patterns* to make it a little bit easier.
+Each *tester* can use the ``id_pattern`` attribute to define a pattern that is used to assign *test IDs* automatically.
+The format is analog to *Python's format strings*:
+
+```yaml
+tester:
+  id: '001'
+  id_pattern: '001-{:02d}'
+  title: Basic Usage
+  description: |-
+    Demonstrate the basic usage of the id_pattern attribute
+
+tests:
+
+  - title: Test passwd File
+    description: |-
+      ...
+```
+
+In the example above, the first *test* within the ``tests`` attribute gets assigned the *ID* ``001-00``, the second
+``001-01`` and so on.
 
 To launch tests based on an *ID* you can use the command line switches ``--ids`` and ``--exclude-ids``. When using
 ``--ids``, *tricot* only runs the tests / testers that match the specified *IDs*. If the *ID* belongs to a tester,
@@ -406,6 +433,13 @@ all nested testers and tests are run, independent of their *ID*. The ``--exclude
 test / tester *IDs* from a test. Notice that ``--exclude-ids`` triggers before ``--ids``, so if you specify the same
 *ID* for both command line options, it is not run. On the other hand, this allows you to exclude nested test / tester
 *IDs* that are contained within a tester specified with the ``--ids`` option.
+
+*tricot* also supports the options ``--skip-until`` and ``--continue-from``. These option do exactly the same and start
+your test from the specified *test / tester ID*. This is useful when a test failed and you want to continue your test
+from this point.
+
+
+#### Test Groups
 
 *Test groups* can be used to group tests / testers together. Each test / tester definition can contain a ``groups`` key,
 which is a list within the *YAML* configuration. The contained items are the groups for the corresponding test / tester.

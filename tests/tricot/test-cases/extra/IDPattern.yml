@@ -1,0 +1,8 @@
+tester:
+  title: ID Pattern
+  description: |-
+    "Performs different checks on tricot's id_pattern feature"
+
+testers:
+  - IDPattern/nested_one.yml
+  - IDPattern/nested_two.yml

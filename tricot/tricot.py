@@ -16,6 +16,7 @@ from tricot.command import Command
 from tricot.condition import Condition
 
 
+skip_until = None
 assigned_ids = set()
 
 
@@ -261,7 +262,7 @@ class Test:
 
     def from_dict(path: Path, input_dict: dict, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   environment: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[list[str]] = list()) -> Test:
+                  parent_groups: list[list[str]] = list(), suggested_id: str = None) -> Test:
         '''
         Creates a Test object from a dictionary. The dictionary is expected to be the content
         read in of a .yml file and needs all keys that are required for a test (validators,
@@ -276,6 +277,7 @@ class Test:
             conditionals    Conditionals for running the test
             output_conf     Output configuration inherited by the tester
             parent_groups   Test groups inherited from the parent tester
+            suggested_id    Tets ID suggested by the id_pattern
 
         Returns:
             Test            Newly generated Test object
@@ -311,7 +313,7 @@ class Test:
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
             test = Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, extractors, env,
-                        conditions, conditionals, j.get('id'), groups)
+                        conditions, conditionals, j.get('id', suggested_id), groups)
 
             test.set_logfile(j.get('logfile'))
             test.set_output(tricot.utils.merge(output_conf, j.get('output', {}), 'output', path))
@@ -326,7 +328,7 @@ class Test:
 
     def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[list[str]] = list()) -> list[Test]:
+                  parent_groups: list[list[str]] = list(), id_pattern: str = None) -> list[Test]:
         '''
         Within .yml files, Tests are specified in form of a list. This function takes such a list,
         that contains each single test definition as another dictionary (like it is created when
@@ -341,6 +343,7 @@ class Test:
             conditionals    Conditionals specified by the upper tester
             output_conf     Output configuration inherited by the tester
             parent_groups   Test groups inherited from the parent tester
+            id_pattern      Pattern to create test IDs from
 
         Returns
             list[Test]      List of Test objects created from the .yml input
@@ -352,9 +355,15 @@ class Test:
 
         for ctr in range(len(input_list)):
 
+            if id_pattern is not None:
+                suggested_id = id_pattern.format(ctr)
+
+            else:
+                suggested_id = None
+
             try:
                 test = Test.from_dict(path, input_list[ctr], variables, error_mode, env, conditionals,
-                                      output_conf, parent_groups)
+                                      output_conf, parent_groups, suggested_id)
                 tests.append(test)
 
             except TestKeyError as e:
@@ -386,9 +395,8 @@ class Test:
 
         success = True
 
-        if not Condition.check_conditions(self.conditions, self.conditionals):
-            Logger.print_yellow_plain("skipped.")
-            Logger.decrease_indent()
+        if not Condition.check_conditions(self.conditions, self.conditionals) or tricot.skip_until is not None:
+            Logger.cprint('skipped.', color='grey')
             return
 
         self.command.run(self.path.parent, self.timeout, hotplug_variables, self.env)
@@ -485,7 +493,7 @@ class Tester:
     '''
     tester_count = 0
 
-    def __init__(self, path: Path, name: str, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
+    def __init__(self, path: Path, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
                  containers: list[TricotContainer], plugins: list[Plugin], conditions: dict, conditionals: set[Condition],
                  error_mode: str, tester_id: str, test_groups: list[list[str]]) -> None:
         '''
@@ -493,7 +501,6 @@ class Tester:
 
         Parameters:
             path            Path object to the Testers configuration file
-            name            Name of the tester (used for identification)
             title           Title of the test (used for displaying)
             variables       Dictionary of global variables that should be applied to all Tests and Validators
             tests           List of Test objects that should run during a test
@@ -509,8 +516,7 @@ class Tester:
         Returns:
             None
         '''
-        self.name = name
-        self.title = title or name
+        self.title = title
         self.variables = variables
         self.tests = tests
         self.testers = testers
@@ -521,7 +527,7 @@ class Tester:
         self.error_mode = error_mode
 
         if tester_id is None:
-            self.id = self.name
+            self.id = self.title
 
         else:
             self.id = str(tester_id)
@@ -568,6 +574,7 @@ class Tester:
             conds = Condition.from_dict(path, t.get('conditionals', {})).union(conditionals)
             run_conds = t.get('conditions', {})
             output_c = tricot.utils.merge(output_conf, t.get('output', {}), 'output', path)
+            id_pattern = tricot.utils.verify_id_pattern(t.get('id_pattern'), path)
 
             Condition.check_format(path, run_conds, conds)
 
@@ -590,18 +597,18 @@ class Tester:
                     if not Path(f).is_absolute():
                         f = path.parent.joinpath(f)
 
-                    for ff in glob.glob(str(f)):
+                    for ff in sorted(glob.glob(str(f))):
                         tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
                         tester_list.append(tester)
 
             tests = None
             if definitions and type(definitions) is list:
-                tests = Test.from_list(path, definitions, variables, error_mode, env, conds, output_c, groups)
+                tests = Test.from_list(path, definitions, variables, error_mode, env, conds, output_c, groups, id_pattern)
 
             elif not tester_list:
                 raise TesterKeyError('tests', path, optional='testers')
 
-            new_tester = Tester(path, t['name'], t.get('title'), variables, tests, tester_list, containers, plugins,
+            new_tester = Tester(path, t['title'], variables, tests, tester_list, containers, plugins,
                                 run_conds, conds, error_mode, t.get('id'), groups)
             new_tester.set_logfile(t.get('logfile'))
 
@@ -785,7 +792,7 @@ class Tester:
         Logger.add_logfile(self.logfile)
         Logger.print_mixed_yellow('Starting test:', self.title, end=' ')
 
-        if self.id and self.id != self.name:
+        if self.id and self.id != self.title:
             Logger.print_plain_blue(f'[{self.id}]')
         else:
             print()
@@ -833,6 +840,9 @@ class Tester:
         Logger.print('')
         runall = tricot.utils.groups_contain(groups, self.groups) or (ids and {self.id}.issubset(ids))
 
+        if tricot.skip_until and tricot.skip_until == self.id:
+            tricot.skip_until = None
+
         for ctr in range(len(self.tests)):
 
             test = self.tests[ctr]
@@ -854,6 +864,9 @@ class Tester:
 
             else:
                 continue
+
+            if tricot.skip_until and tricot.skip_until == test.id:
+                tricot.skip_until = None
 
             test.run(f'{ctr+1}.', hotplug_variables)
 

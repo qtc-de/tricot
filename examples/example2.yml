@@ -1,5 +1,5 @@
 tester:
-  name: Docker Integration
+  title: Docker Integration
   description: |-
     An example for tricots docker integration
 

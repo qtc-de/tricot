@@ -1,0 +1,40 @@
+tester:
+  title: IDPattern Nested 1
+  description: |-
+    'Contains test case for tricots id_pattern feature.'
+
+  id_pattern: 'test-1-{:03}'
+
+tests:
+  - title: Test One
+    description: |-
+      'First test within the tester'
+    command:
+      - echo
+      - 'Hi :D'
+    validators:
+      - contains:
+          values:
+            - 'Hi :D'
+
+  - title: Test Two
+    description: |-
+      'Second test within the tester'
+    command:
+      - echo
+      - 'Hi :D'
+    validators:
+      - contains:
+          values:
+            - 'Hi :D'
+
+  - title: Test Three
+    description: |-
+      'Third test within the tester'
+    command:
+      - echo
+      - 'Hi :D'
+    validators:
+      - contains:
+          values:
+            - 'Hi :D'

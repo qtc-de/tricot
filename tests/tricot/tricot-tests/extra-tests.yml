@@ -14,6 +14,9 @@ tests:
     description: |-
       'Test tricots docker integration'
 
+    groups:
+      - docker
+
     command:
       - tricot
       - ${EXTRA}/Docker.yml
@@ -49,6 +52,9 @@ tests:
     description: |-
       'Test tricots environment integration'
 
+    groups:
+      - env
+
     command:
       - tricot
       - ${EXTRA}/Env.yml
@@ -71,6 +77,10 @@ tests:
   - title: Conditions - Regular
     description: |-
       "Test tricot's condition feature"
+
+    groups:
+      - conditions
+      - conditionals
 
     command:
       - tricot
@@ -99,6 +109,10 @@ tests:
     description: |-
       "Test tricot's condition feature"
 
+    groups:
+      - conditions
+      - conditionals
+
     command:
       - tricot
       - ${EXTRA}/Conditionals/Error1/launcher.yml
@@ -113,6 +127,10 @@ tests:
   - title: Conditions - Error2
     description: |-
       "Test tricot's condition feature"
+
+    groups:
+      - conditions
+      - conditionals
 
     command:
       - tricot
@@ -129,6 +147,10 @@ tests:
     description: |-
       "Test tricot's condition feature"
 
+    groups:
+      - conditions
+      - conditionals
+
     command:
       - tricot
       - ${EXTRA}/Conditionals/Error3/launcher.yml
@@ -144,6 +166,10 @@ tests:
     description: |-
       "Test tricot's condition feature"
 
+    groups:
+      - conditions
+      - conditionals
+
     command:
       - tricot
       - ${EXTRA}/Conditionals/Error4/launcher.yml
@@ -158,6 +184,10 @@ tests:
   - title: Variables
     description: |-
       "Different test on tricot variables"
+
+    groups:
+      - vars
+      - variables
 
     command:
       - tricot
@@ -189,6 +219,9 @@ tests:
     description: |-
       "Different test on tricot streams"
 
+    groups:
+      - streams
+
     command:
       - tricot
       - ${EXTRA}/Streams.yml
@@ -211,6 +244,9 @@ tests:
   - title: Prev
     description: |-
       "Test whether $prev variable works as expected"
+
+    groups:
+      - prev
 
     command:
       - tricot
@@ -235,6 +271,9 @@ tests:
     description: |-
       "Test tricot command execution in shell mode"
 
+    groups:
+      - shell
+
     command:
       - tricot
       - ${EXTRA}/Shell.yml
@@ -257,6 +296,10 @@ tests:
   - title: Log
     description: |-
       "Test tricot's logfile feature"
+
+    groups:
+      - log
+      - logging
 
     command:
       - tricot
@@ -281,6 +324,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -302,6 +349,10 @@ tests:
   - title: Groups One
     description: |-
       "Test tricot's test group feature"
+
+    groups:
+      - group
+      - groups
 
     command:
       - tricot
@@ -327,6 +378,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -350,6 +405,10 @@ tests:
   - title: Groups One - One
     description: |-
       "Test tricot's test group feature"
+
+    groups:
+      - group
+      - groups
 
     command:
       - tricot
@@ -375,6 +434,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -398,6 +461,10 @@ tests:
   - title: Groups One / Two - One (explicit)
     description: |-
       "Test tricot's test group feature"
+
+    groups:
+      - group
+      - groups
 
     command:
       - tricot
@@ -424,6 +491,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -448,6 +519,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -471,6 +546,10 @@ tests:
   - title: Exclude group_one
     description: |-
       "Test tricot's test group feature"
+
+    groups:
+      - group
+      - groups
 
     command:
       - tricot
@@ -497,6 +576,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -521,6 +604,10 @@ tests:
   - title: Exclude vs Include
     description: |-
       "Test tricot's test group feature"
+
+    groups:
+      - group
+      - groups
 
     command:
       - tricot
@@ -547,6 +634,10 @@ tests:
   - title: Exclude vs Include 2
     description: |-
       "Test tricot's test group feature"
+
+    groups:
+      - group
+      - groups
 
     command:
       - tricot
@@ -575,6 +666,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -602,6 +697,10 @@ tests:
     description: |-
       "Test tricot's test group feature"
 
+    groups:
+      - group
+      - groups
+
     command:
       - tricot
       - ${EXTRA}/Groups.yml
@@ -625,6 +724,10 @@ tests:
   - title: Group Merge Exclude
     description: |-
       "Test tricot's test group feature"
+
+    groups:
+      - group
+      - groups
 
     command:
       - tricot
@@ -653,6 +756,10 @@ tests:
     description: |-
       "Test tricot's ID feature"
 
+    groups:
+      - id
+      - ids
+
     command:
       - tricot
       - ${EXTRA}/IDs.yml
@@ -677,6 +784,10 @@ tests:
   - title: ID Test - One
     description: |-
       "Test tricot's ID feature"
+
+    groups:
+      - id
+      - ids
 
     command:
       - tricot
@@ -703,6 +814,10 @@ tests:
     description: |-
       "Test tricot's ID feature"
 
+    groups:
+      - id
+      - ids
+
     command:
       - tricot
       - ${EXTRA}/IDs.yml
@@ -727,6 +842,10 @@ tests:
   - title: Exclude ID
     description: |-
       "Test tricot's ID feature"
+
+    groups:
+      - id
+      - ids
 
     command:
       - tricot
@@ -753,6 +872,10 @@ tests:
     description: |-
       "Test tricot's ID feature"
 
+    groups:
+      - id
+      - ids
+
     command:
       - tricot
       - ${EXTRA}/IDs.yml
@@ -778,6 +901,10 @@ tests:
   - title: Exclude vs Include 2 (ID)
     description: |-
       "Test tricot's ID feature"
+
+    groups:
+      - id
+      - ids
 
     command:
       - tricot
@@ -806,6 +933,10 @@ tests:
     description: |-
       "Test tricot's ID feature"
 
+    groups:
+      - id
+      - ids
+
     command:
       - tricot
       - ${EXTRA}/IDs.yml
@@ -827,3 +958,197 @@ tests:
             - Test Group Two - One... success
             - Test Group Two - Two... success
             - Test Group Four - One... success
+
+
+  - title: Skip Until 1
+    description: |-
+      'Test the --skip-until option'
+
+    groups:
+      - skip
+      - continue
+
+    command:
+      - tricot
+      - ${EXTRA}/SkipAndContinue.yml
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - '[001-000] Dummy Test 1... success'
+            - '[001-001] Dummy Test 2... success'
+            - '[001-002] Dummy Test 3... success'
+            - '[001-003] Dummy Test 4... success'
+            - '[002-000] Dummy Test 1... success'
+            - '[002-001] Dummy Test 2... success'
+            - '[002-002] Dummy Test 3... success'
+            - '[002-003] Dummy Test 4... success'
+            - '[003-000] Dummy Test 1... success'
+            - '[003-001] Dummy Test 2... success'
+            - '[003-002] Dummy Test 3... success'
+            - '[003-003] Dummy Test 4... success'
+
+
+  - title: Skip Until 2
+    description: |-
+      'Test the --skip-until option'
+
+    groups:
+      - skip
+      - continue
+
+    command:
+      - tricot
+      - ${EXTRA}/SkipAndContinue.yml
+      - --skip-until
+      - '002'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - '[002-000] Dummy Test 1... success'
+            - '[002-001] Dummy Test 2... success'
+            - '[002-002] Dummy Test 3... success'
+            - '[002-003] Dummy Test 4... success'
+            - '[003-000] Dummy Test 1... success'
+            - '[003-001] Dummy Test 2... success'
+            - '[003-002] Dummy Test 3... success'
+            - '[003-003] Dummy Test 4... success'
+            - '[001-000] Dummy Test 1... skipped'
+            - '[001-001] Dummy Test 2... skipped'
+            - '[001-002] Dummy Test 3... skipped'
+            - '[001-003] Dummy Test 4... skipped'
+
+
+  - title: Skip Until 3
+    description: |-
+      'Test the --skip-until option'
+
+    groups:
+      - skip
+      - continue
+
+    command:
+      - tricot
+      - ${EXTRA}/SkipAndContinue.yml
+      - --skip-until
+      - '002-003'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - '[002-003] Dummy Test 4... success'
+            - '[003-000] Dummy Test 1... success'
+            - '[003-001] Dummy Test 2... success'
+            - '[003-002] Dummy Test 3... success'
+            - '[003-003] Dummy Test 4... success'
+            - '[001-000] Dummy Test 1... skipped'
+            - '[001-001] Dummy Test 2... skipped'
+            - '[001-002] Dummy Test 3... skipped'
+            - '[001-003] Dummy Test 4... skipped'
+            - '[002-000] Dummy Test 1... skipped'
+            - '[002-001] Dummy Test 2... skipped'
+            - '[002-002] Dummy Test 3... skipped'
+
+
+  - title: Continue From 1
+    description: |-
+      'Test the --continue-from option'
+
+    groups:
+      - skip
+      - continue
+
+    command:
+      - tricot
+      - ${EXTRA}/SkipAndContinue.yml
+      - --continue-from
+      - '002-003'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - '[002-003] Dummy Test 4... success'
+            - '[003-000] Dummy Test 1... success'
+            - '[003-001] Dummy Test 2... success'
+            - '[003-002] Dummy Test 3... success'
+            - '[003-003] Dummy Test 4... success'
+            - '[001-000] Dummy Test 1... skipped'
+            - '[001-001] Dummy Test 2... skipped'
+            - '[001-002] Dummy Test 3... skipped'
+            - '[001-003] Dummy Test 4... skipped'
+            - '[002-000] Dummy Test 1... skipped'
+            - '[002-001] Dummy Test 2... skipped'
+            - '[002-002] Dummy Test 3... skipped'
+
+
+  - title: Continue From 2
+    description: |-
+      'Test the --continue-from option'
+
+    groups:
+      - skip
+      - continue
+
+    command:
+      - tricot
+      - ${EXTRA}/SkipAndContinue.yml
+      - --continue-from
+      - '002'
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - '[002-000] Dummy Test 1... success'
+            - '[002-001] Dummy Test 2... success'
+            - '[002-002] Dummy Test 3... success'
+            - '[002-003] Dummy Test 4... success'
+            - '[003-000] Dummy Test 1... success'
+            - '[003-001] Dummy Test 2... success'
+            - '[003-002] Dummy Test 3... success'
+            - '[003-003] Dummy Test 4... success'
+            - '[001-000] Dummy Test 1... skipped'
+            - '[001-001] Dummy Test 2... skipped'
+            - '[001-002] Dummy Test 3... skipped'
+            - '[001-003] Dummy Test 4... skipped'
+
+
+  - title: ID Pattern
+    description: |-
+      'Test the id_pattern feature'
+
+    groups:
+      - id_pattern
+
+    command:
+      - tricot
+      - ${EXTRA}/IDPattern.yml
+
+    validators:
+      - error: False
+      - contains:
+          values:
+            - '[test-1-000] Test One... success'
+            - '[test-1-001] Test Two... success'
+            - '[test-1-002] Test Three... success'
+            - '[test-2-000] Test One... success'
+            - '[test-2-001] Test Two... success'
+            - '[test-2-002] Test Three... success'
+            - '[test-2-003] Test Four... success'
+            - '[test-2-004] Test Five... success'
+            - '[test-2-005] Test Six... success'
+            - '[test-2-006] Test Seven... success'
+            - '[test-2-007] Test Eight... success'
+            - '[test-2-008] Test Nine... success'
+            - '[test-2-009] Test Ten... success'
+            - '[test-2-00a] Test Eleven... success'
+            - '[test-2-00b] Test Twelve... success'
+            - '[test-2-00c] Test Thirteen... success'
+            - '[test-2-00d] Test Fourteen... success'
+            - '[test-2-00e] Test Fifteen... success'
+            - '[test-2-00f] Test Sixteen... success'

@@ -50,7 +50,7 @@ $ cp resources/bash_completion.d/tricot ~/bash_completion.d/
 *tricot* tests are defined within of *YAML* files that can contain the following components:
 
 * **Testers**: Each *tricot YAML* file is required to define exactly one *Tester*. The *Tester*
-  basically describes the context of the current *YAML* file and sets attributes like it's *name*
+  basically describes the context of the current *YAML* file and sets attributes like it's *title*
   or *error_mode*. Furthermore, *tricot YAML* files can contain references to other *Testers*,
   which allows nesting *Testers*.
 
@@ -101,7 +101,7 @@ real word examples, you should check the [Projects that use tricot](#projects-th
 * Test definition:
   ```yaml
   tester:
-    name: Basic Usage
+    title: Basic Usage
     description: |-
       Demonstrate the basic usage of tricot
 
@@ -142,7 +142,7 @@ real word examples, you should check the [Projects that use tricot](#projects-th
 * Test definition:
   ```yaml
   tester:
-    name: Docker Integration
+    title: Docker Integration
     description: |-
       An example for tricots docker integration
 
@@ -209,7 +209,7 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   * ``example3.yml``:
     ```yaml
     tester:
-      name: Nested Testers
+      title: Nested Testers
       description: |-
         An example for nested testers and plugins
       error_mode: break
@@ -236,7 +236,7 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   * ``curl.yml``
     ```yaml
     tester:
-      name: curl Tester
+      title: curl Tester
       description: |-
         Test some curl commands
 
@@ -261,7 +261,7 @@ real word examples, you should check the [Projects that use tricot](#projects-th
   * ``wget.yml``:
     ```yaml
     tester:
-      name: wget Tester
+      title: wget Tester
       description: |-
         Test some wget commands
 
@@ -346,7 +346,7 @@ real word examples, you should check the [Projects that use tricot](#projects-th
 * Test definition:
   ```yaml
   tester:
-    name: Extractors
+    title: Extractors
     Description: |-
       An example for tricots extractor feature
 
