@@ -50,7 +50,7 @@ $ cp resources/bash_completion.d/tricot ~/bash_completion.d/
 *tricot* tests are defined within of *YAML* files that can contain the following components:
 
 * **Testers**: Each *tricot YAML* file is required to define exactly one *Tester*. The *Tester*
-  basically describes the context of the current *YAML* file and sets attributes like it's *name*
+  basically describes the context of the current *YAML* file and sets attributes like it's *title*
   or *error_mode*. Furthermore, *tricot YAML* files can contain references to other *Testers*,
   which allows nesting *Testers*.
 
