@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.7.0] - Oct 26, 2021
+
+### Added
+
+* Add ``id_pattern`` attribute (see https://github.com/qtc-de/tricot/tree/main/docs#selective-testing)
+* Add ``--skip-until`` and ``--continue-from`` options (see https://github.com/qtc-de/tricot/tree/main/docs#selective-testing)
+
+### Changed
+
+* The ``name`` attribute of testers is no longer parsed. The ``title`` attribute is now
+  used as a replacement.
+
+
 ## [1.6.0] - Oct 09, 2021
 
 ### Added
