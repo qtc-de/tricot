@@ -12,7 +12,7 @@ on it's own.
 - [Writing Custom Extractors](#writing-custom-extractors)
 - [Accessing Command Information from an Validator](#accessing-command-information-from-an-validator)
 - [Selective Testing](#selective-testing)
-  * [Test / Tester IDs](#test-tester-ids)
+  * [Test / Tester IDs](#test--tester-ids)
   * [Test Groups](#test-groups)
 - [Environment Variables](#environment-variables)
 - [Runtime Variables](#runtime-variables)
