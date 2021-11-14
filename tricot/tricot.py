@@ -241,6 +241,7 @@ class Test:
             key = '${'+str(key)+'}'
 
             if type(val) is str:
+
                 if val == key and type(value) is list:
                     val = value.copy()
 
@@ -248,9 +249,16 @@ class Test:
                     val = val.replace(key, str(value))
 
             elif type(val) is list:
+
                 for ctr in range(len(val)):
+
                     if type(val[ctr]) is str:
-                        val[ctr] = val[ctr].replace(key, str(value))
+
+                        if val[ctr] == key and type(value) is list:
+                            val[ctr:ctr+1] = value
+
+                        else:
+                            val[ctr] = val[ctr].replace(key, str(value))
 
                     else:
                         val[ctr] = str(val[ctr])
