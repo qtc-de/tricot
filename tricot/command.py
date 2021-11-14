@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import signal
 import timeit
 import subprocess
 from typing import Any
@@ -110,13 +112,13 @@ class Command:
 
         try:
             process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       cwd=path, env=envi, shell=self.shell)
+                                       cwd=path, env=envi, shell=self.shell, preexec_fn=os.setsid)
 
             self.stdout_raw, self.stderr_raw = process.communicate(timeout=timeout)
             self.status = process.returncode
 
         except subprocess.TimeoutExpired:
-            process.kill()
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
             self.stdout_raw, self.stderr_raw = process.communicate()
             self.status = 99
 
