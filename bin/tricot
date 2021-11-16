@@ -48,6 +48,21 @@ parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', defau
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='enable verbose logging during tests')
 
 
+def raise_if_debug(args: argparse.Namespace, e: Exception) -> None:
+    '''
+    Checks whether the debug option is set and if so raises the specified Exception.
+
+    Paramaters:
+        args            argparse namespace
+        e               Exception to raise if debug is enabled
+
+    Returns:
+        None
+    '''
+    if args.debug:
+        raise e from None
+
+
 def split_variable(var: str, variables: dict) -> None:
     '''
     Attempts to split a key=value string at the equal sign and
@@ -187,131 +202,148 @@ def main():
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
             tester.run(set(args.ids), groups, set(args.eids), egroups)
 
-        except tricot.ValidatorError as e:
-            tricot.Logger.print_mixed_red('Caught', 'ValidatorError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print('Validator instantiation caused the following error:', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_blue(str(e), e=True)
-            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
-            sys.exit(tricot.constants.VALIDATOR_ERROR)
+        except Exception as excpt:
 
-        except tricot.ValidationException:
-            tricot.Logger.print_mixed_yellow('Caught', 'ValidationException', 'while error mode is set to break.', e=True)
-            tricot.Logger.print_blue('Stopping test.', e=True)
-            sys.exit(tricot.constants.VALIDATION_EXCEPTION)
+            raise_if_debug(args, excpt)
+            try:
+                raise excpt
 
-        except tricot.ExtractException:
-            tricot.Logger.print_mixed_yellow('Caught', 'ExtractException', 'while error mode is set to break.', e=True)
-            tricot.Logger.print_blue('Stopping test.', e=True)
-            sys.exit(tricot.constants.EXTRACT_EXCEPTION)
-
-        except tricot.ExtractorError as e:
-            tricot.Logger.print_mixed_red('Caught', 'ExtractorError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print('Extractor instantiation caused the following error:', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_blue(str(e), e=True)
-            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
-            sys.exit(tricot.constants.EXTRACTOR_ERROR)
-
-        except (tricot.TestKeyError, tricot.TesterKeyError) as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print_blue(str(e), e=True)
-            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
-            sys.exit(tricot.constants.TEST_KEY_ERROR)
-
-        except (tricot.utils.TricotRuntimeVariableError, tricot.utils.TricotEnvVariableError) as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print_blue(str(e), e=True)
-            sys.exit(tricot.constants.VARIABLE_ERROR)
-
-        except tricot.PluginError as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'PluginError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print('Plugin instantiation caused the following error:', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_blue(str(e), e=True)
-            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
-            sys.exit(tricot.constants.PLUGIN_ERROR)
-
-        except tricot.PluginException as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'from', end='', e=True)
-            tricot.Logger.print_mixed_blue_plain('', e.name, 'plugin in', end=' ')
-            tricot.Logger.print_yellow_plain(e.path.absolute())
-            tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
-            tricot.Logger.print_blue('Stopping test.', e=True)
-            sys.exit(tricot.constants.PLUGIN_EXCEPTION)
-
-        except tricot.ConditionFormatException as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'ConditionFormatException', 'while parsing test configuration.', e=True)
-            tricot.Logger.print('Condition instantiation caused the following error:', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_blue(str(e), e=True)
-            tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
-            sys.exit(tricot.constants.CONDITION_FORMAT_ERROR)
-
-        except tricot.TricotException as e:
-            tricot.Logger.print('Encountered an unexpected error.', e=True)
-            tricot.Logger.print_blue(str(e), e=True)
-
-            if e.path:
+            except tricot.ValidatorError as e:
+                tricot.Logger.print_mixed_red('Caught', 'ValidatorError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print('Validator instantiation caused the following error:', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_blue(str(e), e=True)
                 tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+                sys.exit(tricot.constants.VALIDATOR_ERROR)
 
-            sys.exit(tricot.constants.TRICOT_EXCEPTION)
+            except tricot.ValidationException:
+                tricot.Logger.print_mixed_yellow('Caught', 'ValidationException', 'while error mode is set to break.', e=True)
+                tricot.Logger.print_blue('Stopping test.', e=True)
+                sys.exit(tricot.constants.VALIDATION_EXCEPTION)
 
-        except yaml.parser.ParserError as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'ParseError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print_with_indent_blue(str(e), e=True)
-            sys.exit(tricot.constants.PARSER_ERROR)
+            except tricot.ExtractException:
+                tricot.Logger.print_mixed_yellow('Caught', 'ExtractException', 'while error mode is set to break.', e=True)
+                tricot.Logger.print_blue('Stopping test.', e=True)
+                sys.exit(tricot.constants.EXTRACT_EXCEPTION)
 
-        except FileNotFoundError as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'FileNotFoundError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print_with_indent_blue(str(e), e=True)
-            sys.exit(tricot.constants.FILE_NOT_FOUND)
+            except tricot.ExtractorError as e:
+                tricot.Logger.print_mixed_red('Caught', 'ExtractorError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print('Extractor instantiation caused the following error:', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_blue(str(e), e=True)
+                tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+                sys.exit(tricot.constants.EXTRACTOR_ERROR)
 
-        except docker.errors.APIError as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'docker APIError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print('This usually indicates an error when pulling docker images.', e=True)
-            tricot.Logger.print_mixed_blue('Make sure that the specified container exists and that you are', 'authenticated',
-                    'to the corresponding registry.', e=True)
+            except (tricot.TestKeyError, tricot.TesterKeyError) as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print_blue(str(e), e=True)
+                tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+                sys.exit(tricot.constants.TEST_KEY_ERROR)
 
-            tricot.Logger.print_yellow('Original Error:', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_with_indent_blue(str(e), e=True)
-            sys.exit(tricot.constants.DOCKER_API)
+            except (tricot.utils.TricotRuntimeVariableError, tricot.utils.TricotEnvVariableError) as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'KeyError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print_blue(str(e), e=True)
+                sys.exit(tricot.constants.VARIABLE_ERROR)
 
-        except tricot.DuplicateIDError as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'DuplicateIDError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print_with_indent_blue(str(e), e=True)
-            sys.exit(tricot.constants.DUPLICATE_ID_ERROR)
+            except tricot.PluginError as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'PluginError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print('Plugin instantiation caused the following error:', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_blue(str(e), e=True)
+                tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+                sys.exit(tricot.constants.PLUGIN_ERROR)
 
-        except tricot.TricotRuntimeError as e:
-            tricot.Logger.print_mixed_blue('Caught', 'unexpected Exception', 'while running the test command.', e=True)
-            tricot.Logger.print_yellow('Original Error:', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_with_indent_blue(str(e.original), e=True)
-            sys.exit(tricot.constants.RUNTIME_ERROR)
+            except tricot.PluginException as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'PluginException', 'from', end='', e=True)
+                tricot.Logger.print_mixed_blue_plain('', e.name, 'plugin in', end=' ')
+                tricot.Logger.print_yellow_plain(e.path.absolute())
+                tricot.Logger.print_mixed_blue('Original exception:', f'{type(e.original).__name__} - {e.original}')
+                tricot.Logger.print_blue('Stopping test.', e=True)
+                sys.exit(tricot.constants.PLUGIN_EXCEPTION)
 
-        except yaml.scanner.ScannerError as e:
-            tricot.Logger.print_mixed_yellow('Caught', 'yaml.scanner.ScannerError', 'while parsing test configuration.', e=True)
-            tricot.Logger.print('Seems that there is a syntax error within your test configuration.', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_with_indent_blue(str(e), e=True)
-            sys.exit(tricot.constants.YAML_SYNTAX_ERROR)
+            except tricot.ConditionFormatException as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'ConditionFormatException', 'while parsing test configuration.', e=True)
+                tricot.Logger.print('Condition instantiation caused the following error:', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_blue(str(e), e=True)
+                tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
+                sys.exit(tricot.constants.CONDITION_FORMAT_ERROR)
 
-        except KeyboardInterrupt:
-            tricot.Logger.reset_indent()
-            tricot.Logger.print('')
-            tricot.Logger.print_mixed_yellow('Caught', 'KeyboardInterrupt', 'from user.')
-            tricot.Logger.print('Stopping current test.')
-            sys.exit(tricot.constants.KEYBOARD_INTERRUPT)
+            except tricot.TricotException as e:
+                tricot.Logger.print('Encountered an unexpected error.', e=True)
+                tricot.Logger.print_blue(str(e), e=True)
 
-        except Exception as e:
-            if args.debug:
-                raise e
+                if e.path:
+                    tricot.Logger.print_mixed_yellow('Configuration file:', e.path, e=True)
 
-            tricot.Logger.print_mixed_yellow('Caught', 'unexpected Exception', 'while running tricot.', e=True)
-            tricot.Logger.increase_indent()
-            tricot.Logger.print_with_indent_blue(str(e), e=True)
-            sys.exit(tricot.constants.UNKNOWN)
+                sys.exit(tricot.constants.TRICOT_EXCEPTION)
+
+            except FileNotFoundError as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'FileNotFoundError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print_with_indent_blue(str(e), e=True)
+                sys.exit(tricot.constants.FILE_NOT_FOUND)
+
+            except docker.errors.APIError as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'docker APIError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print('This usually indicates an error when pulling docker images.', e=True)
+                tricot.Logger.print_mixed_blue('Make sure that the specified container exists and that you are', 'authenticated',
+                        'to the corresponding registry.', e=True)
+
+                tricot.Logger.print_yellow('Original Error:', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_with_indent_blue(str(e), e=True)
+                sys.exit(tricot.constants.DOCKER_API)
+
+            except tricot.DuplicateIDError as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'DuplicateIDError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print_with_indent_blue(str(e), e=True)
+                sys.exit(tricot.constants.DUPLICATE_ID_ERROR)
+
+            except tricot.TricotRuntimeError as e:
+                tricot.Logger.print_mixed_blue('Caught', 'unexpected Exception', 'while running the test command.', e=True)
+                tricot.Logger.print_yellow('Original Error:', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_with_indent_blue(str(e.original), e=True)
+                sys.exit(tricot.constants.RUNTIME_ERROR)
+
+            except tricot.ExceptionWrapper as wrapper:
+
+                try:
+                    raise wrapper.original
+
+                except yaml.parser.ParserError as e:
+                    tricot.Logger.print_mixed_yellow('Caught', 'ParserError', 'while parsing the test configuration.', e=True)
+                    tricot.Logger.print_mixed_blue('Affected file:', wrapper.path, e=True)
+                    tricot.Logger.print_yellow('Original Error:', e=True)
+                    tricot.Logger.increase_indent()
+                    tricot.Logger.print_with_indent_blue(str(e), e=True)
+                    sys.exit(tricot.constants.PARSER_ERROR)
+
+                except Exception as e:
+                    tricot.Logger.print_mixed_yellow('Caught', 'unexpected Exception', 'while running tricot.', e=True)
+                    tricot.Logger.increase_indent()
+                    tricot.Logger.print_with_indent_blue(str(e), e=True)
+                    sys.exit(tricot.constants.UNKNOWN)
+
+            except yaml.scanner.ScannerError as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'yaml.scanner.ScannerError', 'while parsing test configuration.', e=True)
+                tricot.Logger.print('Seems that there is a syntax error within your test configuration.', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_with_indent_blue(str(e), e=True)
+                sys.exit(tricot.constants.YAML_SYNTAX_ERROR)
+
+            except KeyboardInterrupt:
+                tricot.Logger.reset_indent()
+                tricot.Logger.print('')
+                tricot.Logger.print_mixed_yellow('Caught', 'KeyboardInterrupt', 'from user.')
+                tricot.Logger.print('Stopping current test.')
+                sys.exit(tricot.constants.KEYBOARD_INTERRUPT)
+
+            except Exception as e:
+                tricot.Logger.print_mixed_yellow('Caught', 'unexpected Exception', 'while running tricot.', e=True)
+                tricot.Logger.increase_indent()
+                tricot.Logger.print_with_indent_blue(str(e), e=True)
+                sys.exit(tricot.constants.UNKNOWN)
 
         finally:
             tricot.Logger.reset_indent()
