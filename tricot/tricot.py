@@ -620,11 +620,15 @@ class Tester:
                     if not Path(f).is_absolute():
                         f = path.parent.joinpath(f)
 
+                    testers_to_add = []
                     for ff in sorted(glob.glob(str(f))):
 
                         if Path(ff).is_file() and ( ff.endswith('.yml') or ff.endswith('.yaml') ):
                             tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
-                            tester_list.append(tester)
+                            testers_to_add.append(tester)
+
+                    testers_to_add.sort(key=lambda x: x.id)
+                    tester_list += testers_to_add
 
             tests = None
             if definitions and type(definitions) is list:
