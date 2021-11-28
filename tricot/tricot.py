@@ -621,8 +621,10 @@ class Tester:
                         f = path.parent.joinpath(f)
 
                     for ff in sorted(glob.glob(str(f))):
-                        tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
-                        tester_list.append(tester)
+
+                        if Path(ff).is_file() and ( ff.endswith('.yml') or ff.endswith('.yaml') ):
+                            tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
+                            tester_list.append(tester)
 
             tests = None
             if definitions and type(definitions) is list:
