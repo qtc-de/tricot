@@ -39,6 +39,21 @@ class TricotException(Exception):
         super().__init__(message)
 
 
+class ExceptionWrapper(Exception):
+    '''
+    Custom exception class that wraps around the actual exception and
+    allows storing additional information.
+    '''
+    def __init__(self, original: Exception, path: Path = None) -> None:
+        '''
+        Store the original exception as well as the path of the file that
+        caused it.
+        '''
+        self.path = str(path.resolve())
+        self.original = original
+        super().__init__(str(original))
+
+
 class TesterKeyError(Exception):
     '''
     TesterKeyErrors are raised when the .yml test definition file misses
@@ -241,6 +256,7 @@ class Test:
             key = '${'+str(key)+'}'
 
             if type(val) is str:
+
                 if val == key and type(value) is list:
                     val = value.copy()
 
@@ -248,9 +264,16 @@ class Test:
                     val = val.replace(key, str(value))
 
             elif type(val) is list:
+
                 for ctr in range(len(val)):
+
                     if type(val[ctr]) is str:
-                        val[ctr] = val[ctr].replace(key, str(value))
+
+                        if val[ctr] == key and type(value) is list:
+                            val[ctr:ctr+1] = value
+
+                        else:
+                            val[ctr] = val[ctr].replace(key, str(value))
 
                     else:
                         val[ctr] = str(val[ctr])
@@ -597,9 +620,15 @@ class Tester:
                     if not Path(f).is_absolute():
                         f = path.parent.joinpath(f)
 
+                    testers_to_add = []
                     for ff in sorted(glob.glob(str(f))):
-                        tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
-                        tester_list.append(tester)
+
+                        if Path(ff).is_file() and ( ff.endswith('.yml') or ff.endswith('.yaml') ):
+                            tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
+                            testers_to_add.append(tester)
+
+                    testers_to_add.sort(key=lambda x: x.id)
+                    tester_list += testers_to_add
 
             tests = None
             if definitions and type(definitions) is list:
@@ -654,7 +683,12 @@ class Tester:
             Tester          Tester object created from the file
         '''
         with open(filename, 'r') as f:
-            config_dict = yaml.safe_load(f.read())
+
+            try:
+                config_dict = yaml.safe_load(f.read())
+
+            except yaml.parser.ParserError as e:
+                raise ExceptionWrapper(e, Path(filename))
 
         if '$env' not in initial_vars:
             tricot.utils.add_environment(initial_vars)
