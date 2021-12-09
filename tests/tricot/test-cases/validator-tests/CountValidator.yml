@@ -14,11 +14,11 @@ tests:
     validators:
       - count:
           values:
-            - backup
-            - nobody
+            - :0:0
+            - systemd-network
           counts:
-            - 3
-            - 2
+            - 1
+            - 1
 
   - title: Case Insensitive - Success
     description: >
@@ -30,11 +30,11 @@ tests:
       - count:
           ignore_case: True
           values:
-            - BackUP
-            - nObOdy
+            - :0:0
+            - SystemD-NetworK
           counts:
-            - 3
-            - 2
+            - 1
+            - 1
 
   - title: Check Failure - Fail
     description: >
@@ -46,8 +46,8 @@ tests:
       - count:
           ignore_case: False
           values:
-            - BackUP
-            - nObOdy
+            - :0:0
+            - SystemD-NetworK
           counts:
-            - 3
-            - 2
+            - 1
+            - 1
