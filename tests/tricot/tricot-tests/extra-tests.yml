@@ -1016,10 +1016,11 @@ tests:
             - '[003-001] Dummy Test 2... success'
             - '[003-002] Dummy Test 3... success'
             - '[003-003] Dummy Test 4... success'
-            - '[001-000] Dummy Test 1... skipped'
-            - '[001-001] Dummy Test 2... skipped'
-            - '[001-002] Dummy Test 3... skipped'
-            - '[001-003] Dummy Test 4... skipped'
+          invert:
+            - '[001-000] Dummy Test 1... success'
+            - '[001-001] Dummy Test 2... success'
+            - '[001-002] Dummy Test 3... success'
+            - '[001-003] Dummy Test 4... success'
 
 
   - title: Skip Until 3
@@ -1045,13 +1046,14 @@ tests:
             - '[003-001] Dummy Test 2... success'
             - '[003-002] Dummy Test 3... success'
             - '[003-003] Dummy Test 4... success'
-            - '[001-000] Dummy Test 1... skipped'
-            - '[001-001] Dummy Test 2... skipped'
-            - '[001-002] Dummy Test 3... skipped'
-            - '[001-003] Dummy Test 4... skipped'
-            - '[002-000] Dummy Test 1... skipped'
-            - '[002-001] Dummy Test 2... skipped'
-            - '[002-002] Dummy Test 3... skipped'
+          invert:
+            - '[001-000] Dummy Test 1... success'
+            - '[001-001] Dummy Test 2... success'
+            - '[001-002] Dummy Test 3... success'
+            - '[001-003] Dummy Test 4... success'
+            - '[002-000] Dummy Test 1... success'
+            - '[002-001] Dummy Test 2... success'
+            - '[002-002] Dummy Test 3... success'
 
 
   - title: Continue From 1
@@ -1077,13 +1079,14 @@ tests:
             - '[003-001] Dummy Test 2... success'
             - '[003-002] Dummy Test 3... success'
             - '[003-003] Dummy Test 4... success'
-            - '[001-000] Dummy Test 1... skipped'
-            - '[001-001] Dummy Test 2... skipped'
-            - '[001-002] Dummy Test 3... skipped'
-            - '[001-003] Dummy Test 4... skipped'
-            - '[002-000] Dummy Test 1... skipped'
-            - '[002-001] Dummy Test 2... skipped'
-            - '[002-002] Dummy Test 3... skipped'
+          invert:
+            - '[001-000] Dummy Test 1... success'
+            - '[001-001] Dummy Test 2... success'
+            - '[001-002] Dummy Test 3... success'
+            - '[001-003] Dummy Test 4... success'
+            - '[002-000] Dummy Test 1... success'
+            - '[002-001] Dummy Test 2... success'
+            - '[002-002] Dummy Test 3... success'
 
 
   - title: Continue From 2
@@ -1112,10 +1115,11 @@ tests:
             - '[003-001] Dummy Test 2... success'
             - '[003-002] Dummy Test 3... success'
             - '[003-003] Dummy Test 4... success'
-            - '[001-000] Dummy Test 1... skipped'
-            - '[001-001] Dummy Test 2... skipped'
-            - '[001-002] Dummy Test 3... skipped'
-            - '[001-003] Dummy Test 4... skipped'
+          invert:
+            - '[001-000] Dummy Test 1... success'
+            - '[001-001] Dummy Test 2... success'
+            - '[001-002] Dummy Test 3... success'
+            - '[001-003] Dummy Test 4... success'
 
 
   - title: ID Pattern

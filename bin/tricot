@@ -200,7 +200,8 @@ def main():
 
         try:
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
-            tester.run(set(args.ids), groups, set(args.eids), egroups)
+            tester.filter(set(args.ids), groups, set(args.eids), egroups)
+            tester.run()
 
         except KeyboardInterrupt:
             tricot.Logger.reset_indent()
