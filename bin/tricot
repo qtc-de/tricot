@@ -202,6 +202,13 @@ def main():
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
             tester.run(set(args.ids), groups, set(args.eids), egroups)
 
+        except KeyboardInterrupt:
+            tricot.Logger.reset_indent()
+            tricot.Logger.print('')
+            tricot.Logger.print_mixed_yellow('Caught', 'KeyboardInterrupt', 'from user.')
+            tricot.Logger.print('Stopping current test.')
+            sys.exit(tricot.constants.KEYBOARD_INTERRUPT)
+
         except Exception as excpt:
 
             raise_if_debug(args, excpt)
@@ -331,13 +338,6 @@ def main():
                 tricot.Logger.increase_indent()
                 tricot.Logger.print_with_indent_blue(str(e), e=True)
                 sys.exit(tricot.constants.YAML_SYNTAX_ERROR)
-
-            except KeyboardInterrupt:
-                tricot.Logger.reset_indent()
-                tricot.Logger.print('')
-                tricot.Logger.print_mixed_yellow('Caught', 'KeyboardInterrupt', 'from user.')
-                tricot.Logger.print('Stopping current test.')
-                sys.exit(tricot.constants.KEYBOARD_INTERRUPT)
 
             except Exception as e:
                 tricot.Logger.print_mixed_yellow('Caught', 'unexpected Exception', 'while running tricot.', e=True)
