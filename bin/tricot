@@ -201,6 +201,7 @@ def main():
         try:
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
             tester.filter(set(args.ids), groups, set(args.eids), egroups)
+            tester.check_requirements()
             tester.run()
 
         except KeyboardInterrupt:
@@ -326,6 +327,21 @@ def main():
                     tricot.Logger.increase_indent()
                     tricot.Logger.print_with_indent_blue(str(e), e=True)
                     sys.exit(tricot.constants.PARSER_ERROR)
+
+                except tricot.TricotRequiredFile as e:
+                    tricot.Logger.print_mixed_yellow('Error: Test configuration requires missing file:', str(e), e=True)
+                    tricot.Logger.print_mixed_blue('Affected configuration:', wrapper.path, e=True)
+                    sys.exit(tricot.constants.MISSING_RESOURCE)
+
+                except tricot.TricotRequiredCommand as e:
+                    tricot.Logger.print_mixed_yellow('Error: Test configuration requires missing command:', str(e), e=True)
+                    tricot.Logger.print_mixed_blue('Affected configuration:', wrapper.path, e=True)
+                    sys.exit(tricot.constants.MISSING_RESOURCE)
+
+                except tricot.TricotVersionMismatch as e:
+                    tricot.Logger.print_mixed_yellow('Error: Test configuration requires different tricot version:', str(e), e=True)
+                    tricot.Logger.print_mixed_blue('Affected configuration:', wrapper.path, e=True)
+                    sys.exit(tricot.constants.VERSION_MISMATCH)
 
                 except Exception as e:
                     tricot.Logger.print_mixed_yellow('Caught', 'unexpected Exception', 'while running tricot.', e=True)

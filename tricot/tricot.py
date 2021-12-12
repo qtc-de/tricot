@@ -3,8 +3,9 @@ from __future__ import annotations
 import copy
 import yaml
 import glob
-from pathlib import Path
+from shutil import which
 from typing import Any, Union
+from pathlib import Path
 
 import tricot.utils
 from tricot.docker import TricotContainer
@@ -37,6 +38,24 @@ class TricotException(Exception):
         '''
         self.path = str(path.resolve())
         super().__init__(message)
+
+
+class TricotRequiredFile(Exception):
+    '''
+    Custom exception class for a missing required file.
+    '''
+
+
+class TricotRequiredCommand(Exception):
+    '''
+    Custom exception class for a missing required command.
+    '''
+
+
+class TricotVersionMismatch(Exception):
+    '''
+    Custom exception class when a mismatching tricot version was used.
+    '''
 
 
 class ExceptionWrapper(Exception):
@@ -518,7 +537,7 @@ class Tester:
 
     def __init__(self, path: Path, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
                  containers: list[TricotContainer], plugins: list[Plugin], conditions: dict, conditionals: set[Condition],
-                 error_mode: str, tester_id: str, test_groups: list[list[str]]) -> None:
+                 error_mode: str, tester_id: str, test_groups: list[list[str]], requires: dict) -> None:
         '''
         Initializes a new Tester object.
 
@@ -535,10 +554,12 @@ class Tester:
             error_mode      Decides what to do if a plugin fails (break|continue)
             tester_id       Unique identifikation number of the tester
             test_groups     Test groups that the tester belongs to
+            requires        Requirements to run the tester
 
         Returns:
             None
         '''
+        self.path = path
         self.title = title
         self.variables = variables
         self.tests = tests
@@ -561,6 +582,7 @@ class Tester:
             assigned_ids.add(self.id)
 
         self.groups = test_groups
+        self.requires = requires
 
         self.logfile = None
         self.runall = False
@@ -638,7 +660,7 @@ class Tester:
                 raise TesterKeyError('tests', path, optional='testers')
 
             new_tester = Tester(path, t['title'], variables, tests, tester_list, containers, plugins,
-                                run_conds, conds, error_mode, t.get('id'), groups)
+                                run_conds, conds, error_mode, t.get('id'), groups, t.get('requires'))
             new_tester.set_logfile(t.get('logfile'))
 
             return new_tester
@@ -775,6 +797,45 @@ class Tester:
             return True
 
         return False
+
+    def check_requirements(self):
+        '''
+        Checks whether all requirements for the current tester are satisfied. Since a
+        successful run also requires successful sub-testers, sub-tester requirements are
+        also checked.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        if not self.requires or type(self.requires) is not dict:
+            return
+
+        for file in self.requires.get('files', []):
+
+            if not Path(file).exists():
+                raise ExceptionWrapper(TricotRequiredFile(file), self.path)
+
+        for command in self.requires.get('commands', []):
+
+            if which(command) is None:
+                raise ExceptionWrapper(TricotRequiredCommand(command), self.path)
+
+        version = self.requires.get('version')
+        if not tricot.utils.match_version(version):
+
+            message = ''
+            for item in ['lt', 'eq', 'gt']:
+
+                ver = version.get(item)
+                message += f'{item}: {ver} '
+
+            raise ExceptionWrapper(TricotVersionMismatch(message), self.path)
+
+        for tester in self.testers:
+            tester.check_requirements()
 
     def filter(self, ids: set[str], groups: list[list[str]], exclude: set[str],
                exclude_groups: list[list[str]]) -> bool:
