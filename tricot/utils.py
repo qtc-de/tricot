@@ -5,6 +5,7 @@ import re
 import tricot
 from typing import Any
 from pathlib import Path
+from hashlib import sha256
 
 
 class TricotRuntimeVariableError(Exception):
@@ -539,3 +540,29 @@ def compare_versions(one: str, other: str) -> int:
             return 1
 
     return 0
+
+
+def file_exists(filename: str, hash_value: str = None) -> bool:
+    '''
+    Checks whether the specified filename exists and optionally whether
+    it has the expected hash value.
+
+    Parameters:
+        filename            Filename to check for
+        hash_value          Expected hash value
+
+    Returns:
+        bool                True if file exists and has the correct hash
+    '''
+    if not Path(filename).exists():
+        return False
+
+    if hash_value is not None:
+
+        with open(filename, 'rb') as f:
+            content = f.read()
+
+        if sha256(content).hexdigest() != hash_value:
+            return False
+
+    return True

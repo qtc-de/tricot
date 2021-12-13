@@ -815,8 +815,16 @@ class Tester:
 
         for file in self.requires.get('files', []):
 
-            if not Path(file).exists():
+            if type(file) is str and not tricot.utils.file_exists(file):
                 raise ExceptionWrapper(TricotRequiredFile(file), self.path)
+
+            elif type(file) is dict:
+
+                filename = file.get('filename', '')
+                hash_value = file.get('hash')
+
+                if not tricot.utils.file_exists(filename, hash_value):
+                    raise ExceptionWrapper(TricotRequiredFile(filename + " (wrong sha256)"), self.path)
 
         for command in self.requires.get('commands', []):
 
