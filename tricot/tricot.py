@@ -813,7 +813,9 @@ class Tester:
         if not self.requires or type(self.requires) is not dict:
             return
 
-        for file in self.requires.get('files', []):
+        requires = tricot.utils.apply_variables(self.requires, self.variables)
+
+        for file in requires.get('files', []):
 
             if type(file) is str and not Path(file).exists():
                 raise ExceptionWrapper(TricotRequiredFile(file), self.path)
@@ -823,12 +825,12 @@ class Tester:
                 if not tricot.utils.file_integrity(file):
                     raise ExceptionWrapper(TricotRequiredFile(file.get('filename') + " (wrong hash value)"), self.path)
 
-        for command in self.requires.get('commands', []):
+        for command in requires.get('commands', []):
 
             if which(command) is None:
                 raise ExceptionWrapper(TricotRequiredCommand(command), self.path)
 
-        version = self.requires.get('tricot')
+        version = requires.get('tricot')
         if not tricot.utils.match_version(version):
 
             message = ''
