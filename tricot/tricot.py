@@ -3,8 +3,9 @@ from __future__ import annotations
 import copy
 import yaml
 import glob
-from pathlib import Path
+from shutil import which
 from typing import Any, Union
+from pathlib import Path
 
 import tricot.utils
 from tricot.docker import TricotContainer
@@ -37,6 +38,24 @@ class TricotException(Exception):
         '''
         self.path = str(path.resolve())
         super().__init__(message)
+
+
+class TricotRequiredFile(Exception):
+    '''
+    Custom exception class for a missing required file.
+    '''
+
+
+class TricotRequiredCommand(Exception):
+    '''
+    Custom exception class for a missing required command.
+    '''
+
+
+class TricotVersionMismatch(Exception):
+    '''
+    Custom exception class when a mismatching tricot version was used.
+    '''
 
 
 class ExceptionWrapper(Exception):
@@ -418,7 +437,7 @@ class Test:
 
         success = True
 
-        if not Condition.check_conditions(self.conditions, self.conditionals) or tricot.skip_until is not None:
+        if not Condition.check_conditions(self.conditions, self.conditionals):
             Logger.cprint('skipped.', color='grey')
             return
 
@@ -518,7 +537,7 @@ class Tester:
 
     def __init__(self, path: Path, title: str, variables: dict[str, Any], tests: list[Test], testers: list[Tester],
                  containers: list[TricotContainer], plugins: list[Plugin], conditions: dict, conditionals: set[Condition],
-                 error_mode: str, tester_id: str, test_groups: list[list[str]]) -> None:
+                 error_mode: str, tester_id: str, test_groups: list[list[str]], requires: dict) -> None:
         '''
         Initializes a new Tester object.
 
@@ -535,10 +554,12 @@ class Tester:
             error_mode      Decides what to do if a plugin fails (break|continue)
             tester_id       Unique identifikation number of the tester
             test_groups     Test groups that the tester belongs to
+            requires        Requirements to run the tester
 
         Returns:
             None
         '''
+        self.path = path
         self.title = title
         self.variables = variables
         self.tests = tests
@@ -561,6 +582,7 @@ class Tester:
             assigned_ids.add(self.id)
 
         self.groups = test_groups
+        self.requires = requires
 
         self.logfile = None
         self.runall = False
@@ -623,7 +645,7 @@ class Tester:
                     testers_to_add = []
                     for ff in sorted(glob.glob(str(f))):
 
-                        if Path(ff).is_file() and ( ff.endswith('.yml') or ff.endswith('.yaml') ):
+                        if Path(ff).is_file() and (ff.endswith('.yml') or ff.endswith('.yaml')):
                             tester = Tester.from_file(ff, variables, None, error_mode, env, conds, output_c, groups)
                             testers_to_add.append(tester)
 
@@ -638,7 +660,7 @@ class Tester:
                 raise TesterKeyError('tests', path, optional='testers')
 
             new_tester = Tester(path, t['title'], variables, tests, tester_list, containers, plugins,
-                                run_conds, conds, error_mode, t.get('id'), groups)
+                                run_conds, conds, error_mode, t.get('id'), groups, t.get('requires'))
             new_tester.set_logfile(t.get('logfile'))
 
             return new_tester
@@ -699,26 +721,6 @@ class Tester:
         return Tester.from_dict(config_dict, initial_vars, Path(filename), error_mode, env, conditionals,
                                 output_conf, test_groups)
 
-    def set_runall(self, value: bool) -> None:
-        '''
-        Sets the runall property of a tester. This is required when users specify a tetser ID on the command
-        line. In this case, all tests and nested testers should be run, although their ID is not contained
-        within the IDs to run. Setting the runall property on a tester disabled ID checking and runs everything
-        inside of it anyway.
-
-        Setting the runall property is done recursively for all nested testers.
-
-        Parameters:
-            value           Value to set for the runall property.
-
-        Returns:
-            None
-        '''
-        self.runall = value
-
-        for tester in self.testers:
-            tester.set_runall(value)
-
     def contains_id(self, t_ids: set[str]) -> bool:
         '''
         Checks whether the specified Test / Tester IDs are contained within this tester.
@@ -733,7 +735,7 @@ class Tester:
             return True
 
         if self.id and {self.id}.issubset(t_ids):
-            self.set_runall(True)
+            self.runall = True
             return True
 
         if self.tests:
@@ -762,7 +764,7 @@ class Tester:
             return True
 
         if tricot.utils.groups_contain(t_groups, self.groups):
-            self.set_runall(True)
+            self.runall = True
             return True
 
         if self.tests:
@@ -796,28 +798,166 @@ class Tester:
 
         return False
 
-    def run(self, ids: set[str], groups: list[list[str]], exclude: set[str],
-            exclude_groups: list[list[str]], hotplug_variables: dict[str, Any] = dict()) -> None:
+    def check_requirements(self):
         '''
-        Runs the test: Prints the title of the tester and iterates over all contained
-        Test objects and calls their 'run' method.
+        Checks whether all requirements for the current tester are satisfied. Since a
+        successful run also requires successful sub-testers, sub-tester requirements are
+        also checked.
+
+        Parameters:
+            None
+
+        Returns:
+            None
+        '''
+        if not self.requires or type(self.requires) is not dict:
+            return
+
+        requires = tricot.utils.apply_variables(self.requires, self.variables)
+
+        for file in requires.get('files', []):
+
+            if type(file) is str and not Path(file).exists():
+                raise ExceptionWrapper(TricotRequiredFile(file), self.path)
+
+            elif type(file) is dict:
+
+                if not tricot.utils.file_integrity(file):
+                    raise ExceptionWrapper(TricotRequiredFile(file.get('filename') + " (wrong hash value)"), self.path)
+
+        for command in requires.get('commands', []):
+
+            if which(command) is None:
+                raise ExceptionWrapper(TricotRequiredCommand(command), self.path)
+
+        version = requires.get('tricot')
+        if not tricot.utils.match_version(version):
+
+            message = ''
+            for item in ['lt', 'le', 'eq', 'gt', 'ge']:
+
+                ver = version.get(item)
+
+                if ver is not None:
+                    message += f'{item}: {ver} '
+
+            raise ExceptionWrapper(TricotVersionMismatch(message), self.path)
+
+        for tester in self.testers:
+            tester.check_requirements()
+
+    def filter(self, ids: set[str], groups: list[list[str]], exclude: set[str],
+               exclude_groups: list[list[str]]) -> bool:
+        '''
+        Walks down the tester tree and removes all tests / testers that should be excluded
+        by the current test configuration. If filtering is desired, this should be run before
+        the tester.run method. The return value indicates whether the current tester has
+        tests / testers left after the filtering has applied.
 
         Parameters:
             ids                 Set of Test / Tester IDs to run
             groups              List of group lists to run
             exclude             Set of Test / Tester IDs to exclude
             exclude_groups      List of group lists to exclude
+
+        Returns:
+            bool                Whether or not the tester has tests / testers left
+        '''
+        if self.skip_test(exclude, exclude_groups):
+            return False
+
+        elif not self.contains_id(ids) or not self.contains_group(groups):
+            return False
+
+        elif tricot.skip_until:
+
+            if tricot.skip_until == self.id:
+                tricot.skip_until = None
+
+        if self.runall:
+            self.filter_tests(None, None, exclude, exclude_groups)
+            self.filter_testers(None, None, exclude, exclude_groups)
+
+        else:
+            self.filter_tests(ids, groups, exclude, exclude_groups)
+            self.filter_testers(ids, groups, exclude, exclude_groups)
+
+        if not self.tests and not self.testers:
+            return False
+
+        return True
+
+    def filter_testers(self, ids: set[str], groups: list[list[str]], exclude: set[str],
+                       exclude_groups: list[list[str]]) -> None:
+        '''
+        Iterates the tester array and removes all testers that should not be included by
+        the current filter configuration.
+
+        Parameters:
+            ids                 Set of Test / Tester IDs to run
+            groups              List of group lists to run
+            exclude             Set of Test / Tester IDs to exclude
+            exclude_groups      List of group lists to exclude
+
+        Returns:
+            None
+        '''
+        if not self.testers:
+            return
+
+        for tester in list(self.testers):
+            if not tester.filter(ids, groups, exclude, exclude_groups):
+                self.testers.remove(tester)
+
+    def filter_tests(self, ids: set[str], groups: list[list[str]], exclude: set[str],
+                     exclude_groups: list[list[str]]) -> None:
+        '''
+        Iterates the test array and removes all tests that should not be included by the
+        current filter configuration.
+
+        Parameters:
+            ids                 Set of Test / Tester IDs to run
+            groups              List of group lists to run
+            exclude             Set of Test / Tester IDs to exclude
+            exclude_groups      List of group lists to exclude
+
+        Returns:
+            None
+        '''
+        if not self.tests:
+            return
+
+        for test in list(self.tests):
+
+            if tricot.skip_until:
+
+                if tricot.skip_until == test.id:
+                    tricot.skip_until = None
+
+                else:
+                    self.tests.remove(test)
+                    continue
+
+            if test.skip_test(exclude, exclude_groups):
+                self.tests.remove(test)
+
+            elif ids and not {test.id}.issubset(ids):
+                self.tests.remove(test)
+
+            elif groups and not tricot.utils.groups_contain(groups, test.groups):
+                self.tests.remove(test)
+
+    def run(self, hotplug_variables: dict[str, Any] = dict()) -> None:
+        '''
+        Runs the tester. Iterates over the tests and tester array and runs all
+        tests / testers inside of it.
+
+        Parameters:
             hotplug_variables   Hotplug variables to use during the test
 
         Returns:
             None
         '''
-        if self.skip_test(exclude, exclude_groups):
-            return
-
-        if not self.contains_id(ids) or not self.contains_group(groups):
-            return
-
         if not Condition.check_conditions(self.conditions, self.conditionals):
             Logger.print_mixed_yellow('Skipping test:', self.title)
             return
@@ -828,6 +968,7 @@ class Tester:
 
         if self.id and self.id != self.title:
             Logger.print_plain_blue(f'[{self.id}]')
+
         else:
             print()
 
@@ -841,8 +982,8 @@ class Tester:
             container.start_container()
             hotplug = {**hotplug, **container.get_container_variables()}
 
-        self.run_tests(ids, groups, exclude, exclude_groups, hotplug)
-        self.run_childs(ids, groups, exclude, exclude_groups, hotplug)
+        self.run_tests(hotplug)
+        self.run_childs(hotplug)
 
         for container in self.containers:
             container.stop_container()
@@ -853,16 +994,11 @@ class Tester:
         Logger.remove_logfile(self.logfile)
         Logger.decrease_indent()
 
-    def run_tests(self, ids: set[str], groups: list[list[str]], exclude: set[str],
-                  exclude_groups: list[list[str]], hotplug_variables: dict[str, Any]) -> None:
+    def run_tests(self, hotplug_variables: dict[str, Any]) -> None:
         '''
         Wrapper function that executes the tests specified in a tester.
 
         Parameters:
-            ids                 Set of Test / Tester IDs to run
-            groups              List of group lists to run
-            exclude             Set of Test / Tester IDs to exclude
-            exclude_groups      List of group lists to exclude
             hotplug_variables   Hotplug variables to use during the test
 
         Returns:
@@ -872,48 +1008,15 @@ class Tester:
             return
 
         Logger.print('')
-        runall = tricot.utils.groups_contain(groups, self.groups) or (ids and {self.id}.issubset(ids))
-
-        if tricot.skip_until and tricot.skip_until == self.id:
-            tricot.skip_until = None
 
         for ctr in range(len(self.tests)):
+            self.tests[ctr].run(f'{ctr+1}.', hotplug_variables)
 
-            test = self.tests[ctr]
-
-            if test.skip_test(exclude, exclude_groups):
-                continue
-
-            elif self.runall or runall:
-                pass
-
-            elif not ids and not groups:
-                pass
-
-            elif ids and {test.id}.issubset(ids):
-                pass
-
-            elif groups and tricot.utils.groups_contain(groups, test.groups):
-                pass
-
-            else:
-                continue
-
-            if tricot.skip_until and tricot.skip_until == test.id:
-                tricot.skip_until = None
-
-            test.run(f'{ctr+1}.', hotplug_variables)
-
-    def run_childs(self, ids: set[str], groups: list[list[str]], exclude: set[str],
-                   exclude_groups: list[list[str]], hotplug_variables: dict[str, Any]) -> None:
+    def run_childs(self, hotplug_variables: dict[str, Any]) -> None:
         '''
         Runs the child testers of the current tester.
 
         Parameters:
-            ids                 Set of Test / Tester IDs to run
-            groups              List of group lists to run
-            exclude             Set of Test / Tester IDs to exclude
-            exclude_groups      List of group lists to exclude
             hotplug_variables   Hotplug variables to use during the test
 
         Returns:
@@ -922,7 +1025,7 @@ class Tester:
         for tester in self.testers:
 
             try:
-                tester.run(ids, groups, exclude, exclude_groups, hotplug_variables)
+                tester.run(hotplug_variables)
 
             except tricot.PluginException as e:
 

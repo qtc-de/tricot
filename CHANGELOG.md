@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.0] - Dec 26, 2021
+
+### Added
+
+* Testers can now specify [external requirements](https://github.com/qtc-de/tricot/tree/develop/docs#external-requirements)
+* Requirements are checked before the tester is run and can contain:
+  * Required files (including checksums verification)
+  * Required operating system commands
+  * Required tricot version
+   
+### Changed
+
+* Improved the selective test functionalities (`--skip-until`, `--continue-from`, `--ids`, `--groups`, `--exclude`, `--exclude-groups`).
+  Skipped tests are now skipped completely and they neither appear in the output nor start their associated containers.
+* Fix bug related to KeyboardInterrupts 
+* Update test cases to make them more compatible among different distributions
+
+
 ## [1.8.0] - Dec 04, 2021
 
 ### Changed

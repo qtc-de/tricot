@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import re
 import tricot
+import hashlib
 from typing import Any
 from pathlib import Path
 
@@ -12,7 +13,6 @@ class TricotRuntimeVariableError(Exception):
     A TricotRuntimeVariableError is raised, when a runtime variable was specified within
     the .yml test configuration, but was not defined at runtime.
     '''
-    pass
 
 
 class TricotEnvVariableError(Exception):
@@ -20,7 +20,12 @@ class TricotEnvVariableError(Exception):
     A TricotEnvVariableError is raised, when an environment variable was specified within
     the .yml test configuration, but was not found at runtime.
     '''
-    pass
+
+
+class TricotInvalidVersionException(Exception):
+    '''
+    Is raised when an invalid version string was specified.
+    '''
 
 
 def resolve_runtime_variables(variables: dict[str, Any], key: str, value: Any) -> Any:
@@ -446,3 +451,133 @@ def verify_id_pattern(pattern: str, path: Path) -> str:
             raise tricot.TricotException(msg, path)
 
     return pattern
+
+
+def match_version(version_dict: dict) -> bool:
+    '''
+    Checks if the currently running tricot installation matches the version specified
+    in version_dict. version_dict is a dictionary that has to contain at least one of
+    the following keys: eq, lt, gt.
+
+    Paramaters:
+        version_dict        Version dictionary containing at least one of eq, lt, gt
+
+    Returns:
+        bool                True if matching, False otherwise
+    '''
+    if version_dict is None:
+        return True
+
+    try:
+
+        cur_ver = tricot.constants.VERSION
+
+        for comperator in ['lt', 'le', 'eq', 'gt', 'ge']:
+
+            version = version_dict.get(comperator)
+
+            if version is None:
+                continue
+
+            result = compare_versions(cur_ver, version)
+
+            if 'e' in comperator and result == 0:
+                pass
+
+            elif 'l' in comperator and result == -1:
+                pass
+
+            elif 'g' in comperator and result == 1:
+                pass
+
+            else:
+                return False
+
+    except TricotInvalidVersionException as e:
+        return False
+
+    return True
+
+
+def split_version(version_string: str) -> list[int]:
+    '''
+    Splits a version string into it's three different components.
+
+    Parameters:
+        version_string          Incoming version string
+
+    Returns:
+        list[str]               List containing the different version components
+    '''
+    version_list = list()
+    split = version_string.split('.')
+
+    for item in split:
+
+        if not item.isdigit():
+            raise TricotInvalidVersionException(version_string)
+
+        version_list.append(int(item))
+
+    while len(version_list) < 3:
+        version_list.append(0)
+
+    return version_list
+
+
+def compare_versions(one: str, other: str) -> int:
+    '''
+    Compares two version strings with each other. If equal,
+    zero is reqturned. -1 if first is lower, +1 if other is lower.
+
+    Parameters:
+        one             Version string
+        other           Version string
+
+    Returns:
+        int             0 -> equal, -1 -> one < other, +1 -> one > other
+    '''
+    split1 = split_version(one)
+    split2 = split_version(other)
+
+    for ctr in range(0, 3):
+
+        if split1[ctr] < split2[ctr]:
+            return -1
+
+        elif split1[ctr] > split2[ctr]:
+            return 1
+
+    return 0
+
+
+def file_integrity(file_dict: dict) -> bool:
+    '''
+    Checks whether the filename matches the specified checksums.
+    The filename is expected under the 'filename' key of the specified
+    dicitionary. Checksum keys can be md5, sha1, sha256, sha512
+
+    Parameters:
+        file_dict           Dictionary containing the filename and checksums
+
+    Returns:
+        bool                True if file exists and has the correct hash
+    '''
+    filename = file_dict.get('filename')
+
+    if not filename or not Path(filename).exists():
+        return False
+
+    for hash_type in ['md5', 'sha1', 'sha256', 'sha512']:
+
+        hash_value = file_dict.get(hash_type)
+
+        if hash_value is not None:
+
+            with open(filename, 'rb') as f:
+                content = f.read()
+
+            if hashlib.new(hash_type, content).hexdigest() != hash_value:
+                return False
+
+    return True

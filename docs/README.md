@@ -20,6 +20,7 @@ on it's own.
 - [Conditionals](#conditionals)
 - [Reusing Output](#reusing-output)
 - [Logging](#logging)
+- [External Requirements](#external-requirements)
 - [Custom Strings](#custom-strings)
 - [Worth Knowing](#worth-knowing)
 
@@ -799,6 +800,53 @@ tests:
 
 Log files are always written in verbose mode and contain the full details for each *test* or *tester*.
 This is also true, even if the corresponding *test* or *tester* run was successful.
+
+
+### External Requirements
+
+----
+
+*tricot* allows you to use arbitrary resources on your system for testing. This can make tests incompatible
+across different platforms. To prevent errors at runtime, you can specify some of the external requirements
+within your test configuration. *tricot* checks these requirements first before running the tests. Currently,
+you can require certain files to exist, certain commands to exist and a specific version of tricot to run the
+test. All this needs to be configured within the tester configuration:
+
+```yaml
+tester:
+  title: Basic Usage
+  description: |-
+    Demonstrate the basic usage of tricot
+
+  requires:
+    files:
+      - /etc/passwd
+    commands:
+      - cat
+    tricot:
+      eq: 1.9.0
+      le: 1.9.0
+      lt: 1.9.0
+      ge: 1.9.0
+      gt: 1.9.0
+```
+
+File based requirements can also include a checksum for the specified file:
+
+```yaml
+tester:
+  title: Basic Usage
+  description: |-
+    Demonstrate the basic usage of tricot
+
+  requires:
+    files:
+      - filename: /etc/passwd
+        md5: c6beb132462d61bdd851de604acec9c7
+        sha1: 6de989b32cb10f2361ddaa46ea917a674429b4c6
+        sha256: f5aa7815387c6f8bad54554b5632a775f9c95cedcf4400b3f78395d4e2f59c0f
+        sha512: c26f20ee2d251198d189b53d4f3437769b4381dcf8d53c7e445740de333b2e671a2133932fb2089e2d90ec7eef78af3fefbe28d0d6b6d5dbdaf5a121705ed347
+```
 
 
 ### Custom Strings

@@ -14,7 +14,4 @@ variables:
   EXTRA: ../test-cases/extra/
 
 testers:
-  - ./tricot-tests/plugin-tests.yml
-  - ./tricot-tests/validator-tests.yml
-  - ./tricot-tests/extractor-tests.yml
-  - ./tricot-tests/extra-tests.yml
+  - ./tricot-tests/*
