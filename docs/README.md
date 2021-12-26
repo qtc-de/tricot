@@ -823,13 +823,15 @@ tester:
       - /etc/passwd
     commands:
       - cat
-    version:
+    tricot:
       eq: 1.9.0
-      lt: 2.0.0
-      gt: 1.0.0
+      le: 1.9.0
+      lt: 1.9.0
+      ge: 1.9.0
+      gt: 1.9.0
 ```
 
-File based requirements can also include the *sha256sum* for the specified file:
+File based requirements can also include a checksum for the specified file:
 
 ```yaml
 tester:
@@ -840,7 +842,10 @@ tester:
   requires:
     files:
       - filename: /etc/passwd
-        hash: f5aa7815387c6f8bad54554b5632a775f9c95cedcf4400b3f78395d4e2f59c0f
+        md5: c6beb132462d61bdd851de604acec9c7
+        sha1: 6de989b32cb10f2361ddaa46ea917a674429b4c6
+        sha256: f5aa7815387c6f8bad54554b5632a775f9c95cedcf4400b3f78395d4e2f59c0f
+        sha512: c26f20ee2d251198d189b53d4f3437769b4381dcf8d53c7e445740de333b2e671a2133932fb2089e2d90ec7eef78af3fefbe28d0d6b6d5dbdaf5a121705ed347
 ```
 
 
