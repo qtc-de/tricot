@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.9.0] - Dec 26, 2021
+
+### Added
+
+* Testers can now specify [external requirements](https://github.com/qtc-de/tricot/tree/develop/docs#external-requirements)
+* Requirements are checked before the tester is run and can contain:
+  * Required files (including checksums verification)
+  * Required operating system commands
+  * Required tricot version
+   
+
 ## [1.8.0] - Dec 04, 2021
 
 ### Changed
