@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * Required operating system commands
   * Required tricot version
    
+### Changed
+
+* Improved the selective test functionalities (`--skip-until`, `--continue-from`, `--ids`, `--groups`, `--exclude`, `--exclude-groups`).
+  Skipped tests are now skipped completely and they neither appear in the output nor start their associated containers.
+* Fix bug related to KeyboardInterrupts 
+* Update test cases to make them more compatible among different distributions
+
 
 ## [1.8.0] - Dec 04, 2021
 
