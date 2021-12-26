@@ -815,30 +815,29 @@ class Tester:
 
         for file in self.requires.get('files', []):
 
-            if type(file) is str and not tricot.utils.file_exists(file):
+            if type(file) is str and not Path(file).exists():
                 raise ExceptionWrapper(TricotRequiredFile(file), self.path)
 
             elif type(file) is dict:
 
-                filename = file.get('filename', '')
-                hash_value = file.get('hash')
-
-                if not tricot.utils.file_exists(filename, hash_value):
-                    raise ExceptionWrapper(TricotRequiredFile(filename + " (wrong sha256)"), self.path)
+                if not tricot.utils.file_integrity(file):
+                    raise ExceptionWrapper(TricotRequiredFile(file.get('filename') + " (wrong hash value)"), self.path)
 
         for command in self.requires.get('commands', []):
 
             if which(command) is None:
                 raise ExceptionWrapper(TricotRequiredCommand(command), self.path)
 
-        version = self.requires.get('version')
+        version = self.requires.get('tricot')
         if not tricot.utils.match_version(version):
 
             message = ''
-            for item in ['lt', 'eq', 'gt']:
+            for item in ['lt', 'le', 'eq', 'gt', 'ge']:
 
                 ver = version.get(item)
-                message += f'{item}: {ver} '
+
+                if ver is not None:
+                    message += f'{item}: {ver} '
 
             raise ExceptionWrapper(TricotVersionMismatch(message), self.path)
 

@@ -3,9 +3,9 @@ from __future__ import annotations
 import os
 import re
 import tricot
+import hashlib
 from typing import Any
 from pathlib import Path
-from hashlib import sha256
 
 
 class TricotRuntimeVariableError(Exception):
@@ -470,24 +470,33 @@ def match_version(version_dict: dict) -> bool:
 
     try:
 
-        ctr = -2
         cur_ver = tricot.constants.VERSION
 
-        for comperator in ['lt', 'eq', 'gt']:
+        for comperator in ['lt', 'le', 'eq', 'gt', 'ge']:
 
-            ctr += 1
             version = version_dict.get(comperator)
 
             if version is None:
                 continue
 
-            elif compare_versions(cur_ver, version) != ctr:
-                return False
+            result = compare_versions(cur_ver, version)
 
-        return True
+            if 'e' in comperator and result == 0:
+                pass
+
+            elif 'l' in comperator and result == -1:
+                pass
+
+            elif 'g' in comperator and result == 1:
+                pass
+
+            else:
+                return False
 
     except TricotInvalidVersionException as e:
         return False
+
+    return True
 
 
 def split_version(version_string: str) -> list[int]:
@@ -542,27 +551,33 @@ def compare_versions(one: str, other: str) -> int:
     return 0
 
 
-def file_exists(filename: str, hash_value: str = None) -> bool:
+def file_integrity(file_dict: dict) -> bool:
     '''
-    Checks whether the specified filename exists and optionally whether
-    it has the expected hash value.
+    Checks whether the filename matches the specified checksums.
+    The filename is expected under the 'filename' key of the specified
+    dicitionary. Checksum keys can be md5, sha1, sha256, sha512
 
     Parameters:
-        filename            Filename to check for
-        hash_value          Expected hash value
+        file_dict           Dictionary containing the filename and checksums
 
     Returns:
         bool                True if file exists and has the correct hash
     '''
-    if not Path(filename).exists():
+    filename = file_dict.get('filename')
+
+    if not filename or not Path(filename).exists():
         return False
 
-    if hash_value is not None:
+    for hash_type in ['md5', 'sha1', 'sha256', 'sha512']:
 
-        with open(filename, 'rb') as f:
-            content = f.read()
+        hash_value = file_dict.get(hash_type)
 
-        if sha256(content).hexdigest() != hash_value:
-            return False
+        if hash_value is not None:
+
+            with open(filename, 'rb') as f:
+                content = f.read()
+
+            if hashlib.new(hash_type, content).hexdigest() != hash_value:
+                return False
 
     return True
