@@ -975,9 +975,9 @@ class LineCountValidator(Validator):
             raise ValidationException(f"Command output has '{len(lines)}' line(s), but '{count}' lines were expected.")
 
 
-class TarContains(Validator):
+class TarContainsValidator(Validator):
     '''
-    The TarContains validator checks whether the specified tar archive contains the listed items.
+    The TarContainsValidator checks whether the specified tar archive contains the listed items.
 
     Example:
 
@@ -1063,9 +1063,9 @@ class TarContains(Validator):
                     raise ValidationException(f'File {filename} was found in archive {self.archive}')
 
 
-class ZipContains(Validator):
+class ZipContainsValidator(Validator):
     '''
-    The ZipContains validator checks whether the specified zip archive contains the listed items.
+    The ZipContainsValidator checks whether the specified zip archive contains the listed items.
 
     Example:
 
@@ -1159,5 +1159,5 @@ register_validator("file_contains", FileContainsValidator)
 register_validator("runtime", RuntimeValidator)
 register_validator("count", CountValidator)
 register_validator("line_count", LineCountValidator)
-register_validator("tar_contains", TarContains)
-register_validator("zip_contains", ZipContains)
+register_validator("tar_contains", TarContainsValidator)
+register_validator("zip_contains", ZipContainsValidator)
