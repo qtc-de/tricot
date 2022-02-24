@@ -977,22 +977,26 @@ class LineCountValidator(Validator):
 
 class TarContains(Validator):
     '''
-    The TarContains validator checks whether the specified tar archive contains the
-    specified files.
+    The TarContains validator checks whether the specified tar archive contains the listed items.
 
     Example:
 
         validators:
-            - line_count:
-                count: 5
-                ignore_empty: True
+            - tar_contains:
+              archive: "/tmp/test.tar"
+              files:
+                - filename: link
+                  type: LNKTYPE
+                  target: /etc/passwd
+                - example1
+                - filename: example2
+                  size: 5
     '''
     param_type = dict
     inner_types = {
             'archive': {'required': True, 'type': str},
             'files': {'required': True, 'type': list, 'alternatives': ['invert']},
             'invert': {'required': True, 'type': list, 'alternatives': ['files']},
-            'ignore_case': {'required': False, 'type': bool},
             'compression': {'required': False, 'type': str},
     }
     item_types = ['REGTYPE', 'AREGTYPE', 'LNKTYPE', 'SYMTYPE', 'DIRTYPE', 'FIFOTYPE',
@@ -1000,7 +1004,8 @@ class TarContains(Validator):
 
     def __init__(self, *args, **kwargs) -> None:
         '''
-        Make sure that the specified compression value is allowed.
+        Make sure that the specified compression type is allowed and that items that
+        are specified as dictionary contain the required keys.
         '''
         super().__init__(*args, **kwargs)
         self.archive = self.param['archive']
@@ -1022,7 +1027,7 @@ class TarContains(Validator):
 
     def run(self) -> None:
         '''
-        Check whether the exit code of the command matches the specified value.
+        Check whether the specified tar archive matches the requirements.
         '''
         with tarfile.open(self.archive, f'r:{self.alg}') as archive:
 
@@ -1060,27 +1065,33 @@ class TarContains(Validator):
 
 class ZipContains(Validator):
     '''
-    The ZipContains validator checks whether the specified zip archive contains the specified files.
+    The ZipContains validator checks whether the specified zip archive contains the listed items.
 
     Example:
 
         validators:
-            - line_count:
-                count: 5
-                ignore_empty: True
+             - zip_contains:
+                 archive: "/tmp/bla.zip"
+                 files:
+                   - test1
+                   - filename: test2
+                     size: 20
+                     csize: 5
+                     type: FILE
+                     crc: 906850967
+                   - test3
     '''
     param_type = dict
     inner_types = {
             'archive': {'required': True, 'type': str},
             'files': {'required': True, 'type': list, 'alternatives': ['invert']},
             'invert': {'required': True, 'type': list, 'alternatives': ['files']},
-            'ignore_case': {'required': False, 'type': bool},
     }
     item_types = ['FILE', 'DIR']
 
     def __init__(self, *args, **kwargs) -> None:
         '''
-        Make sure that the specified compression value is allowed.
+        Make sure that items that are specified as dictionary contain the required keys.
         '''
         super().__init__(*args, **kwargs)
         self.archive = self.param['archive']
@@ -1098,7 +1109,7 @@ class ZipContains(Validator):
 
     def run(self) -> None:
         '''
-        Check whether the exit code of the command matches the specified value.
+        Check whether the specified archive matches the requirements.
         '''
         with zipfile.ZipFile(self.archive) as archive:
 

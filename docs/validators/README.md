@@ -15,6 +15,8 @@ This document contains a list of validators that are available per default when 
 - [RegexValidator](#regexvalidator)
 - [RuntimeValidator](#runtimevalidator)
 - [StatusCodeValidator](#statuscodevalidator)
+- [TarContainsValidator](#tarcontainsvalidator)
+- [ZipContainsValidator](#zipcontainsvalidator)
 
 
 ### ContainsValidator
@@ -312,7 +314,7 @@ validators:
 ----
 
 The ``RuntimeValidator`` checks whether the overall runtime of the command was lower or greater
-than the user specified value. It also supports equal, but this should be useles :D
+than the user specified value. It also supports equal, but this should be useless :D
 
 **Type Validation**:
 
@@ -352,4 +354,80 @@ param_type = int
 ```yaml
 validators:
     - status: 0
+```
+
+
+### TarContainsValidator
+
+----
+
+The `TarContainsValidator` checks whether a *tar* archive contains the specified items. It is also
+possible to validate the item type and other attributes of an tar item.
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+        'archive': {'required': True, 'type': str},
+        'files': {'required': True, 'type': list, 'alternatives': ['invert']},
+        'invert': {'required': True, 'type': list, 'alternatives': ['files']},
+        'compression': {'required': False, 'type': str},
+}
+```
+
+**Example:**
+
+Whereas the `invert` key is expected to be a list of plain strings, the `files` key can also
+contain more validation options for a tar item:
+
+```yaml
+validators:
+    - tar_contains:
+      archive: "/tmp/test.tar"
+      files:
+        - filename: link
+          type: LNKTYPE
+          target: /etc/passwd
+        - example1
+        - filename: example2
+          size: 5
+```
+
+
+### ZipContainsValidator
+
+----
+
+The `ZipContainsValidator` checks whether a *zip* archive contains the specified items. It is also
+possible to validate the item type and other attributes of an zip item.
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+        'archive': {'required': True, 'type': str},
+        'files': {'required': True, 'type': list, 'alternatives': ['invert']},
+        'invert': {'required': True, 'type': list, 'alternatives': ['files']},
+}
+```
+
+**Example:**
+
+Whereas the `invert` key is expected to be a list of plain strings, the `files` key can also
+contain more validation options for a zip item:
+
+```yaml
+validators:
+  - zip_contains:
+      archive: "/tmp/test.zip"
+      files:
+        - test1
+        - filename: test2
+          size: 20
+          csize: 5
+          type: FILE
+          crc: 906850967
+        - test3
 ```
