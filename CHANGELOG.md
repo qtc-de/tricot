@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Add [tar_contains validator](/docs/validators/#tarcontainsvalidator) to validate contents of a tar file
 * Add [zip_contains validator](/docs/validators/#zipcontainsvalidator) to validate contents of a zip file
-* Add `init` field for containers. Containers can use it to specify a custom initialization time.
+* Add [tempfile plugin](/docs/plugins/#tempfileplugin) to create temporary files for a test
+* Add `init` field for containers. Containers can use it to specify a custom initialization time
 
 
 ## [1.9.0] - Dec 26, 2021
