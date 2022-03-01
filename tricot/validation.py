@@ -999,8 +999,8 @@ class TarContainsValidator(Validator):
             'invert': {'required': True, 'type': list, 'alternatives': ['files']},
             'compression': {'required': False, 'type': str},
     }
-    item_types = ['REGTYPE', 'AREGTYPE', 'LNKTYPE', 'SYMTYPE', 'DIRTYPE', 'FIFOTYPE',
-                  'CONTTYPE', 'CHRTYPE', 'BLKTYPE', 'GNUTYPE_SPARSE']
+    types = ['REGTYPE', 'AREGTYPE', 'LNKTYPE', 'SYMTYPE', 'DIRTYPE', 'FIFOTYPE',
+             'CONTTYPE', 'CHRTYPE', 'BLKTYPE', 'GNUTYPE_SPARSE']
 
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -1021,8 +1021,8 @@ class TarContainsValidator(Validator):
                 if 'filename' not in file:
                     raise ValidatorError(self.path, '"filename" key is missing for dict in files list.')
 
-                if 'type' in file and file['type'] not in TarContains.item_types:
-                    choices = ", ".join(TarContains.item_types)
+                if 'type' in file and file['type'] not in TarContainsValidator.types:
+                    choices = ", ".join(TarContainsValidator.types)
                     raise ValidatorError(self.path, f'Invalid type {file["type"]}. Choose from {choices}')
 
     def run(self) -> None:
@@ -1049,8 +1049,8 @@ class TarContainsValidator(Validator):
                 if 'size' in file and file['size'] != tar_info.size:
                     raise ValidationException(f'{filename}:: Expected size: {file["size"]} - Actual size: {tar_info.size}')
 
-                if 'type' in file and str(TarContains.item_types.index(file['type'])).encode('utf-8') != tar_info.type:
-                    actual = TarContains.item_types[int(tar_info.type)]
+                if 'type' in file and str(TarContainsValidator.types.index(file['type'])).encode('utf-8') != tar_info.type:
+                    actual = TarContainsValidator.types[int(tar_info.type)]
                     raise ValidationException(f'{filename}:: Expected type: {file["type"]} - Actual type: {actual}')
 
                 if 'target' in file and file['target'] != tar_info.linkname:
@@ -1087,7 +1087,7 @@ class ZipContainsValidator(Validator):
             'files': {'required': True, 'type': list, 'alternatives': ['invert']},
             'invert': {'required': True, 'type': list, 'alternatives': ['files']},
     }
-    item_types = ['FILE', 'DIR']
+    types = ['FILE', 'DIR']
 
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -1103,8 +1103,8 @@ class ZipContainsValidator(Validator):
                 if 'filename' not in file:
                     raise ValidatorError(self.path, 'filename key is missing for dict in files list.')
 
-                if 'type' in file and file['type'] not in ZipContains.item_types:
-                    choices = ", ".join(ZipContains.item_types)
+                if 'type' in file and file['type'] not in ZipContainsValidator.types:
+                    choices = ", ".join(ZipContainsValidator.types)
                     raise ValidatorError(self.path, f'Invalid type {file["type"]}. Choose from {choices}')
 
     def run(self) -> None:
