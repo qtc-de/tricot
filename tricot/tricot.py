@@ -958,6 +958,10 @@ class Tester:
         Returns:
             None
         '''
+        if not self.tests and not self.testers:
+            Logger.print_mixed_yellow('Skipping empty test:', self.title)
+            return
+
         if not Condition.check_conditions(self.conditions, self.conditionals):
             Logger.print_mixed_yellow('Skipping test:', self.title)
             return

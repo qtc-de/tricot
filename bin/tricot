@@ -200,7 +200,8 @@ def main():
 
         try:
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
-            tester.filter(set(args.ids), groups, set(args.eids), egroups)
+            tester.filter_tests(set(args.ids), groups, set(args.eids), egroups)
+            tester.filter_testers(set(args.ids), groups, set(args.eids), egroups)
             tester.check_requirements()
             tester.run()
 
