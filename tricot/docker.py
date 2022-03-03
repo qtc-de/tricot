@@ -15,7 +15,7 @@ class TricotContainer:
     '''
 
     def __init__(self, name: str, image: str, env: dict[str, str] = None, volumes: dict[str, str] = None,
-                 aliases: dict[str, str] = {}, network_mode: str = None) -> None:
+                 aliases: dict[str, str] = {}, network_mode: str = None, init: int = 2) -> None:
         '''
         Initializes the container and registers an atexit event, but does not start the container.
 
@@ -26,6 +26,7 @@ class TricotContainer:
             volumes         Volumes to assign to the container
             aliases         Aliases for docker variables
             network_mode    Networking mode to start the container in
+            init            Time to wait for container initialization
 
         Returns:
             None
@@ -37,6 +38,7 @@ class TricotContainer:
         self.volumes = volumes
         self.aliases = aliases
         self.network_mode = network_mode
+        self.init = init
 
         self.client = docker.from_env()
         self.container = None
@@ -75,7 +77,7 @@ class TricotContainer:
                                    network_mode=self.network_mode)
 
         self.container = self.client.containers.get(self.name)
-        time.sleep(1)
+        time.sleep(self.init)
 
     def stop_container(self) -> None:
         '''
@@ -220,8 +222,9 @@ class TricotContainer:
                 aliases = tricot.utils.apply_variables(item.get('aliases', {}), variables)
                 environment = tricot.utils.apply_variables(item.get('env', {}), variables)
                 network_mode = tricot.utils.apply_variables(item.get('network_mode'), variables)
+                init = tricot.utils.apply_variables(item.get('init', 2), variables)
 
-                container = TricotContainer(name, image, environment, volume_dict, aliases, network_mode)
+                container = TricotContainer(name, image, environment, volume_dict, aliases, network_mode, init)
                 containers.append(container)
 
             return containers

@@ -493,7 +493,7 @@ def match_version(version_dict: dict) -> bool:
             else:
                 return False
 
-    except TricotInvalidVersionException as e:
+    except TricotInvalidVersionException:
         return False
 
     return True

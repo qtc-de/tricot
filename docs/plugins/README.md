@@ -10,6 +10,7 @@ This document contains a list of plugins that are available per default when usi
 - [HttpListenerPlugin](#httplistenerplugin)
 - [MkdirPlugin](#mkdirplugin)
 - [OsCommandPlugin](#oscommandplugin)
+- [TempFilePlugin](#tempfileplugin)
 
 
 ### CleanupPlugin
@@ -219,4 +220,34 @@ plugins:
             - nc
             - -vlp
             - 4444
+```
+
+
+### TempFilePlugin
+
+----
+
+The *TempFilePlugin* allows the creation of temporary files. The path for the temporary file
+is the only required parameter. The content of the file and the creation mode can optionally
+be specified.
+
+**Type Validation**:
+
+```python
+param_type = dict
+inner_types = {
+                'path': {'required': True, 'type': str},
+                'content': {'required': False, 'type': str},
+                'mode': {'required': False, 'type': str}
+              }
+```
+
+**Example:**
+
+```yaml
+plugins:
+    - tempfile:
+        path: /tmp/tricot_tempfile
+        content: |-
+            This is some content for the tempfile
 ```

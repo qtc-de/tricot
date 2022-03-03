@@ -4,6 +4,8 @@ import re
 import sys
 import shutil
 import os.path
+import tarfile
+import zipfile
 from typing import Any
 from pathlib import Path
 
@@ -973,6 +975,179 @@ class LineCountValidator(Validator):
             raise ValidationException(f"Command output has '{len(lines)}' line(s), but '{count}' lines were expected.")
 
 
+class TarContainsValidator(Validator):
+    '''
+    The TarContainsValidator checks whether the specified tar archive contains the listed items.
+
+    Example:
+
+        validators:
+            - tar_contains:
+              archive: "/tmp/test.tar"
+              files:
+                - filename: link
+                  type: LNKTYPE
+                  target: /etc/passwd
+                - example1
+                - filename: example2
+                  size: 5
+    '''
+    param_type = dict
+    inner_types = {
+            'archive': {'required': True, 'type': str},
+            'files': {'required': True, 'type': list, 'alternatives': ['invert']},
+            'invert': {'required': True, 'type': list, 'alternatives': ['files']},
+            'compression': {'required': False, 'type': str},
+    }
+    types = ['REGTYPE', 'AREGTYPE', 'LNKTYPE', 'SYMTYPE', 'DIRTYPE', 'FIFOTYPE',
+             'CONTTYPE', 'CHRTYPE', 'BLKTYPE', 'GNUTYPE_SPARSE']
+
+    def __init__(self, *args, **kwargs) -> None:
+        '''
+        Make sure that the specified compression type is allowed and that items that
+        are specified as dictionary contain the required keys.
+        '''
+        super().__init__(*args, **kwargs)
+        self.archive = self.param['archive']
+        self.files = self.param.get('files', [])
+        self.alg = self.param.get('compression', '')
+
+        if self.alg and (self.alg != 'gz' and self.alg != 'bz2'):
+            raise ValidatorError(self.path, f'Invalid compression algorithm specified: {self.alg}')
+
+        for file in self.files:
+            if type(file) is dict:
+
+                if 'filename' not in file:
+                    raise ValidatorError(self.path, '"filename" key is missing for dict in files list.')
+
+                if 'type' in file and file['type'] not in TarContainsValidator.types:
+                    choices = ", ".join(TarContainsValidator.types)
+                    raise ValidatorError(self.path, f'Invalid type {file["type"]}. Choose from {choices}')
+
+    def run(self) -> None:
+        '''
+        Check whether the specified tar archive matches the requirements.
+        '''
+        with tarfile.open(self.archive, f'r:{self.alg}') as archive:
+
+            members = archive.getmembers()
+            member_names = list(map(lambda x: x.name, members))
+
+            for file in self.files:
+
+                filename = file if type(file) is str else file['filename']
+
+                if filename not in member_names:
+                    raise ValidationException(f'Missing file {filename} in archive {self.archive}')
+
+                if type(file) is str:
+                    continue
+
+                tar_info = archive.getmember(filename)
+
+                if 'size' in file and file['size'] != tar_info.size:
+                    raise ValidationException(f'{filename}:: Expected size: {file["size"]} - Actual size: {tar_info.size}')
+
+                if 'type' in file and str(TarContainsValidator.types.index(file['type'])).encode('utf-8') != tar_info.type:
+                    actual = TarContainsValidator.types[int(tar_info.type)]
+                    raise ValidationException(f'{filename}:: Expected type: {file["type"]} - Actual type: {actual}')
+
+                if 'target' in file and file['target'] != tar_info.linkname:
+                    target = tar_info.linkname
+                    raise ValidationException(f'{filename}:: Expected target {file["target"]} - Actual target: {target}')
+
+            for file in self.param.get('invert', []):
+
+                if file in member_names:
+                    raise ValidationException(f'File {filename} was found in archive {self.archive}')
+
+
+class ZipContainsValidator(Validator):
+    '''
+    The ZipContainsValidator checks whether the specified zip archive contains the listed items.
+
+    Example:
+
+        validators:
+             - zip_contains:
+                 archive: "/tmp/bla.zip"
+                 files:
+                   - test1
+                   - filename: test2
+                     size: 20
+                     csize: 5
+                     type: FILE
+                     crc: 906850967
+                   - test3
+    '''
+    param_type = dict
+    inner_types = {
+            'archive': {'required': True, 'type': str},
+            'files': {'required': True, 'type': list, 'alternatives': ['invert']},
+            'invert': {'required': True, 'type': list, 'alternatives': ['files']},
+    }
+    types = ['FILE', 'DIR']
+
+    def __init__(self, *args, **kwargs) -> None:
+        '''
+        Make sure that items that are specified as dictionary contain the required keys.
+        '''
+        super().__init__(*args, **kwargs)
+        self.archive = self.param['archive']
+        self.files = self.param.get('files', [])
+
+        for file in self.files:
+            if type(file) is dict:
+
+                if 'filename' not in file:
+                    raise ValidatorError(self.path, 'filename key is missing for dict in files list.')
+
+                if 'type' in file and file['type'] not in ZipContainsValidator.types:
+                    choices = ", ".join(ZipContainsValidator.types)
+                    raise ValidatorError(self.path, f'Invalid type {file["type"]}. Choose from {choices}')
+
+    def run(self) -> None:
+        '''
+        Check whether the specified archive matches the requirements.
+        '''
+        with zipfile.ZipFile(self.archive) as archive:
+
+            members = archive.namelist()
+
+            for file in self.files:
+
+                filename = file if type(file) is str else file['filename']
+
+                if filename not in members:
+                    raise ValidationException(f'Missing file {filename} in archive {self.archive}')
+
+                if type(file) is str:
+                    continue
+
+                zip_info = archive.getinfo(filename)
+                zip_type = 'DIR' if zip_info.is_dir() else 'FILE'
+
+                if 'size' in file and file['size'] != zip_info.file_size:
+                    size = zip_info.file_size
+                    raise ValidationException(f'{filename}:: Expected size: {file["size"]} - Actual size: {size}')
+
+                if 'csize' in file and file['csize'] != zip_info.compress_size:
+                    csize = zip_info.compress_size
+                    raise ValidationException(f'{filename}:: Expected csize: {file["csize"]} - Actual csize: {csize}')
+
+                if 'crc' in file and file['crc'] != zip_info.CRC:
+                    raise ValidationException(f'{filename}:: Expected CRC: {file["crc"]} - Actual CRC: {zip_info.CRC}')
+
+                if 'type' in file and file['type'] != zip_type:
+                    raise ValidationException(f'{filename}:: Expected type: {file["type"]} - Actual type: {zip_type}')
+
+            for file in self.param.get('invert', []):
+
+                if file in members:
+                    raise ValidationException(f'File {filename} was found in archive {self.archive}')
+
+
 register_validator("contains", ContainsValidator)
 register_validator("match", MatchValidator)
 register_validator("regex", RegexValidator)
@@ -984,3 +1159,5 @@ register_validator("file_contains", FileContainsValidator)
 register_validator("runtime", RuntimeValidator)
 register_validator("count", CountValidator)
 register_validator("line_count", LineCountValidator)
+register_validator("tar_contains", TarContainsValidator)
+register_validator("zip_contains", ZipContainsValidator)

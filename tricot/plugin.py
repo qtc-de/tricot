@@ -752,9 +752,60 @@ class CopyPlugin(Plugin):
                 shutil.rmtree(str(item.absolute()))
 
 
+class TempFile(Plugin):
+    '''
+    The TempFile plugin creates a temorary file and optionally fills it with user specified content.
+    The temporary file is deleted after the pluin has stopped.
+
+    Example:
+
+        plugins:
+            - tempfile:
+                path: /tmp/tricot_tempfile
+                content: |-
+                    This is some content for the tempfile
+    '''
+    param_type = dict
+    inner_types = {
+                    'path': {'required': True, 'type': str},
+                    'content': {'required': False, 'type': str},
+                    'mode': {'required': False, 'type': str}
+                  }
+
+    def __init__(self, *args, **kwargs) -> None:
+        '''
+        Make sure that the specified mode is valid before running the plugin.
+        '''
+        super().__init__(*args, **kwargs)
+
+        self.path = self.param['path']
+        self.mode = self.param.get('mode', 'w')
+        self.content = self.param.get('content', '')
+
+        if self.mode not in ['w', 'a']:
+            raise PluginError(self.path, f"The select mode '{self.mode}' is invalid! Choices: 'w', 'a'")
+
+    def run(self) -> None:
+        '''
+        Create the temporary file and optionally fill it with content.
+        '''
+        with open(self.path, self.mode) as temp_file:
+            temp_file.write(self.content)
+
+    def stop(self) -> None:
+        '''
+        Remove the temporary file.
+        '''
+        item = Path(self.path)
+
+        if item.is_file():
+            item.unlink()
+
+
 register_plugin("os_command", OsCommandPlugin)
 register_plugin("mkdir", MkdirPlugin)
 register_plugin("http_listener", HttpListenerPlugin)
 register_plugin("cleanup", CleanupPlugin)
 register_plugin("cleanup_command", CleanupCommandPlugin)
 register_plugin("copy", CopyPlugin)
+register_plugin("tempfile", TempFile)
