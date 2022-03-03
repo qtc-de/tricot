@@ -15,7 +15,7 @@ class TricotContainer:
     '''
 
     def __init__(self, name: str, image: str, env: dict[str, str] = None, volumes: dict[str, str] = None,
-                 aliases: dict[str, str] = {}, network_mode: str = None, init: int = 1) -> None:
+                 aliases: dict[str, str] = {}, network_mode: str = None, init: int = 2) -> None:
         '''
         Initializes the container and registers an atexit event, but does not start the container.
 
@@ -222,7 +222,7 @@ class TricotContainer:
                 aliases = tricot.utils.apply_variables(item.get('aliases', {}), variables)
                 environment = tricot.utils.apply_variables(item.get('env', {}), variables)
                 network_mode = tricot.utils.apply_variables(item.get('network_mode'), variables)
-                init = tricot.utils.apply_variables(item.get('init', 1), variables)
+                init = tricot.utils.apply_variables(item.get('init', 2), variables)
 
                 container = TricotContainer(name, image, environment, volume_dict, aliases, network_mode, init)
                 containers.append(container)
