@@ -190,9 +190,9 @@ def main():
     egroups = tricot.utils.parse_groups(args.egroups)
 
     if args.skip_until:
-        tricot.skip_until = args.skip_until
+        tricot.skip_until = args.skip_until.strip("[|]")
     elif args.continue_from:
-        tricot.skip_until = args.continue_from
+        tricot.skip_until = args.continue_from.strip("[|]")
 
     tricot.Logger.print_mixed_yellow('tricot', f'v{VERSION}', '- Starting tests...')
 
