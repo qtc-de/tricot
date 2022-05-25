@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.10.1] - May 25, 2022
+
+### Changed
+
+* Fixed a selection bug when running selective tests (e.g. by using `--groups`). The bug caused unrelated
+  tests to run anyway.
+* The `--continue-from` and `--skip-until` options can now be used with test identifiers enclosed in brackets
+  (as they are displayed during a test run)
+
+
 ## [1.10.0] - Mar 03, 2022
 
 ### Added

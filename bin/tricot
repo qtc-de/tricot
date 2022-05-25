@@ -190,9 +190,9 @@ def main():
     egroups = tricot.utils.parse_groups(args.egroups)
 
     if args.skip_until:
-        tricot.skip_until = args.skip_until
+        tricot.skip_until = args.skip_until.strip("[|]")
     elif args.continue_from:
-        tricot.skip_until = args.continue_from
+        tricot.skip_until = args.continue_from.strip("[|]")
 
     tricot.Logger.print_mixed_yellow('tricot', f'v{VERSION}', '- Starting tests...')
 
@@ -200,7 +200,8 @@ def main():
 
         try:
             tester = tricot.Tester.from_file(yml_file, runtime_vars=variables)
-            tester.filter(set(args.ids), groups, set(args.eids), egroups)
+            tester.filter_tests(set(args.ids), groups, set(args.eids), egroups)
+            tester.filter_testers(set(args.ids), groups, set(args.eids), egroups)
             tester.check_requirements()
             tester.run()
 
