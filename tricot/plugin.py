@@ -542,9 +542,13 @@ class HttpListenerPlugin(Plugin):
         '''
         Starts the HTTPListener. Should be run in a separate thread.
         '''
-        handler = functools.partial(HttpListenerPlugin.CustomHandler, directory=directory)
-        self.server = http.server.HTTPServer(('', port), handler)
-        self.server.serve_forever()
+        try:
+            handler = functools.partial(HttpListenerPlugin.CustomHandler, directory=directory)
+            self.server = http.server.HTTPServer(('', port), handler)
+            self.server.serve_forever()
+
+        except Exception:
+            pass
 
     def stop(self) -> None:
         '''
