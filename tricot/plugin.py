@@ -782,7 +782,7 @@ class TempFile(Plugin):
         '''
         super().__init__(*args, **kwargs)
 
-        self.path = self.param['path']
+        self.tempfile = self.path.parent.joinpath(self.param['path'])
         self.mode = self.param.get('mode', 'w')
         self.content = self.param.get('content', '')
 
@@ -793,17 +793,15 @@ class TempFile(Plugin):
         '''
         Create the temporary file and optionally fill it with content.
         '''
-        with open(self.path, self.mode) as temp_file:
+        with open(self.tempfile, self.mode) as temp_file:
             temp_file.write(self.content)
 
     def stop(self) -> None:
         '''
         Remove the temporary file.
         '''
-        item = Path(self.path)
-
-        if item.is_file():
-            item.unlink()
+        if self.tempfile.is_file():
+            self.tempfile.unlink()
 
 
 register_plugin("os_command", OsCommandPlugin)

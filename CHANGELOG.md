@@ -10,8 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-* Improve error handling of the `http_listener` plugin
+* Improve error handling of the [http_listener plugin](/docs/plugins/#httplistenerplugin)
 * Improve error handling for yaml related scan errors
+* Fix some bugs in the [tempfile plugin](/docs/plugins/#tempfileplugin)
 
 
 ## [1.10.1] - May 25, 2022
