@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.10.2] - Jun 07, 2022
+
+### Changed
+
+* Improve error handling of the [http_listener plugin](/docs/plugins/#httplistenerplugin)
+* Improve error handling for yaml related scan errors
+* Fix some bugs in the [tempfile plugin](/docs/plugins/#tempfileplugin)
+
+
 ## [1.10.1] - May 25, 2022
 
 ### Changed

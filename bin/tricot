@@ -321,8 +321,8 @@ def main():
                 try:
                     raise wrapper.original
 
-                except yaml.parser.ParserError as e:
-                    tricot.Logger.print_mixed_yellow('Caught', 'ParserError', 'while parsing the test configuration.', e=True)
+                except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
+                    tricot.Logger.print_mixed_yellow('Caught', type(e).__name__, 'while parsing the test configuration.', e=True)
                     tricot.Logger.print_mixed_blue('Affected file:', wrapper.path, e=True)
                     tricot.Logger.print_yellow('Original Error:', e=True)
                     tricot.Logger.increase_indent()

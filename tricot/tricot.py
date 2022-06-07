@@ -709,7 +709,7 @@ class Tester:
             try:
                 config_dict = yaml.safe_load(f.read())
 
-            except yaml.parser.ParserError as e:
+            except (yaml.parser.ParserError, yaml.scanner.ScannerError) as e:
                 raise ExceptionWrapper(e, Path(filename))
 
         if '$env' not in initial_vars:
