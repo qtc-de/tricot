@@ -204,13 +204,12 @@ class TricotContainer:
                 volumes = tricot.utils.apply_variables(volumes, variables)
 
                 for volume in volumes:
+
                     split = volume.split(':')
+                    p = Path(split[0])
 
-                    if '/' in split[0]:
-                        p = Path(split[0])
-
-                        if not p.is_absolute():
-                            p = path.parent.joinpath(p).absolute()
+                    if not p.is_absolute():
+                        p = path.parent.joinpath(p).absolute()
 
                     if len(split) < 3:
                         split.append('rw')
