@@ -15,6 +15,9 @@ for end to end testing of command line applications.
 [![](https://img.shields.io/badge/license-GPL%20v3.0-blue)](https://github.com/qtc-de/tricot/blob/master/LICENSE)
 
 
+https://user-images.githubusercontent.com/49147108/183279190-d4148edb-ce40-443c-93c9-03c9b632e780.mp4
+
+
 ### Installation
 
 ----
