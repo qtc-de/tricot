@@ -10,7 +10,12 @@ for end to end testing of command line applications.
 
 ![](https://github.com/qtc-de/tricot/workflows/main%20Python%20CI/badge.svg?branch=main)
 ![](https://github.com/qtc-de/tricot/workflows/develop%20Python%20CI/badge.svg?branch=develop)
-![example-usage](https://tneitzel.eu/73201a92878c0aba7c3419b7403ab604/tricot-example.gif)
+[![](https://img.shields.io/badge/version-1.11.0-blue)](https://github.com/qtc-de/tricot/releases)
+![](https://img.shields.io/badge/python-9%2b-blue)
+[![](https://img.shields.io/badge/license-GPL%20v3.0-blue)](https://github.com/qtc-de/tricot/blob/master/LICENSE)
+
+
+https://user-images.githubusercontent.com/49147108/183279190-d4148edb-ce40-443c-93c9-03c9b632e780.mp4
 
 
 ### Installation

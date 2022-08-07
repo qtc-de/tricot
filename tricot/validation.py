@@ -796,9 +796,11 @@ class FileContainsValidator(Validator):
 
             invert = check.get('invert', [])
             contains = check.get('contains', [])
+            cleanup = check.get('cleanup', False)
             ignore_case = check.get('ignore_case', False)
 
             file_name = self.resolve_path(check['file'])
+
             if not os.path.isfile(file_name):
                 raise ValidationException(f"Specified file '{file_name}' does not exist.")
 
@@ -817,6 +819,9 @@ class FileContainsValidator(Validator):
                 for item in invert:
                     if item in content:
                         raise ValidationException(f"String '{item}' was found in '{file_name}'.")
+
+            if cleanup:
+                os.remove(file_name)
 
 
 class RuntimeValidator(Validator):

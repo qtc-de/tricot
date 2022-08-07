@@ -370,6 +370,7 @@ class Logger:
         else:
             Logger.print_mixed_yellow('- Caught unexpected', type(e).__name__, 'during validation process.', e=True)
             Logger.print_mixed_red('  The', val.name, 'validator raises probably an uncaught exception.', e=True)
+            Logger.print_mixed_blue('  Configuration file:', val.path.absolute(), e=True)
             Logger.print_mixed_blue('  Message:', str(e), e=True)
 
         if Logger.verbosity <= 1:

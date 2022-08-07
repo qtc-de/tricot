@@ -177,6 +177,10 @@ validators:
           contains:
             - localhost
             - 127.0.0.1
+        - file: /tmp/tmp_file
+          contains:
+            - 'cleanup deletes the file after validation'
+          cleanup: True
 ```
 
 
