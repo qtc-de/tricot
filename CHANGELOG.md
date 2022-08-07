@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * Add `cleanup` option to [file_contains validator](https://github.com/qtc-de/tricot/tree/main/docs/validators#filecontainsvalidator)
+* Fixed a bug when using *docker volumes* with relative paths
+* Improved the error handling of uncaught validator exceptions
 
 
 ## [1.10.2] - Jun 07, 2022
