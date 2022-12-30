@@ -22,6 +22,7 @@ on it's own.
 - [Logging](#logging)
 - [External Requirements](#external-requirements)
 - [Custom Strings](#custom-strings)
+- [Inline Includes](#inline-includes)
 - [Worth Knowing](#worth-knowing)
 
 
@@ -868,6 +869,64 @@ Output specifications in *tests* overwrite settings in *testers* and output spec
 overwrite settings in *tests*. *Validators* are only allowed to set the ``failure_string`` and ``failure_color``
 settings. Furthermore, support for *validators* is currently limited by their parameter type. The ``output`` attribute
 can only be specified for *validators* that have an dictionary parameter type.
+
+
+### Inline Includes
+
+----
+
+As already demonstrated by the [example section](https://github.com/qtc-de/tricot#examples), *tricot* testers can be
+nested to split test configurations into individual files. A tester including other testers starts them automatically
+and passes context information like variables to them. Visually, each nested tester looks like a separate tester run.
+
+In some situations, you want test definitions to be defined within a separate file but not want to create a separate
+tester for them. A common example are shared test definitions, that are used by several testers and expected to create
+the same output. Such tests definitions can be included using the `include` key, which inlines the test definitions from
+the specified files as they were defined in the current test configuration. Here is a quick example:
+
+```yml
+tester:
+  title: Include Usage
+  description: |-
+    Demonstrate the usage of the include key
+
+variables:
+  passwd: /etc/passwd
+
+tests:
+
+  - title: Test passwd File
+    description: |-
+      Test that our passwd file contains some expected user names.
+      Make sure that david is not contained within our passwd file.
+
+    command:
+      - cat
+      - ${passwd}
+    validators:
+      - status: 0
+      - contains:
+          ignore_case: False
+          values:
+            - root
+            - bin
+          invert:
+            - david
+
+include:
+  - ./shared/example.yml
+```
+
+The test configuration displayed above contains one test definition. However, the `include` key is used to include
+another configuration file. The specified file is expected to contain additional test definitions within a key named
+`tests`. These tests are inlined into the current test definition as they were specified in the currently parsed
+configuration file.
+
+A more practical example can be found in the [remote-method-guesser](https://github.com/qtc-de/remote-method-guesser)
+repository. For *remote-method-guesser* we use separate testers for different *Java* versions. While there are some
+tool behavior differences between the different *Java* versions, most of the tests are expected to create the same
+output. We store these test definitions in separate shared files that are included by the testers for the different
+*Java* versions. This is easier to maintain, but still looks like the tests were defined for each tester individually.
 
 
 ### Worth Knowing
