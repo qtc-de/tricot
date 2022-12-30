@@ -370,7 +370,7 @@ class Test:
 
     def from_list(path: Path, input_list: list, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[list[str]] = list(), id_pattern: str = None) -> list[Test]:
+                  parent_groups: list[list[str]] = list(), id_pattern: str = None, index: int = 0) -> list[Test]:
         '''
         Within .yml files, Tests are specified in form of a list. This function takes such a list,
         that contains each single test definition as another dictionary (like it is created when
@@ -386,6 +386,7 @@ class Test:
             output_conf     Output configuration inherited by the tester
             parent_groups   Test groups inherited from the parent tester
             id_pattern      Pattern to create test IDs from
+            index           Initial Index to use for the first test
 
         Returns
             list[Test]      List of Test objects created from the .yml input
@@ -398,7 +399,7 @@ class Test:
         for ctr in range(len(input_list)):
 
             if id_pattern is not None:
-                suggested_id = id_pattern.format(ctr)
+                suggested_id = id_pattern.format(ctr + index)
 
             else:
                 suggested_id = None
@@ -416,7 +417,7 @@ class Test:
 
     def from_file(path: Path, variables: dict[str, Any] = {}, error_mode: str = 'continue',
                   env: dict = {}, conditionals: set[Condition] = set(), output_conf: dict = {},
-                  parent_groups: list[list[str]] = list(), id_pattern: str = None) -> list[Test]:
+                  parent_groups: list[list[str]] = list(), id_pattern: str = None, index: int = 0) -> list[Test]:
         '''
         Reads a list of test definitions from a yaml file. Tests should be contained in a 'tests' section
         that contains each single test definition.
@@ -430,6 +431,7 @@ class Test:
             output_conf     Output configuration inherited by the tester
             parent_groups   Test groups inherited from the parent tester
             id_pattern      Pattern to create test IDs from
+            index           Initial Index to use for the first test
 
         Returns
             list[Test]      List of Test objects created from the .yml input
@@ -444,7 +446,7 @@ class Test:
 
         if 'tests' in config_dict and type(config_dict['tests']) is list:
             return Test.from_list(path, config_dict['tests'], variables, error_mode, env, conditionals, output_conf,
-                                  parent_groups, id_pattern)
+                                  parent_groups, id_pattern, index)
 
         return []
 
@@ -696,7 +698,8 @@ class Tester:
             if includes and type(includes) is list:
 
                 for include in includes:
-                    tests += Test.from_file(path.parent / Path(include), variables, error_mode, env, conds, output_c, groups, id_pattern)
+                    tests += Test.from_file(path.parent / Path(include), variables, error_mode, env, conds, output_c, groups,
+                                            id_pattern, len(tests))
 
             if not tests and not tester_list:
                 raise TesterKeyError('tests', path, optional='testers')
