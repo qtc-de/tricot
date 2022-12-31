@@ -341,7 +341,7 @@ class Logger:
         if type(e) is ExtractException:
             Logger.print_mixed_yellow('- Caught', 'ExtractException', 'raised by the', end='', e=True)
             Logger.print_mixed_red_plain('', e.extractor.name, 'extractor.')
-            Logger.print_mixed_blue('  Configuration file:', e.extractor.path.absolute(), e=True)
+            Logger.print_mixed_blue('  Configuration file:', e.extractor.path.resolve().absolute(), e=True)
 
             if Logger.verbosity > 1:
                 Logger.print('', e=True)
@@ -359,7 +359,7 @@ class Logger:
         elif type(e) is ValidationException:
             Logger.print_mixed_yellow('- Caught', 'ValidationException', 'raised by the', end='', e=True)
             Logger.print_mixed_red_plain('', val.name, 'validator.')
-            Logger.print_mixed_blue('  Configuration file:', val.path.absolute(), e=True)
+            Logger.print_mixed_blue('  Configuration file:', val.path.resolve().absolute(), e=True)
 
             if Logger.verbosity > 1:
                 Logger.print('', e=True)
@@ -370,7 +370,7 @@ class Logger:
         else:
             Logger.print_mixed_yellow('- Caught unexpected', type(e).__name__, 'during validation process.', e=True)
             Logger.print_mixed_red('  The', val.name, 'validator raises probably an uncaught exception.', e=True)
-            Logger.print_mixed_blue('  Configuration file:', val.path.absolute(), e=True)
+            Logger.print_mixed_blue('  Configuration file:', val.path.resolve().absolute(), e=True)
             Logger.print_mixed_blue('  Message:', str(e), e=True)
 
         if Logger.verbosity <= 1:
