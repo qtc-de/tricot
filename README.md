@@ -406,6 +406,8 @@ real word examples, you should check the [Projects that use tricot](#projects-th
 In this section we list some projects that are using *tricot* for testing. Not because we are proud of,
 but only to provide you some more examples on how to use *tricot* for effective testing.
 
-* [remote-method-guesser](https://github.com/qtc-de/remote-method-guesser)
+* [beanshooter](https://github.com/qtc-de/beanshooter)
 * [ctfcred](https://github.com/qtc-de/ctfcred)
+* [remote-method-guesser](https://github.com/qtc-de/remote-method-guesser)
+* [slipit](https://github.com/usdAG/slipit)
 * [tricot](https://github.com/qtc-de/tricot)

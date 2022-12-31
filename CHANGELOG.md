@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * Add support for [inline includes](https://github.com/qtc-de/tricot/tree/main/docs#inline-includes)
+* Improved error handling
 
 
 ## [1.11.0] - Aug 07, 2022
