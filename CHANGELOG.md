@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.12.0] - Dec 31, 2022
+
+### Changed
+
+* Add support for [inline includes](https://github.com/qtc-de/tricot/tree/main/docs#inline-includes)
+* Improved error handling
+
+
 ## [1.11.0] - Aug 07, 2022
 
 ### Changed

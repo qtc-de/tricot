@@ -10,7 +10,7 @@ for end to end testing of command line applications.
 
 ![](https://github.com/qtc-de/tricot/workflows/main%20Python%20CI/badge.svg?branch=main)
 ![](https://github.com/qtc-de/tricot/workflows/develop%20Python%20CI/badge.svg?branch=develop)
-[![](https://img.shields.io/badge/version-1.11.0-blue)](https://github.com/qtc-de/tricot/releases)
+[![](https://img.shields.io/badge/version-1.12.0-blue)](https://github.com/qtc-de/tricot/releases)
 ![](https://img.shields.io/badge/python-9%2b-blue)
 [![](https://img.shields.io/badge/license-GPL%20v3.0-blue)](https://github.com/qtc-de/tricot/blob/master/LICENSE)
 
@@ -406,6 +406,8 @@ real word examples, you should check the [Projects that use tricot](#projects-th
 In this section we list some projects that are using *tricot* for testing. Not because we are proud of,
 but only to provide you some more examples on how to use *tricot* for effective testing.
 
-* [remote-method-guesser](https://github.com/qtc-de/remote-method-guesser)
+* [beanshooter](https://github.com/qtc-de/beanshooter)
 * [ctfcred](https://github.com/qtc-de/ctfcred)
+* [remote-method-guesser](https://github.com/qtc-de/remote-method-guesser)
+* [slipit](https://github.com/usdAG/slipit)
 * [tricot](https://github.com/qtc-de/tricot)

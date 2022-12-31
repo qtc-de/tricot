@@ -1,0 +1,11 @@
+tests:
+  - title: Inlined 3
+    description: >
+      'Check whether inlining the test is working'
+    command:
+      - echo
+      - ${test}
+    validators:
+      - contains:
+          values:
+            - 'Hello World :D'

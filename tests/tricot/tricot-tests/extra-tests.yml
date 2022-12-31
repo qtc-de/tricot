@@ -1156,3 +1156,26 @@ tests:
             - '[test-2-00d] Test Fourteen... success'
             - '[test-2-00e] Test Fifteen... success'
             - '[test-2-00f] Test Sixteen... success'
+
+
+  - title: Includes
+    description: |-
+      "Different tests on tricots include feature"
+
+    groups:
+      - include
+      - includes
+
+    command:
+      - tricot
+      - ${EXTRA}/Includes.yml
+
+    validators:
+      - error: False
+      - count:
+          values:
+            - ... success
+            - ... failed
+          counts:
+            - 4
+            - 0

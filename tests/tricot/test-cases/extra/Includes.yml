@@ -1,0 +1,27 @@
+tester:
+  name: includes
+  title: Includes Test
+  description: |-
+    'Performs different checks on tricots include feature'
+
+
+variables:
+  test: 'Hello World :D'
+
+
+tests:
+  - title: Locally Defined
+    description: >
+      'Dummy check defined in current file'
+    command:
+      - echo
+      - ${test}
+    validators:
+      - contains:
+          values:
+            - 'Hello World :D'
+
+
+include:
+  - Includes/nested1.yml
+  - Includes/nested2.yml
