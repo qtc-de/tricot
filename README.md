@@ -35,7 +35,7 @@ You can also build *tricot* from source by running the following commands:
 ```console
 [user@host ~]$ git clone https://github.com/qtc-de/tricot
 [user@host ~]$ cd tricot
-[user@host ~]$ pipx install .
+[user@host ~/tricot]$ pipx install .
 ```
 
 *tricot* also supports autocompletion for *bash*. To take advantage of autocompletion, you need to have the
@@ -44,7 +44,7 @@ copying the [completion script](./resources/bash_completion.d/tricot) to your ``
 autocompletion.
 
 ```console
-$ cp resources/bash_completion.d/tricot ~/bash_completion.d/
+[user@host ~]$ cp resources/bash_completion.d/tricot ~/bash_completion.d/
 ```
 
 
