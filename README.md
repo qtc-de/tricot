@@ -8,9 +8,10 @@ to execute along with a set of desired validators. This approach makes *tricot* 
 for end to end testing of command line applications.
 
 
-![](https://github.com/qtc-de/tricot/workflows/main%20Python%20CI/badge.svg?branch=main)
-![](https://github.com/qtc-de/tricot/workflows/develop%20Python%20CI/badge.svg?branch=develop)
-[![](https://img.shields.io/badge/version-1.12.0-blue)](https://github.com/qtc-de/tricot/releases)
+![](https://github.com/qtc-de/tricot/workflows/main/badge.svg?branch=main)
+![](https://github.com/qtc-de/tricot/workflows/develop/badge.svg?branch=develop)
+[![](https://img.shields.io/badge/version-1.12.1-blue)](https://github.com/qtc-de/tricot/releases)
+[![](https://img.shields.io/badge/packaging-pypi-blue)](https://pypi.org/project/tricot/)
 ![](https://img.shields.io/badge/python-9%2b-blue)
 [![](https://img.shields.io/badge/license-GPL%20v3.0-blue)](https://github.com/qtc-de/tricot/blob/master/LICENSE)
 
@@ -22,20 +23,19 @@ https://user-images.githubusercontent.com/49147108/183279190-d4148edb-ce40-443c-
 
 ----
 
-*tricot* can be build and installed as a *pip package*. The following command installs *tricot*
-for your current user profile:
+*tricot* can be build and installed as a [pip package](https://pypi.org/project/tricot/). The recommended
+way of installing is via [pipx](https://github.com/pypa/pipx):
 
 ```console
-$ pip3 install tricot
+[user@host ~]$ pipx install tricot
 ```
 
 You can also build *tricot* from source by running the following commands:
 
 ```console
-$ git clone https://github.com/qtc-de/tricot
-$ cd tricot
-$ python3 setup.py sdist
-$ pip3 install dist/*
+[user@host ~]$ git clone https://github.com/qtc-de/tricot
+[user@host ~]$ cd tricot
+[user@host ~]$ pipx install .
 ```
 
 *tricot* also supports autocompletion for *bash*. To take advantage of autocompletion, you need to have the
