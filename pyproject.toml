@@ -29,9 +29,10 @@ classifiers = [
 
 [project.urls]
 Homepage = 'https://github.com/qtc-de/tricot'
+Documentation = 'https://github.com/qtc-de/tricot/tree/main/docs'
 Repository = 'https://github.com/qtc-de/tricot'
 'Bug Tracker' = 'https://github.com/qtc-de/tricot/issues'
 Changelog = 'https://github.com/qtc-de/tricot/blob/main/CHANGELOG.md'
 
 [project.scripts]
-tricot = "tricot.main:main"
+tricot = 'tricot.main:main'
