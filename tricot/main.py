@@ -365,8 +365,4 @@ def main():
 
         finally:
             tricot.Logger.reset_indent()
-
-
-if __name__ == '__main__':
-    main()
-    sys.exit(tricot.constants.LAST_ERROR)
+            sys.exit(tricot.constants.LAST_ERROR)
