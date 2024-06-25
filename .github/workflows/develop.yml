@@ -49,7 +49,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          ~/.local/bin/pytest tests/pytest
+          pytest tests/pytest
 
       - name: Test with tricot
         run: |
