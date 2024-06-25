@@ -36,8 +36,9 @@ jobs:
           python3 -m pip install --upgrade pip
           pip install --upgrade pipx
           pipx install flake8
+          pipx install pytest
           pipx install .
-          pipx inject tricot pytest 
+          pipx inject pytest .
 
       - name: Lint with flake8
         run: |
@@ -48,7 +49,7 @@ jobs:
 
       - name: Test with pytest
         run: |
-          ~/.local/pipx/venvs/tricot/bin/pytest tests/pytest
+          ~/.local/bin/pytest tests/pytest
 
       - name: Test with tricot
         run: |
