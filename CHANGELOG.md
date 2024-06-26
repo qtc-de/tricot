@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Resource based requirements
+* Resource based requirements ([docs](/docs/README.md#external-requirements))
 
 ### Changed
 
