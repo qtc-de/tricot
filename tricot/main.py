@@ -191,6 +191,7 @@ def main():
 
     if args.skip_until:
         tricot.skip_until = args.skip_until.strip("[|]")
+
     elif args.continue_from:
         tricot.skip_until = args.continue_from.strip("[|]")
 
@@ -365,4 +366,5 @@ def main():
 
         finally:
             tricot.Logger.reset_indent()
-            sys.exit(tricot.constants.LAST_ERROR)
+
+    sys.exit(tricot.constants.LAST_ERROR)
