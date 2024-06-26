@@ -15,6 +15,7 @@ from tricot.extractor import Extractor
 from tricot.plugin import Plugin
 from tricot.command import Command
 from tricot.condition import Condition
+from tricot.resource import Resource
 
 
 skip_until = None
@@ -38,12 +39,6 @@ class TricotException(Exception):
         '''
         self.path = str(path.resolve())
         super().__init__(message)
-
-
-class TricotRequiredFile(Exception):
-    '''
-    Custom exception class for a missing required file.
-    '''
 
 
 class TricotRequiredCommand(Exception):
@@ -864,13 +859,15 @@ class Tester:
 
         for file in requires.get('files', []):
 
-            if type(file) is str and not Path(file).exists():
-                raise ExceptionWrapper(TricotRequiredFile(file), self.path)
+            try:
+                if type(file) is str:
+                    Resource({'path': file}).validate()
 
-            elif type(file) is dict:
+                elif type(file) is dict:
+                    Resource(file).validate()
 
-                if not tricot.utils.file_integrity(file):
-                    raise ExceptionWrapper(TricotRequiredFile(file.get('filename') + " (wrong hash value)"), self.path)
+            except Exception as e:
+                raise ExceptionWrapper(e, self.path)
 
         for command in requires.get('commands', []):
 

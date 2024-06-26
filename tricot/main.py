@@ -330,8 +330,8 @@ def main():
                     tricot.Logger.print_with_indent_blue(str(e), e=True)
                     sys.exit(tricot.constants.PARSER_ERROR)
 
-                except tricot.TricotRequiredFile as e:
-                    tricot.Logger.print_mixed_yellow('Error: Test configuration requires missing file:', str(e), e=True)
+                except tricot.ResourceValidationException as e:
+                    tricot.Logger.print_mixed_yellow('Error: a resource validation has failed:', str(e), e=True)
                     tricot.Logger.print_mixed_blue('Affected configuration:', wrapper.path, e=True)
                     sys.exit(tricot.constants.MISSING_RESOURCE)
 

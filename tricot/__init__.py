@@ -8,5 +8,6 @@ from .template import *
 from .tricot import *
 from .validation import *
 from .extractor import *
+from .resource import *
 
 name = 'tricot'
