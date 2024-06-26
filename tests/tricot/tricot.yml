@@ -9,6 +9,7 @@ tester:
 
 variables:
   VAL: ../test-cases/validator-tests/
+  RES: ../test-cases/resource-tests/
   EXT: ../test-cases/extractor-tests/
   PLUG: ../test-cases/plugin-tests/
   EXTRA: ../test-cases/extra/
