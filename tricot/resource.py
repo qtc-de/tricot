@@ -87,10 +87,6 @@ class Resource:
             Logger.print_mixed_blue('Writing resource data to:', str(path))
             path.write_bytes(r.content)
 
-        if self.mode:
-            Logger.print_mixed_blue('Adjusting permissions of resource to:', self.mode)
-            os.chmod(path, int(self.mode, 8))
-
         if self.hash:
 
             triggered = False
@@ -110,3 +106,7 @@ class Resource:
 
             if not triggered:
                 raise ResourceValidationException('hash attribute contains no valid hash types.')
+
+        if self.mode:
+            Logger.print_mixed_blue('Adjusting permissions of resource to:', self.mode)
+            os.chmod(path, int(self.mode, 8))
