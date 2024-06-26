@@ -1,0 +1,26 @@
+tester:
+  name: Valid Resources
+  title: Valid Resources Tests
+  description: |-
+    "Perform tests on tricots resource requirements"
+
+  requires:
+      files:
+        - path: /tmp/beanshooter
+          url: 'https://github.com/qtc-de/beanshooter/releases/download/v4.1.0/beanshooter-4.1.0-jar-with-dependencies.jar'
+          hash:
+            sha256: fc9830784690a79f0fddf98f076ba1d07e7d09859c7d1082b7db54d2ac119ba9
+          mode: 0o755
+
+tests:
+  - title: Validate Download
+    description: |-
+      'validates that beanshooter was downloaded'
+    command:
+      - echo
+      - Hello
+    validators:
+      - file_exists:
+          cleanup: True
+          files:
+            - /tmp/beanshooter

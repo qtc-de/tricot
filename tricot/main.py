@@ -191,6 +191,7 @@ def main():
 
     if args.skip_until:
         tricot.skip_until = args.skip_until.strip("[|]")
+
     elif args.continue_from:
         tricot.skip_until = args.continue_from.strip("[|]")
 
@@ -329,8 +330,8 @@ def main():
                     tricot.Logger.print_with_indent_blue(str(e), e=True)
                     sys.exit(tricot.constants.PARSER_ERROR)
 
-                except tricot.TricotRequiredFile as e:
-                    tricot.Logger.print_mixed_yellow('Error: Test configuration requires missing file:', str(e), e=True)
+                except tricot.ResourceValidationException as e:
+                    tricot.Logger.print_mixed_yellow('Error: a resource validation has failed:', str(e), e=True)
                     tricot.Logger.print_mixed_blue('Affected configuration:', wrapper.path, e=True)
                     sys.exit(tricot.constants.MISSING_RESOURCE)
 
@@ -366,7 +367,4 @@ def main():
         finally:
             tricot.Logger.reset_indent()
 
-
-if __name__ == '__main__':
-    main()
     sys.exit(tricot.constants.LAST_ERROR)

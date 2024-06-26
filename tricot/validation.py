@@ -297,6 +297,7 @@ class Validator:
         '''
         Resolves the specified path relative to the current validator definition (file location of
         the validators .yml file). If the input path is already absolute, it is just returned.
+        A leading ~ character is expanded to the users home directory.
 
         Parameters:
             path        File system path to resolve
@@ -304,6 +305,8 @@ class Validator:
         Returns:
             resolved    Resolved file system path
         '''
+        path = os.path.expanduser(path)
+
         if os.path.isabs(path):
             return path
 

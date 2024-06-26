@@ -1,0 +1,24 @@
+tester:
+  name: Missing Resources
+  title: Missing Resources Tests
+  description: |-
+    "Perform tests on tricots resource requirements"
+
+  requires:
+      files:
+        - path: /tmp/missing
+          hash:
+            sha256: 0c9830784690a79f0fddf98f076ba1d07e7d09859c7d1082b7db54d2ac119ba9
+
+tests:
+  - title: Dummy
+    description: |-
+      'Just a dummy'
+    command:
+      - echo
+      - Hello
+    validators:
+      - file_exists:
+          cleanup: True
+          files:
+            - /tmp/beanshooter

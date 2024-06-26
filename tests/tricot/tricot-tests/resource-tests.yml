@@ -1,0 +1,57 @@
+tester:
+  name: resource
+  title: Resource Tests
+  description: |-
+    "Performs tests on tricot resource requirements"
+
+  id: 05
+  groups:
+    - resource
+
+tests:
+  - title: ResourceValidation
+    description: |-
+      'Starts the test cases for tricots resource validation'
+
+    command:
+      - tricot
+      - ${RES}/valid.yml
+
+    validators:
+      - status: 0
+      - contains:
+          values:
+            - 'Downloading missing resource from: https://github.com'
+            - 'Writing resource data to: /tmp/beanshooter'
+            - 'Adjusting permissions of resource to: 0o755'
+            - '1. Validate Download... success'
+
+  - title: InvalidHash
+    description: |-
+      'Starts the test cases for tricots resource validation'
+
+    command:
+      - tricot
+      - ${RES}/invalid.yml
+
+    validators:
+      - status: 21
+      - contains:
+          values:
+            - 'Downloading missing resource from: https://github.com'
+            - 'Writing resource data to: /tmp/beanshooter'
+            - 'Error: a resource validation has failed: /tmp/beanshooter'
+
+  - title: MissingFile
+    description: |-
+      'Starts the test cases for tricots resource validation'
+
+    command:
+      - tricot
+      - ${RES}/missing.yml
+
+    validators:
+      - status: 21
+      - contains:
+          values:
+            - 'Error: a resource validation has failed: /tmp/missing: does not exist'
