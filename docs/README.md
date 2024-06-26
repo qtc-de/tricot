@@ -811,7 +811,8 @@ This is also true, even if the corresponding *test* or *tester* run was successf
 across different platforms. To prevent errors at runtime, you can specify some of the external requirements
 within your test configuration. *tricot* checks these requirements first before running the tests. Currently,
 you can require certain files to exist, certain commands to exist and a specific version of tricot to run the
-test. All this needs to be configured within the tester configuration:
+test. All this needs to be configured within the tester configuration. By using the `url` key, resources can
+even be downloaded dynamically during runtime.
 
 ```yaml
 tester:
@@ -822,8 +823,14 @@ tester:
   requires:
     files:
       - /etc/passwd
+      - path: ~/.local/bin/tool
+        url: https://where-to-download-tool-from.com/tool.jar
+        hash:
+          sha256: e81fb3d921d12bc4ef9d2292d1f2082386e48ffe8b1269c0d846ce17f56e9da8
+        mode: 0o755
     commands:
       - cat
+      - tool
     tricot:
       eq: 1.9.0
       le: 1.9.0
@@ -832,7 +839,7 @@ tester:
       gt: 1.9.0
 ```
 
-File based requirements can also include a checksum for the specified file:
+File based requirements support different checksum types:
 
 ```yaml
 tester:
@@ -842,7 +849,7 @@ tester:
 
   requires:
     files:
-      - filename: /etc/passwd
+      - path: /etc/passwd
         md5: c6beb132462d61bdd851de604acec9c7
         sha1: 6de989b32cb10f2361ddaa46ea917a674429b4c6
         sha256: f5aa7815387c6f8bad54554b5632a775f9c95cedcf4400b3f78395d4e2f59c0f
