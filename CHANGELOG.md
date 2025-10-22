@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Add basic support for Windows operating systems
 * Add `chdir` test param to change cwd for a test
+* Add `--no-color` option
 
 
 ## v1.13.0 - Jun 26, 2024
