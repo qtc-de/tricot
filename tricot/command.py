@@ -28,7 +28,7 @@ class Command:
     the command and storing the corresponding outputs along with some meta
     information.
     '''
-    def __init__(self, command: list, shell: bool = False) -> None:
+    def __init__(self, command: list, shell: bool = False, chdir: str = None) -> None:
         '''
         Crates a new Command object.
 
@@ -49,6 +49,7 @@ class Command:
 
         self.shell = shell
         self.command = command
+        self.chdir = chdir
 
     def run(self, path: Path, timeout: int, hotplug_variables: dict[str, Any] = None, env: dict = {}):
         '''
@@ -70,8 +71,26 @@ class Command:
             self.command = tricot.Test.apply_variables(self.command, hotplug_variables)
 
             try:
+
+                cmd_cwd = path
                 self.path = path
-                timer = timeit.Timer(lambda: self._run(path, timeout, env))
+
+                if self.chdir is not None:
+
+                    chdir = Path(self.chdir)
+
+                    if chdir.is_absolute():
+                        cmd_cwd = chdir
+
+                    else:
+                        cmd_cwd = path / chdir
+
+                cmd_cwd = cmd_cwd.resolve()
+
+                if not cmd_cwd.is_dir():
+                    raise TricotRuntimeError(FileNotFoundError(cmd_cwd))
+
+                timer = timeit.Timer(lambda: self._run(cmd_cwd, timeout, env))
                 self.runtime = timer.timeit(number=1)
 
             except Exception as e:
@@ -111,14 +130,34 @@ class Command:
             self.command = ' '.join(self.command)
 
         try:
-            process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                       cwd=path, env=envi, shell=self.shell, preexec_fn=os.setsid)
+
+            if os.name == 'nt':
+
+                # on Windows, we cannot use os.setsid and shell needs to be True to process the
+                # user supplied arguments correctly. Moreover, cwd needs an absolute path, as
+                # otherwise it is treated relatively to the current working directroy.
+                process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                           cwd=path.absolute(), env=envi, shell=True)
+
+            else:
+
+                # on other OS, we use os.setsid to create a new session and to assign the process
+                # as leader. This is required for clean termination if the process is ended by a
+                # user specified timeout.
+                process = subprocess.Popen(self.command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                           cwd=path, env=envi, shell=self.shell, preexec_fn=os.setsid)
 
             self.stdout_raw, self.stderr_raw = process.communicate(timeout=timeout)
             self.status = process.returncode
 
         except subprocess.TimeoutExpired:
-            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+
+            if 'killpg' in dir(os) and 'getpgid' in dir(os):
+                os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+
+            else:
+                os.kill(process.pid, signal.SIGKILL)
+
             self.stdout_raw, self.stderr_raw = process.communicate()
             self.status = 99
 
@@ -127,8 +166,8 @@ class Command:
             self.stderr_raw = e.stderr
             self.status = e.returncode
 
-        self.stdout = self.stdout_raw.decode('utf-8')
-        self.stderr = self.stderr_raw.decode('utf-8')
+        self.stdout = self.stdout_raw.decode('utf-8', errors='ignore')
+        self.stderr = self.stderr_raw.decode('utf-8', errors='ignore')
 
     def copy(self, other: Command) -> None:
         '''

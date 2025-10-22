@@ -6,7 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [1.13.0] - Jun 26, 2024
+## v1.14.0 - Oct 22, 2025
+
+### Added
+
+* Add basic support for Windows operating systems
+* Add `chdir` test param to change cwd for a test
+
+
+## v1.13.0 - Jun 26, 2024
 
 ### Added
 
@@ -19,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Switch to `pyproject.toml`
 
 
-## [1.12.0] - Dec 31, 2022
+## v1.12.0 - Dec 31, 2022
 
 ### Changed
 
@@ -27,7 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Improved error handling
 
 
-## [1.11.0] - Aug 07, 2022
+## v1.11.0 - Aug 07, 2022
 
 ### Changed
 
@@ -36,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Improved the error handling of uncaught validator exceptions
 
 
-## [1.10.2] - Jun 07, 2022
+## v1.10.2 - Jun 07, 2022
 
 ### Changed
 
@@ -45,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix some bugs in the [tempfile plugin](/docs/plugins/#tempfileplugin)
 
 
-## [1.10.1] - May 25, 2022
+## v1.10.1 - May 25, 2022
 
 ### Changed
 
@@ -55,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (as they are displayed during a test run)
 
 
-## [1.10.0] - Mar 03, 2022
+## v1.10.0 - Mar 03, 2022
 
 ### Added
 
@@ -65,7 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add `init` field for containers. Containers can use it to specify a custom initialization time (default=2)
 
 
-## [1.9.0] - Dec 26, 2021
+## v1.9.0 - Dec 26, 2021
 
 ### Added
 
@@ -83,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Update test cases to make them more compatible among different distributions
 
 
-## [1.8.0] - Dec 04, 2021
+## v1.8.0 - Dec 04, 2021
 
 ### Changed
 
@@ -93,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Improved exception handling
 
 
-## [1.7.0] - Oct 26, 2021
+## v1.7.0 - Oct 26, 2021
 
 ### Added
 
@@ -106,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   used as a replacement.
 
 
-## [1.6.0] - Oct 09, 2021
+## v1.6.0 - Oct 09, 2021
 
 ### Added
 
@@ -125,7 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `--exclude-groups` options.
 
 
-## [1.5.0] - Sep 11, 2021
+## v1.5.0 - Sep 11, 2021
 
 ### Added
 
@@ -145,14 +153,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Removed short version for most options
 
 
-## [1.4.2] - June 11, 2021
+## v1.4.2 - June 11, 2021
 
 ### Changed
 
 * Fix typo within ``tricot.py`` that caused an error when using the ``--tester`` option
 
 
-## [1.4.1] - May 28, 2021
+## v1.4.1 - May 28, 2021
 
 ### Changed
 
@@ -160,7 +168,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add debug information on OsCommand plugins
 
 
-## [1.4.0] - May 27, 2021
+## v1.4.0 - May 27, 2021
 
 ### Added
 
@@ -169,21 +177,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add support for custom [success and error strings](/docs/README.md##custom-strings)
 
 
-## [1.3.2] - May 24, 2021
+## v1.3.2 - May 24, 2021
 
 ### Changed
 
 * Add six dependency to ``setup.py`` file (see #4 for details)
 
 
-## [1.3.1] - May 24, 2021
+## v1.3.1 - May 24, 2021
 
 ### Changed
 
 * Add six dependency to ``requirements.txt`` file (see #4 for details)
 
 
-## [1.3.0] - May 24, 2021
+## v1.3.0 - May 24, 2021
 
 ### Added
 
@@ -197,7 +205,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add *stream* key to the expected validator keys
 
 
-## [1.2.0] - May 22, 2021
+## v1.2.0 - May 22, 2021
 
 ### Added
 
@@ -210,7 +218,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Some minor bug fixes
 
 
-## [1.1.0] - May 09, 2021
+## v1.1.0 - May 09, 2021
 
 ### Added
 
@@ -224,6 +232,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Fix bug that ``--numbers`` was not working
 
 
-## [1.0.0] - May 05, 2021
+## v1.0.0 - May 05, 2021
 
 Initial release :)
