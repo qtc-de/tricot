@@ -59,7 +59,7 @@ class Command:
         outputs and meta information is stored within class variables.
 
         Parameters:
-            path                File system path where the command is run in
+            path                File system path of the yaml file containing the command
             timeout             Timeout to use during command execution
             hotplug_variables   Variables that are applied at runtime.
             env                 Environment variables
@@ -68,11 +68,12 @@ class Command:
             None
         '''
         if self.command[0] != '${prev}':
+
             self.command = tricot.Test.apply_variables(self.command, hotplug_variables)
 
             try:
 
-                cmd_cwd = path
+                cmd_cwd = path.parent
                 self.path = path
 
                 if self.chdir is not None:
@@ -83,7 +84,7 @@ class Command:
                         cmd_cwd = chdir
 
                     else:
-                        cmd_cwd = path / chdir
+                        cmd_cwd = cmd_cwd / chdir
 
                 cmd_cwd = cmd_cwd.resolve()
 
@@ -109,7 +110,7 @@ class Command:
 
             else:
                 tricot.Logger.print_plain_red("error.")
-                raise tricot.TricotException("Special '${prev}' variable was used, but no previous output exists.")
+                raise tricot.TricotException("Special '${prev}' variable was used, but no previous output exists.", path)
 
     def _run(self, path: Path, timeout: int, env: dict = {}) -> None:
         '''
@@ -198,7 +199,8 @@ class Command:
         for attr in attrs:
 
             value = getattr(self, attr)
-            if value is None:
+
+            if attr != 'chdir' and value is None:
                 return False
 
         return True

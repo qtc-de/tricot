@@ -473,7 +473,7 @@ class Test:
             Logger.cprint('skipped.', color='grey')
             return
 
-        self.command.run(self.path.parent, self.timeout, hotplug_variables, self.env)
+        self.command.run(self.path, self.timeout, hotplug_variables, self.env)
         extractor_error = None
 
         for extractor in self.extractors:
