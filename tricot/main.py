@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import os
 import sys
 import yaml
 import docker
@@ -46,6 +47,7 @@ parser.add_argument('--skip-until', dest='skip_until', metavar='id', help='skip 
 parser.add_argument('--template', dest='template', choices=['tester', 'plugin', 'validator', 'extractor'], help='write a template file')
 parser.add_argument('--variables', dest='vars', metavar='vars', nargs='+', default=[], help='runtime variables')
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='enable verbose logging during tests')
+parser.add_argument('--no-color', dest='nocolor', action='store_true', help='disable colored output')
 
 
 def raise_if_debug(args: argparse.Namespace, e: Exception) -> None:
@@ -179,6 +181,9 @@ def main():
     '''
     args = parser.parse_args()
     initialize_logger(args)
+
+    if args.nocolor:
+        os.environ['ANSI_COLORS_DISABLED'] = '1'
 
     if args.template:
         write_template(args.file[0], args.template)

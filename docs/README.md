@@ -946,3 +946,6 @@ The following list contains information on some smaller *tricot* features that d
   Furthermore, the switch disables exception handling and shows each exception with full details.
 * Each *test* can contain the special attribute ``shell`` with a boolean value. If ``True`` commands are executed in shell
   mode.
+* Each *test* can contain the special attribute ``chdir`` with a string value. If specified, the working directory the
+  corresponding test is executed in can be changed. Relative paths change the working directory relative to the current
+  test file. Absoulte paths are treated as they are.

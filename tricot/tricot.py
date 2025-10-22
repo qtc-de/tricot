@@ -146,7 +146,7 @@ class Test:
     evaluated by executing their 'run' method.
     '''
     expected_keys = ['title', 'description', 'command', 'arguments', 'validators', 'timeout', 'env', 'conditions',
-                     'logfile', 'shell', 'extractors', 'id', 'groups']
+                     'logfile', 'shell', 'chdir', 'extractors', 'id', 'groups']
 
     def __init__(self, path: Path, title: str, error_mode: str, variables: dict[str, Any], command: Command,
                  timeout: int, validators: list[Validator], extractors: list[Extractor], env: dict, conditions: dict,
@@ -346,7 +346,8 @@ class Test:
                 command += arguments
 
             shell = j.get('shell', False)
-            command = Command(command, shell)
+            chdir = j.get('chdir', None)
+            command = Command(command, shell, chdir)
 
             tricot.utils.check_keys(Test.expected_keys, input_dict)
             test = Test(path, j['title'], e_mode, var, command, j.get('timeout'), validators, extractors, env,
@@ -472,7 +473,7 @@ class Test:
             Logger.cprint('skipped.', color='grey')
             return
 
-        self.command.run(self.path.parent, self.timeout, hotplug_variables, self.env)
+        self.command.run(self.path, self.timeout, hotplug_variables, self.env)
         extractor_error = None
 
         for extractor in self.extractors:
